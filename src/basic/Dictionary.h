@@ -33,25 +33,25 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#define DICTIONARY_SIZE					4096
-#define DICTIONARY_MAX_WORD_LENGTH		4
-#define DICTIONARY_MAX_COLLISIONS		1
+#include "../Types.h"
+#include "Entry.h"
+#include <iostream>
+#include <string>
+
+#define DICTIONARY_SIZE					HASH_SIZE
+#define DICTIONARY_MAX_WORD_LENGTH		HASH_MAX_LENGTH
 #define DICTIONARY_WORD_NOT_FOUND		-1
-
-typedef unsigned char byte;
-
-static unsigned int dictionaryHashCoeffs[4] = {1, 3, 5, 7};
 
 class Dictionary {
 private:
-	byte*** dictionary;
+	Entry** dictionary;
 
 public:
 	Dictionary();
 	~Dictionary();
 	
-	void put(byte*, unsigned int, unsigned int);
-	int get(byte*, unsigned int, unsigned int);
+	void put(Entry*);
+	int get(byte* buffer, unsigned int offset, unsigned int length);
 };
 
 #endif

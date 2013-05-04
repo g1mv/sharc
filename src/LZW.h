@@ -33,7 +33,7 @@
 #ifndef LZW_H
 #define LZW_H
 
-typedef unsigned char byte;
+#include "Types.h"
 
 class LZW {
 public:

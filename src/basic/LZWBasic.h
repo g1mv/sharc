@@ -35,9 +35,12 @@
 
 #include "../LZW.h"
 #include "commons.h"
+#include "dictionary.h"
 
 class LZWBasic : public LZW {
 private:
+	Dictionary* dictionary;
+
 public:
 	LZWBasic();
 	~LZWBasic();

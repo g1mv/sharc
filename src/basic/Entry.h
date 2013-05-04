@@ -26,42 +26,70 @@
  *
  * acceLZW
  *
- * 04/05/13 02:17
+ * 04/05/13 13:49
  * @author gpnuma
  */
 
-#include "Dictionary.h"
+#ifndef ENTRY_H
+#define ENTRY_H
 
-Dictionary::Dictionary() {
-	dictionary = new Entry*[DICTIONARY_SIZE];
-	for(unsigned int i = 0; i < DICTIONARY_SIZE; i ++)
-		dictionary[i] = 0;
-	for(byte i = 0; i < (byte)255; i ++) {
-		Entry* entry = new Entry(i);
-		dictionary[entry->getHashCode()] = entry;
-		//std::cout << i << std::endl;
-	}
+#include "../Types.h"
+#include <string.h>
+
+#define HASH_SIZE		1024
+#define HASH_MAX_LENGTH 8
+
+class Entry {
+private:
+	byte* entry;
+	unsigned int length;
+	int hashCode;
+
+public:
+	Entry(byte);
+	Entry(byte*, unsigned int, unsigned int);
+	~Entry();
+
+	/*bool operator == (Entry* e) {
+		if(this == 0) {
+			if(e == 0)
+				return true;
+			else
+				return false;
+		} else {
+			if(e == 0)
+				return false;
+		}
+		int i = this->getLength();
+		if(this->getLength() != e->getLength())
+			return false;
+		for(unsigned int i = 0; i < this->getLength(); i ++)
+			if(this->getValue()[i] != e->getValue()[i])
+				return false;
+        return true;
+    }*/
+
+	byte* getValue();
+	unsigned int getLength();
+	int getHashCode();
+};
+
+static unsigned int hashCoeffs[HASH_MAX_LENGTH] = {2, 3, 5, 7, 11, 13, 17, 19};
+
+static int hashWord(byte* buffer, unsigned int offset, unsigned int length) {
+	int hash = 0;
+	for(unsigned int i = 0; i < length; i ++)
+		hash += buffer[i + offset] * hashCoeffs[i];
+	return hash % HASH_SIZE;
 }
 
-Dictionary::~Dictionary() {
-	delete[] dictionary;
-}
-	
-void Dictionary::put(Entry* entry) {
-	unsigned int hash = entry->getHashCode();
-	dictionary[hash] = entry;
+static bool areIdentical(Entry* entry, byte* buffer, unsigned int offset, unsigned int length) {
+	if(entry->getLength() != length)
+		return false;
+	for(unsigned int i = 0; i < entry->getLength(); i ++)
+		if(entry->getValue()[i] != buffer[i + offset])
+			return false;
+    return true;
 }
 
-int Dictionary::get(byte* input, unsigned int offset, unsigned int length) {
-	if(length > DICTIONARY_MAX_WORD_LENGTH)
-		return DICTIONARY_WORD_NOT_FOUND;
-	int hash = hashWord(input, offset, length);
-	Entry* found = dictionary[hash];
-	//std::cout << found << std::endl;
-	if(found == 0)
-		//std::cout << "Not found !" << std::endl;
-		return DICTIONARY_WORD_NOT_FOUND;
-	if(!areIdentical(found, input, offset, length))
-		return DICTIONARY_WORD_NOT_FOUND;
-	return hash;
-}
+#endif

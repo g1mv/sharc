@@ -26,42 +26,13 @@
  *
  * acceLZW
  *
- * 04/05/13 02:17
+ * 04/05/13 13:53
  * @author gpnuma
  */
 
-#include "Dictionary.h"
+#ifndef TYPES_H
+#define TYPES_H
 
-Dictionary::Dictionary() {
-	dictionary = new Entry*[DICTIONARY_SIZE];
-	for(unsigned int i = 0; i < DICTIONARY_SIZE; i ++)
-		dictionary[i] = 0;
-	for(byte i = 0; i < (byte)255; i ++) {
-		Entry* entry = new Entry(i);
-		dictionary[entry->getHashCode()] = entry;
-		//std::cout << i << std::endl;
-	}
-}
+typedef unsigned char byte;
 
-Dictionary::~Dictionary() {
-	delete[] dictionary;
-}
-	
-void Dictionary::put(Entry* entry) {
-	unsigned int hash = entry->getHashCode();
-	dictionary[hash] = entry;
-}
-
-int Dictionary::get(byte* input, unsigned int offset, unsigned int length) {
-	if(length > DICTIONARY_MAX_WORD_LENGTH)
-		return DICTIONARY_WORD_NOT_FOUND;
-	int hash = hashWord(input, offset, length);
-	Entry* found = dictionary[hash];
-	//std::cout << found << std::endl;
-	if(found == 0)
-		//std::cout << "Not found !" << std::endl;
-		return DICTIONARY_WORD_NOT_FOUND;
-	if(!areIdentical(found, input, offset, length))
-		return DICTIONARY_WORD_NOT_FOUND;
-	return hash;
-}
+#endif

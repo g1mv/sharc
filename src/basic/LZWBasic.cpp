@@ -33,12 +33,36 @@
 #include "LZWBasic.h"
 
 LZWBasic::LZWBasic() {
+	dictionary = new Dictionary();
 }
 
 LZWBasic::~LZWBasic() {
+	delete dictionary;
 }
 
 unsigned int LZWBasic::compress(byte* input, unsigned int inputLength, byte* output) {
+	unsigned int indexStart = 0;
+	int indexFound = DICTIONARY_WORD_NOT_FOUND, previousIndexFound;
+
+	for(unsigned int i = 0; i < inputLength; i++) {
+		previousIndexFound = indexFound;
+		indexFound = dictionary->get(input, indexStart, i + 1 - indexStart);
+		//std::cout << indexFound << std::endl;
+		if(indexFound == DICTIONARY_WORD_NOT_FOUND) {
+			dictionary->put(new Entry(input, indexStart, i + 1 - indexStart));
+			switch(previousIndexFound) {
+			case DICTIONARY_WORD_NOT_FOUND:
+				std::cout << std::string((const char *)&input[indexStart], i - indexStart) << std::endl;
+				break;
+			default:
+				std::cout << previousIndexFound << std::endl;
+				break;
+			}
+			indexStart = i;			
+		}
+	}
+	std::cout << std::string((const char *)&input[indexStart], inputLength - indexStart) << std::endl;
+
 	return 0;
 }
 
@@ -48,18 +72,23 @@ unsigned int LZWBasic::decompress(byte* input, unsigned int inputLength, byte* o
 
 int main(int argc, char *argv[]) {
     Chrono* chrono = new Chrono();
-	LZW* lzw = new LZWBasic();
+    std::cout << "Chrono initialized" << std::endl;
 
-	unsigned int size = 1024 * 1024 * 1024;
+	LZW* lzw = new LZWBasic();
+    std::cout << "LZW initialized" << std::endl;
+
+	char* test = "TOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOTTOBEORNOTTOBEORTOBEORNOT";
+	unsigned int size = 24*20;
 	byte* testArray = new byte[size];
+	for(unsigned int i = 0; i < size; i++)
+		testArray[i] = (byte)(test[i]);
 
 	chrono->start();
 	unsigned int compressedSize = lzw->compress(testArray, size, testArray);
 	unsigned int decompressedSize = lzw->decompress(testArray, compressedSize, testArray);
-	for(unsigned int i = 0; i < size; i++);
 	chrono->stop();
 
-    std::cout << "Chrono = " << chrono->getElapsedMillis() << "ms" << std::endl;
+    std::cout << size << " bytes in " << chrono->getElapsedMillis() << "ms" << std::endl;
 
 	delete testArray;
 	delete lzw;
