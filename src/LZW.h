@@ -37,8 +37,12 @@ typedef unsigned char byte;
 
 class LZW {
 public:
+    virtual ~LZW() = 0;
     virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
     virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
 };
+
+inline LZW::~LZW() {
+}
 
 #endif

@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 	chrono->start();
 	unsigned int compressedSize = lzw->compress(testArray, size, testArray);
 	unsigned int decompressedSize = lzw->decompress(testArray, compressedSize, testArray);
-	//for(unsigned int i = 0; i < size; i++);
+	for(unsigned int i = 0; i < size; i++);
 	chrono->stop();
 
     std::cout << "Chrono = " << chrono->getElapsedMillis() << "ms" << std::endl;
