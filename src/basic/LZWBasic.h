@@ -46,6 +46,7 @@ public:
 	~LZWBasic();
     unsigned int compress(byte*, unsigned int, byte*);
     unsigned int decompress(byte*, unsigned int, byte*);
+	void reset();
 };
 
 #endif
