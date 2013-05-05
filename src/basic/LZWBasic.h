@@ -35,7 +35,7 @@
 
 #include "../LZW.h"
 #include "commons.h"
-#include "dictionary.h"
+#include "Dictionary.h"
 
 class LZWBasic : public LZW {
 private:
