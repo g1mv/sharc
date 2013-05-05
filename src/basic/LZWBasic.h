@@ -36,6 +36,7 @@
 #include "../LZW.h"
 #include "commons.h"
 #include "Dictionary.h"
+#include <fstream>
 
 class LZWBasic : public LZW {
 private:
