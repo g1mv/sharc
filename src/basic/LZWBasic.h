@@ -36,6 +36,7 @@
 #include "../LZW.h"
 #include "commons.h"
 #include "dictionary.h"
+#include <fstream>
 
 class LZWBasic : public LZW {
 private:
@@ -46,6 +47,7 @@ public:
 	~LZWBasic();
     unsigned int compress(byte*, unsigned int, byte*);
     unsigned int decompress(byte*, unsigned int, byte*);
+	void reset();
 };
 
 #endif
