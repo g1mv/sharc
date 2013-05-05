@@ -36,7 +36,7 @@ Entry::Entry(byte letter) {
 	entry = &letter;
 	length = 1;
 
-	hashCode = letter;
+	hashCode = hashWord(&letter, 0, 1);
 }
 
 Entry::Entry(byte* buffer, unsigned int offset, unsigned int length) {
