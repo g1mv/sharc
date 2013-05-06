@@ -26,24 +26,34 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 04/05/13 02:17
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#ifndef DEFAULT_DICTIONARY_H
+#define DEFAULT_DICTIONARY_H
 
-#include "Types.h"
+#include "../Types.h"
+#include "../Dictionary.h"
+#include "DefaultEntry.h"
+#include <iostream>
+#include <string>
 
-class LZW {
+#define DICTIONARY_WORD_NOT_FOUND		-1
+
+class DefaultDictionary : public Dictionary {
+private:
+    unsigned int used;
+	Entry** dictionary;
+	HashFunction* hashFunction;
+
 public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
+	DefaultDictionary(HashFunction*);
+	~DefaultDictionary();
+	
+	void put(Entry*);
+	int get(byte*, unsigned int, unsigned int);
+    unsigned int getUsedKeys();
 };
-
-inline LZW::~LZW() {
-}
 
 #endif

@@ -26,24 +26,36 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 04/05/13 13:49
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#ifndef DEFAULT_ENTRY_H
+#define DEFAULT_ENTRY_H
 
-#include "Types.h"
+#include "../Entry.h"
+#include "../HashFunction.h"
+#include <string.h>
 
-class LZW {
+#define HASH_MAX_LENGTH 16
+
+class DefaultEntry : public Entry {
+private:
+    HashFunction* hashFunction;
+	byte* entry;
+	unsigned int offset;
+	unsigned int length;
+	unsigned short int hashCode;
+
 public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
+	DefaultEntry(HashFunction* hashFunction, byte);
+	DefaultEntry(HashFunction* hashFunction, byte*, unsigned int, unsigned int);
+	~DefaultEntry();
+
+	byte* getValue();
+	unsigned int getLength();
+	unsigned short int getHashCode();
 };
 
-inline LZW::~LZW() {
-}
 
 #endif

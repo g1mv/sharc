@@ -26,24 +26,20 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 06/05/13 16:19
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#ifndef DICTIONARY_H
+#define DICTIONARY_H
 
-#include "Types.h"
+#include "Entry.h"
 
-class LZW {
+class Dictionary {
 public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
+	virtual void put(Entry*) = 0;
+	virtual int get(byte* buffer, unsigned int offset, unsigned int length) = 0;
+    virtual unsigned int getUsedKeys() = 0;
 };
-
-inline LZW::~LZW() {
-}
 
 #endif

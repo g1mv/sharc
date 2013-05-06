@@ -26,24 +26,22 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 06/05/13 17:48
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#include "SdbmHash.h"
 
-#include "Types.h"
-
-class LZW {
-public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
-};
-
-inline LZW::~LZW() {
+SdbmHash::SdbmHash(unsigned int hashSize, unsigned int maxWordLength) : HashFunction(hashSize, maxWordLength) {
 }
 
-#endif
+SdbmHash::~SdbmHash() {
+}
+
+unsigned short int SdbmHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
+    unsigned int hash = 0;
+	unsigned int limit = length <= maxWordLength ? length : maxWordLength;
+    for(unsigned int i = 0; i < limit; i ++)
+        hash = buffer[i + offset] + (hash << 6) + (hash << 16) - hash;
+    return hash % hashSize;
+}

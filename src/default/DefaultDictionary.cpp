@@ -26,24 +26,54 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 04/05/13 02:17
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#include "DefaultDictionary.h"
 
-#include "Types.h"
-
-class LZW {
-public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
-};
-
-inline LZW::~LZW() {
+DefaultDictionary::DefaultDictionary(HashFunction* hashFunction) {
+    this->hashFunction = hashFunction;
+    used = 0;
+	dictionary = (Entry**)new DefaultEntry*[hashFunction->getHashSize()];
+	for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
+		dictionary[i] = 0;
+	for(byte i = 0; i < (byte)255; i ++) {
+		DefaultEntry* entry = new DefaultEntry(hashFunction, i);
+		put(entry);
+		//std::cout << i << std::endl;
+	}
 }
 
-#endif
+DefaultDictionary::~DefaultDictionary() {
+	for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
+		delete dictionary[i];
+	delete[] dictionary;
+}
+	
+void DefaultDictionary::put(Entry* entry) {
+	unsigned short int hash = entry->getHashCode();
+    if(dictionary[hash] == 0)
+        used ++;
+	else
+		delete dictionary[hash];
+	dictionary[hash] = entry;
+}
+
+int DefaultDictionary::get(byte* input, unsigned int offset, unsigned int length) {
+	if(length > hashFunction->getMaxWordLength())
+		return DICTIONARY_WORD_NOT_FOUND;
+	unsigned short int hash = hashFunction->hash(input, offset, length);
+	DefaultEntry* found = (DefaultEntry*)dictionary[hash];
+	//std::cout << found << std::endl;
+	if(found == 0)
+		//std::cout << "Not found !" << std::endl;
+		return DICTIONARY_WORD_NOT_FOUND;
+	if(!areIdentical(found, input, offset, length))
+        return DICTIONARY_WORD_NOT_FOUND;
+	return hash;
+}
+
+unsigned int DefaultDictionary::getUsedKeys() {
+    return used;
+}

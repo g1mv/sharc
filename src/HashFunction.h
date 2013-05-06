@@ -26,28 +26,38 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 06/05/13 17:35
  * @author gpnuma
  */
 
-#ifndef LZW_BASIC_H
-#define LZW_BASIC_H
+#ifndef HASH_FUNCTION_H
+#define HASH_FUNCTION_H
 
-#include "../LZW.h"
-#include "commons.h"
-#include "Dictionary.h"
-#include <fstream>
+#include "Types.h"
 
-class LZWBasic : public LZW {
-private:
-	Dictionary* dictionary;
+class HashFunction {
+protected:
+    unsigned int hashSize;
+	unsigned int maxWordLength;
 
 public:
-	LZWBasic();
-	~LZWBasic();
-    unsigned int compress(byte*, unsigned int, byte*);
-    unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
+    HashFunction(unsigned int hashSize, unsigned int maxWordLength) {
+        this->hashSize = hashSize;
+		this->maxWordLength = maxWordLength;
+    }
+
+    ~HashFunction() {
+    }
+
+    virtual unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length) = 0;
+
+    unsigned int getHashSize() {
+        return hashSize;
+    }
+
+	unsigned int getMaxWordLength() {
+		return maxWordLength;
+	}
 };
 
 #endif

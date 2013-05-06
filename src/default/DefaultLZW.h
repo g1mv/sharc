@@ -26,49 +26,34 @@
  *
  * acceLZW
  *
- * 04/05/13 02:17
+ * 03/05/13 12:02
  * @author gpnuma
  */
 
-#include "Dictionary.h"
+#ifndef DEFAULT_LZW_H
+#define DEFAULT_LZW_H
 
-Dictionary::Dictionary() {
-    used = 0;
-	dictionary = new Entry*[DICTIONARY_SIZE];
-	for(unsigned int i = 0; i < DICTIONARY_SIZE; i ++)
-		dictionary[i] = 0;
-	for(byte i = 0; i < (byte)255; i ++) {
-		Entry* entry = new Entry(i);
-		put(entry);
-		//std::cout << i << std::endl;
-	}
-}
+#include "../LZW.h"
+#include "../hashes/BernsteinHash.h"
+#include "../hashes/DefaultHash.h"
+#include "../hashes/SdbmHash.h"
+#include "../hashes/NehalemHash.h"
+#include "commons.h"
+#include "DefaultDictionary.h"
+#include <fstream>
+#include <intrin.h>
 
-Dictionary::~Dictionary() {
-	delete[] dictionary;
-}
-	
-void Dictionary::put(Entry* entry) {
-	unsigned int hash = entry->getHashCode();
-    if(dictionary[hash] == 0)
-        used ++;
-	dictionary[hash] = entry;
-}
+class DefaultLZW : public LZW {
+private:
+	HashFunction* hashFunction;
+	Dictionary* dictionary;
 
-int Dictionary::get(byte* input, unsigned int offset, unsigned int length) {
-	if(length > DICTIONARY_MAX_WORD_LENGTH)
-		return DICTIONARY_WORD_NOT_FOUND;
-	int hash = hashWord(input, offset, length);
-	Entry* found = dictionary[hash];
-	//std::cout << found << std::endl;
-	if(found == 0)
-		//std::cout << "Not found !" << std::endl;
-		return DICTIONARY_WORD_NOT_FOUND;
-	if(!areIdentical(found, input, offset, length))
-        return DICTIONARY_WORD_NOT_FOUND;
-	return hash;
-}
+public:
+	DefaultLZW(HashFunction*);
+	~DefaultLZW();
+    unsigned int compress(byte*, unsigned int, byte*);
+    unsigned int decompress(byte*, unsigned int, byte*);
+	void reset();
+};
 
-unsigned int Dictionary::getOccupation() {
-    return used;
-}
+#endif

@@ -26,24 +26,21 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 06/05/13 17:45
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#ifndef DEFAULT_HASH_H
+#define DEFAULT_HASH_H
 
-#include "Types.h"
+#include "../HashFunction.h"
 
-class LZW {
+class DefaultHash : public HashFunction {
 public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
-};
+	DefaultHash(unsigned int, unsigned int);
+	~DefaultHash();
 
-inline LZW::~LZW() {
-}
+    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
+};
 
 #endif

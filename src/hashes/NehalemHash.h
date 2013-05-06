@@ -26,24 +26,25 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 06/05/13 20:11
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#ifndef NEHALEM_HASH_H
+#define NEHALEM_HASH_H
 
-#include "Types.h"
+#include "../HashFunction.h"
+#include <intrin.h>
+#include <nmmintrin.h>
+#include <smmintrin.h>
+#include <stdint.h>
 
-class LZW {
+class NehalemHash : public HashFunction {
 public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
-};
+	NehalemHash(unsigned int);
+	~NehalemHash();
 
-inline LZW::~LZW() {
-}
+    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
+};
 
 #endif

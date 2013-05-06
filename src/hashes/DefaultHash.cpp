@@ -26,24 +26,24 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 06/05/13 17:45
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#include "DefaultHash.h"
 
-#include "Types.h"
+static unsigned int hashCoeffs[16] = {23, 47, 97, 191, 383, 761, 1523, 3041, 6089, 12163, 24329, 48649, 97301, 195047, 390001, 611953};
 
-class LZW {
-public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
-};
-
-inline LZW::~LZW() {
+DefaultHash::DefaultHash(unsigned int hashSize, unsigned int maxWordLength) : HashFunction(hashSize, maxWordLength) {
 }
 
-#endif
+DefaultHash::~DefaultHash() {
+}
+
+unsigned short int DefaultHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
+    unsigned int hash = 0;
+	unsigned int limit = length <= maxWordLength ? length : maxWordLength;
+    for(unsigned int i = 0; i < limit; i ++)
+        hash += buffer[i + offset] * hashCoeffs[i];
+    return hash % hashSize;
+}

@@ -26,34 +26,21 @@
  *
  * acceLZW
  *
- * 04/05/13 02:17
+ * 06/05/13 17:48
  * @author gpnuma
  */
 
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#ifndef SDBM_HASH_H
+#define SDBM_HASH_H
 
-#include "../Types.h"
-#include "Entry.h"
-#include <iostream>
-#include <string>
+#include "../HashFunction.h"
 
-#define DICTIONARY_SIZE					HASH_SIZE
-#define DICTIONARY_MAX_WORD_LENGTH		HASH_MAX_LENGTH
-#define DICTIONARY_WORD_NOT_FOUND		-1
-
-class Dictionary {
-private:
-    unsigned int used;
-	Entry** dictionary;
-
+class SdbmHash : public HashFunction {
 public:
-	Dictionary();
-	~Dictionary();
-	
-	void put(Entry*);
-	int get(byte* buffer, unsigned int offset, unsigned int length);
-    unsigned int getOccupation();
+	SdbmHash(unsigned int, unsigned int);
+	~SdbmHash();
+
+    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
 };
 
 #endif

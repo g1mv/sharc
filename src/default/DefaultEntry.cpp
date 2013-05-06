@@ -26,70 +26,43 @@
  *
  * acceLZW
  *
- * 04/05/13 13:49
+ * 04/05/13 13:54
  * @author gpnuma
  */
 
-#ifndef ENTRY_H
-#define ENTRY_H
+#include "DefaultEntry.h"
 
-#include "../Types.h"
-#include <string.h>
+DefaultEntry::DefaultEntry(HashFunction* hashFunction, byte letter) {
+    this->hashFunction = hashFunction;
+	entry = &letter;
+	length = 1;
 
-#define HASH_SIZE		4096
-#define HASH_MAX_LENGTH 16
-
-class Entry {
-private:
-	byte* entry;
-	unsigned int length;
-	int hashCode;
-
-public:
-	Entry(byte);
-	Entry(byte*, unsigned int, unsigned int);
-	~Entry();
-
-	/*bool operator == (Entry* e) {
-		if(this == 0) {
-			if(e == 0)
-				return true;
-			else
-				return false;
-		} else {
-			if(e == 0)
-				return false;
-		}
-		int i = this->getLength();
-		if(this->getLength() != e->getLength())
-			return false;
-		for(unsigned int i = 0; i < this->getLength(); i ++)
-			if(this->getValue()[i] != e->getValue()[i])
-				return false;
-        return true;
-    }*/
-
-	byte* getValue();
-	unsigned int getLength();
-	int getHashCode();
-};
-
-static unsigned int hashCoeffs[16] = {23, 47, 97, 191, 383, 761, 1523, 3041, 6089, 12163, 24329, 48649, 97301, 195047, 390001, 611953};
-
-static int hashWord(byte* buffer, unsigned int offset, unsigned int length) {
-	int hash = 0;
-	for(unsigned int i = 0; i < length; i ++)
-		hash += buffer[i + offset] * hashCoeffs[i];
-	return hash % HASH_SIZE;
+	hashCode = hashFunction->hash(&letter, 0, 1);
 }
 
-static bool areIdentical(Entry* entry, byte* buffer, unsigned int offset, unsigned int length) {
-	if(entry->getLength() != length)
-		return false;
-	for(unsigned int i = 0; i < entry->getLength(); i ++)
-		if(entry->getValue()[i] != buffer[i + offset])
-			return false;
-    return true;
+DefaultEntry::DefaultEntry(HashFunction* hashFunction, byte* buffer, unsigned int offset, unsigned int length) {
+    this->hashFunction = hashFunction;
+	//entry = new byte[length];
+	//memcpy(entry, buffer + offset, length); 
+	this->entry = buffer;
+	this->offset = offset;
+	this->length = length;
+
+	hashCode = hashFunction->hash(entry, offset, length);
 }
 
-#endif
+DefaultEntry::~DefaultEntry() {
+	//delete[] entry;
+}
+
+byte* DefaultEntry::getValue() {
+	return entry;
+}
+
+unsigned int DefaultEntry::getLength() {
+	return length;
+}
+
+unsigned short int DefaultEntry::getHashCode() {
+	return hashCode;
+}

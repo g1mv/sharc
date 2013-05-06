@@ -26,39 +26,29 @@
  *
  * acceLZW
  *
- * 04/05/13 13:54
+ * 06/05/13 16:21
  * @author gpnuma
  */
 
-#include "Entry.h"
+#ifndef ENTRY_H
+#define ENTRY_H
 
-Entry::Entry(byte letter) {
-	entry = &letter;
-	length = 1;
+#include "Types.h"
 
-	hashCode = hashWord(&letter, 0, 1);
+class Entry {
+public:
+	virtual byte* getValue() = 0;
+	virtual unsigned int getLength() = 0;
+	virtual unsigned short int getHashCode() = 0;
+};
+
+static bool areIdentical(Entry* entry, byte* buffer, unsigned int offset, unsigned int length) {
+	if(entry->getLength() != length)
+		return false;
+	for(unsigned int i = 0; i < entry->getLength(); i ++)
+		if(entry->getValue()[i + offset] != buffer[i + offset])
+			return false;
+    return true;
 }
 
-Entry::Entry(byte* buffer, unsigned int offset, unsigned int length) {
-	entry = new byte[length];
-	memcpy(entry, buffer + offset, length); 
-	this->length = length;
-
-	hashCode = hashWord(entry, 0, length);
-}
-
-Entry::~Entry() {
-	delete[] entry;
-}
-
-byte* Entry::getValue() {
-	return entry;
-}
-
-unsigned int Entry::getLength() {
-	return length;
-}
-
-int Entry::getHashCode() {
-	return hashCode;
-}
+#endif

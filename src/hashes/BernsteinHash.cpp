@@ -26,24 +26,22 @@
  *
  * acceLZW
  *
- * 03/05/13 12:02
+ * 06/05/13 17:38
  * @author gpnuma
  */
 
-#ifndef LZW_H
-#define LZW_H
+#include "BernsteinHash.h"
 
-#include "Types.h"
-
-class LZW {
-public:
-    virtual ~LZW() = 0;
-    virtual unsigned int compress(byte*, unsigned int, byte*) = 0;
-    virtual unsigned int decompress(byte*, unsigned int, byte*) = 0;
-	virtual void reset() = 0;
-};
-
-inline LZW::~LZW() {
+BernsteinHash::BernsteinHash(unsigned int hashSize, unsigned int maxWordLength) : HashFunction(hashSize, maxWordLength) {
 }
 
-#endif
+BernsteinHash::~BernsteinHash() {
+}
+
+unsigned short int BernsteinHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
+    unsigned int hash = 5381;
+	unsigned int limit = length <= maxWordLength ? length : maxWordLength;
+	for(unsigned int i = 0; i < limit; i ++)
+		hash = ((hash << 5) + hash) + buffer[i + offset];
+	return hash % hashSize;
+}
