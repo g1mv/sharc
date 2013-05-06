@@ -37,7 +37,7 @@
 #include <string.h>
 
 #define HASH_SIZE		4096
-#define HASH_MAX_LENGTH 8
+#define HASH_MAX_LENGTH 16
 
 class Entry {
 private:
@@ -74,7 +74,7 @@ public:
 	int getHashCode();
 };
 
-static unsigned int hashCoeffs[8] = {23, 47, 97, 191, 383, 761, 1523, 3041};
+static unsigned int hashCoeffs[16] = {23, 47, 97, 191, 383, 761, 1523, 3041, 6089, 12163, 24329, 48649, 97301, 195047, 390001, 611953};
 
 static int hashWord(byte* buffer, unsigned int offset, unsigned int length) {
 	int hash = 0;

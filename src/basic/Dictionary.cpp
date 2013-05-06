@@ -33,12 +33,13 @@
 #include "Dictionary.h"
 
 Dictionary::Dictionary() {
+    used = 0;
 	dictionary = new Entry*[DICTIONARY_SIZE];
 	for(unsigned int i = 0; i < DICTIONARY_SIZE; i ++)
 		dictionary[i] = 0;
 	for(byte i = 0; i < (byte)255; i ++) {
 		Entry* entry = new Entry(i);
-		dictionary[entry->getHashCode()] = entry;
+		put(entry);
 		//std::cout << i << std::endl;
 	}
 }
@@ -49,6 +50,8 @@ Dictionary::~Dictionary() {
 	
 void Dictionary::put(Entry* entry) {
 	unsigned int hash = entry->getHashCode();
+    if(dictionary[hash] == 0)
+        used ++;
 	dictionary[hash] = entry;
 }
 
@@ -62,6 +65,10 @@ int Dictionary::get(byte* input, unsigned int offset, unsigned int length) {
 		//std::cout << "Not found !" << std::endl;
 		return DICTIONARY_WORD_NOT_FOUND;
 	if(!areIdentical(found, input, offset, length))
-		return DICTIONARY_WORD_NOT_FOUND;
+        return DICTIONARY_WORD_NOT_FOUND;
 	return hash;
+}
+
+unsigned int Dictionary::getOccupation() {
+    return used;
 }

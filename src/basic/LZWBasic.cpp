@@ -68,6 +68,7 @@ unsigned int LZWBasic::compress(byte* input, unsigned int inputLength, byte* out
 		std::cout << std::string((const char *)&input[indexStart], inputLength - indexStart) << std::endl;
 	else
 		std::cout << "Code = " << indexFound << std::endl;*/
+    std::cout << "Dictionary occupation : " << dictionary->getOccupation() << " / " << HASH_SIZE << std::endl;
 	double outBytes = (bytesCompressed * 12.0) / 8;
 	std::cout << inputLength << " bytes in, " << (unsigned int)outBytes << " bytes out, ratio out / in = " << outBytes / inputLength << std::endl;
 
@@ -116,7 +117,7 @@ int main(int argc, char *argv[]) {
 	unsigned int compressedSize = lzw->compress(testArray, index, testArray);
 	chrono->stop();
 
-    std::cout << "Time = " << chrono->getElapsedMillis() << "ms, Speed = " << (1000.0 * index) / (chrono->getElapsedMillis() * 1024.0 * 1024.0) << " MB/s" << std::endl;
+    std::cout << "Time = " << chrono->getElapsedMillis() << " ms, Speed = " << (1000.0 * index) / (chrono->getElapsedMillis() * 1024.0 * 1024.0) << " MB/s" << std::endl;
 
 	delete testArray;
 	delete lzw;

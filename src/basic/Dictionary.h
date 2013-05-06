@@ -44,6 +44,7 @@
 
 class Dictionary {
 private:
+    unsigned int used;
 	Entry** dictionary;
 
 public:
@@ -52,6 +53,7 @@ public:
 	
 	void put(Entry*);
 	int get(byte* buffer, unsigned int offset, unsigned int length);
+    unsigned int getOccupation();
 };
 
 #endif
