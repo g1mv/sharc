@@ -34,46 +34,83 @@
 
 DefaultDictionary::DefaultDictionary(HashFunction* hashFunction) {
     this->hashFunction = hashFunction;
-    used = 0;
-	dictionary = (Entry**)new DefaultEntry*[hashFunction->getHashSize()];
-	for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
-		dictionary[i] = 0;
-	for(byte i = 0; i < (byte)255; i ++) {
-		DefaultEntry* entry = new DefaultEntry(hashFunction, i);
-		put(entry);
-		//std::cout << i << std::endl;
-	}
+	dictionary = new ENTRY[hashFunction->getHashSize()];
+    for(unsigned short i = 0; i < hashFunction->getHashSize(); i++) {
+        ENTRY entry;
+        entry.exists = false;
+        //entry.hashCode = i;
+        entry.offset = 0;
+        entry.length = 0;
+        dictionary[i] = entry;
+    }
+    reset();
 }
 
 DefaultDictionary::~DefaultDictionary() {
-	for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
-		delete dictionary[i];
+	/*for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
+		delete dictionary[i];*/
 	delete[] dictionary;
 }
-	
-void DefaultDictionary::put(Entry* entry) {
-	unsigned short int hash = entry->getHashCode();
-    if(dictionary[hash] == 0)
-        used ++;
-	else
-		delete dictionary[hash];
-	dictionary[hash] = entry;
+
+void DefaultDictionary::reset() {
+    usedKeys = 0;
+    maxKeyLength = 0;
+	for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
+		dictionary[i].exists = false;
+    byte* temporary = new byte[1];
+	for(unsigned short i = 0; i < 256; i ++) {
+        temporary[0] = (byte)i;
+        unsigned short hash = hashFunction->hash(temporary, 0, 1);
+        //std::cout << hash << std::endl;
+        updateExists(hash);
+		update(hash, i, 1);
+	}
 }
 
-int DefaultDictionary::get(byte* input, unsigned int offset, unsigned int length) {
-	if(length > hashFunction->getMaxWordLength())
-		return DICTIONARY_WORD_NOT_FOUND;
-	unsigned short int hash = hashFunction->hash(input, offset, length);
-	DefaultEntry* found = (DefaultEntry*)dictionary[hash];
-	//std::cout << found << std::endl;
-	if(found == 0)
-		//std::cout << "Not found !" << std::endl;
-		return DICTIONARY_WORD_NOT_FOUND;
-	if(!areIdentical(found, input, offset, length))
-        return DICTIONARY_WORD_NOT_FOUND;
-	return hash;
+void DefaultDictionary::update(unsigned short hashCode, unsigned int offset, unsigned int length) {
+    ENTRY entry = dictionary[hashCode];
+    if(length > maxKeyLength)
+        maxKeyLength = length;
+    //entry.exists = true;
+    entry.offset = offset;
+    entry.length = length;    
 }
+
+void DefaultDictionary::updateExists(unsigned short hashCode) {
+    ENTRY entry = dictionary[hashCode];
+    if(!entry.exists)
+        usedKeys ++;
+    entry.exists = true;
+}
+
+/*void DefaultDictionary::put(unsigned short hashCode, ENTRY entry) {
+    if(!dictionary[hashCode].exists)
+        usedKeys ++;
+    if(entry.length > maxKeyLength)
+        maxKeyLength = entry.length;
+	//dictionary[entry.hashCode] = entry;
+}*/
+
+ENTRY DefaultDictionary::get(unsigned short hashCode) {
+    return dictionary[hashCode];
+}
+
+/*int DefaultDictionary::get(byte* input, unsigned int offset, unsigned int length) {
+	if(length > hashFunction->getMaxWordLength())
+		return DICTIONARY_WORD_NOT_EXISTING;
+	unsigned short hash = hashFunction->hash(input, offset, length);
+	ENTRY found = dictionary[hash];
+	if(!found.exists)
+		return -1 - hash;    
+	if(!theSame(found, offset, length))
+        return -1 - hash;
+	return hash;
+}*/
 
 unsigned int DefaultDictionary::getUsedKeys() {
-    return used;
+    return usedKeys;
+}
+
+unsigned int DefaultDictionary::getMaxKeyLength() {
+    return maxKeyLength;
 }

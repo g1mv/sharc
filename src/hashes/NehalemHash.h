@@ -34,9 +34,9 @@
 #define NEHALEM_HASH_H
 
 #include "../HashFunction.h"
-#include <intrin.h>
+/*#include <intrin.h>
 #include <nmmintrin.h>
-#include <smmintrin.h>
+#include <smmintrin.h>*/
 #include <stdint.h>
 
 class NehalemHash : public HashFunction {

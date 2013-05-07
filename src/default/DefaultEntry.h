@@ -34,22 +34,20 @@
 #define DEFAULT_ENTRY_H
 
 #include "../Entry.h"
-#include "../HashFunction.h"
 #include <string.h>
 
 #define HASH_MAX_LENGTH 16
 
 class DefaultEntry : public Entry {
 private:
-    HashFunction* hashFunction;
 	byte* entry;
 	unsigned int offset;
 	unsigned int length;
-	unsigned short int hashCode;
+	unsigned short hashCode;
 
 public:
-	DefaultEntry(HashFunction* hashFunction, byte);
-	DefaultEntry(HashFunction* hashFunction, byte*, unsigned int, unsigned int);
+	DefaultEntry(unsigned short hashCode, byte);
+	DefaultEntry(unsigned short hashCode, byte*, unsigned int, unsigned int);
 	~DefaultEntry();
 
 	byte* getValue();

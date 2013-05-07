@@ -26,39 +26,38 @@
  *
  * acceLZW
  *
- * 04/05/13 02:17
+ * 07/05/13 16:52
  * @author gpnuma
  */
 
-#ifndef DEFAULT_DICTIONARY_H
-#define DEFAULT_DICTIONARY_H
+#ifndef FAST_LZW_H
+#define FAST_LZW_H
 
-#include "../Types.h"
-#include "../Dictionary.h"
-//#include "DefaultEntry.h"
-#include <iostream>
-#include <string>
+#include "LZW.h"
+#include "hashes/BernsteinHash.h"
+#include "commons.h"
+#include <fstream>
 
-#define DICTIONARY_WORD_NOT_EXISTING		-65537
+typedef struct {
+    bool exists;
+	unsigned int offset;
+	unsigned int length;
+} ENTRY;
 
-class DefaultDictionary : public Dictionary {
+class FastLZW : public LZW {
 private:
     unsigned int usedKeys;
     unsigned int maxKeyLength;
-	ENTRY* dictionary;
+    unsigned int* keyLengthSpread;
+    ENTRY* dictionary;
 	HashFunction* hashFunction;
-
+    
 public:
-	DefaultDictionary(HashFunction*);
-	~DefaultDictionary();
-	
-    void reset();
-	//void put(ENTRY);
-    void update(unsigned short, unsigned int, unsigned int);
-    void updateExists(unsigned short);
-	ENTRY get(unsigned short);
-    unsigned int getUsedKeys();
-    unsigned int getMaxKeyLength();
+	FastLZW(HashFunction*);
+	~FastLZW();
+    unsigned int compress(byte*, unsigned int, byte*);
+    unsigned int decompress(byte*, unsigned int, byte*);
+	void reset();
 };
 
 #endif

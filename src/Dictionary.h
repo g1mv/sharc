@@ -33,13 +33,30 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#include "Entry.h"
+//#include "Entry.h"
+#include "HashFunction.h"
+
+typedef struct {
+    bool exists;
+	unsigned int offset;
+	unsigned int length;
+} ENTRY;
 
 class Dictionary {
 public:
-	virtual void put(Entry*) = 0;
-	virtual int get(byte* buffer, unsigned int offset, unsigned int length) = 0;
+    virtual ~Dictionary();
+    
+    virtual void reset() = 0;
+	//virtual void put(ENTRY) = 0;
+    virtual void update(unsigned short, unsigned int, unsigned int) = 0;
+    virtual void updateExists(unsigned short) = 0;
+    virtual ENTRY get(unsigned short) = 0;
+	//virtual int get(byte* buffer, unsigned int offset, unsigned int length) = 0;
     virtual unsigned int getUsedKeys() = 0;
+    virtual unsigned int getMaxKeyLength() = 0;
 };
+
+inline Dictionary::~Dictionary() {
+}
 
 #endif

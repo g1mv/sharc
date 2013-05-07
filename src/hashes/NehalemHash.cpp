@@ -44,7 +44,7 @@ unsigned short int NehalemHash::hash(byte* buffer, unsigned int offset, unsigned
     for(unsigned int i = 0; i < limit; i ++)
         hash += buffer[i + offset] * hashCoeffs[i];
     return hash % hashSize;*/
-	unsigned int limit = length <= maxWordLength ? length : maxWordLength;
+	/*unsigned int limit = length <= maxWordLength ? length : maxWordLength;
 	unsigned __int32 crc32;
 	switch(limit) {
 	case 1:
@@ -78,5 +78,6 @@ unsigned short int NehalemHash::hash(byte* buffer, unsigned int offset, unsigned
 		crc32 = _mm_crc32_u32(crc32, (unsigned __int32)buffer[offset + 4]);
 		break;
 	}
-	return (unsigned short int)(crc32 % hashSize);
+	return (unsigned short int)(crc32 % hashSize);*/
+    return 0;
 }

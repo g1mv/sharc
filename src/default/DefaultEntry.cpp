@@ -32,23 +32,23 @@
 
 #include "DefaultEntry.h"
 
-DefaultEntry::DefaultEntry(HashFunction* hashFunction, byte letter) {
-    this->hashFunction = hashFunction;
-	entry = &letter;
+DefaultEntry::DefaultEntry(unsigned short hashCode, byte letter) {
+    this->hashCode = hashCode;
+    entry = &letter;
 	length = 1;
 
-	hashCode = hashFunction->hash(&letter, 0, 1);
+	//hashCode = hashFunction->hash(&letter, 0, 1);
 }
 
-DefaultEntry::DefaultEntry(HashFunction* hashFunction, byte* buffer, unsigned int offset, unsigned int length) {
-    this->hashFunction = hashFunction;
+DefaultEntry::DefaultEntry(unsigned short hashCode, byte* buffer, unsigned int offset, unsigned int length) {
+    this->hashCode = hashCode;
 	//entry = new byte[length];
 	//memcpy(entry, buffer + offset, length); 
 	this->entry = buffer;
 	this->offset = offset;
 	this->length = length;
 
-	hashCode = hashFunction->hash(entry, offset, length);
+	//hashCode = hashFunction->hash(entry, offset, length);
 }
 
 DefaultEntry::~DefaultEntry() {

@@ -41,7 +41,6 @@
 #include "commons.h"
 #include "DefaultDictionary.h"
 #include <fstream>
-#include <intrin.h>
 
 class DefaultLZW : public LZW {
 private:

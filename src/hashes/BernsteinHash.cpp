@@ -33,15 +33,93 @@
 #include "BernsteinHash.h"
 
 BernsteinHash::BernsteinHash(unsigned int hashSize, unsigned int maxWordLength) : HashFunction(hashSize, maxWordLength) {
+    byte* temporary = new byte[3];
+    
+    /*lookupTableOne = new unsigned short int[256];
+    for(unsigned short i = 0; i < 256; i++) {
+        temporary[0] = (byte)i;
+        lookupTableOne[i] = calculateHash(temporary, 0, 1);
+    }*/
+    
+    lookupTableTwo = new unsigned short int*[256];
+    for(unsigned short i = 0; i < 256; i++)
+        lookupTableTwo[i] = new unsigned short int[256];
+    for(unsigned short i = 0; i < 256; i++)
+        for(unsigned short j = 0; j < 256; j++) {
+            temporary[0] = (byte)i;
+            temporary[1] = (byte)j;
+            lookupTableTwo[i][j] = calculateHash(temporary, 0, 2);
+        }
+    
+    /*lookupTableThree = new unsigned short int**[256];
+    for(unsigned short i = 0; i < 256; i++)
+        lookupTableThree[i] = new unsigned short int*[256];
+    for(unsigned short i = 0; i < 256; i++)
+        for(unsigned short j = 0; j < 256; j++)
+            lookupTableThree[i][j] = new unsigned short int[256];
+    for(unsigned short i = 0; i < 256; i++)
+        for(unsigned short j = 0; j < 256; j++)
+            for(unsigned short k = 0; k < 256; k++) {
+                temporary[0] = (byte)i;
+                temporary[1] = (byte)j;
+                temporary[2] = (byte)k;
+                lookupTableThree[i][j][k] = calculateHash(temporary, 0, 3);
+            }*/
+    
+    delete temporary;
 }
 
 BernsteinHash::~BernsteinHash() {
+    /*for(unsigned short i = 0; i < 256; i++)
+        for(unsigned short j = 0; j < 256; j++)
+            delete[] lookupTableThree[i][j];
+    for(unsigned short i = 0; i < 256; i++)
+        delete[] lookupTableThree[i];
+    delete[] lookupTableThree;*/
+    
+    for(unsigned short i = 0; i < 256; i++)
+        delete[] lookupTableTwo[i];
+    delete[] lookupTableTwo;
+    
+    //delete[] lookupTableOne;
+}
+
+unsigned short int BernsteinHash::calculateHash(byte* buffer, unsigned int offset, unsigned int length) {
+    switch(length) {
+        case 1:
+            return 1445 + buffer[offset];
+        case 2:
+            return (2629 + 33 * buffer[offset] + buffer[offset + 1]) % 4096;
+        /*case 3:
+            return (741 + 1089 * buffer[offset] + 33 * buffer[offset + 1] + buffer[offset + 2]) % 4096;
+        case 4:
+            return (3973 + 35937 * buffer[offset] + 1089 * buffer[offset + 1] + 33 * buffer[offset + 2] + buffer[offset + 3]) % 4096;*/
+        default:
+            //unsigned int hash = (3973 + 35937 * buffer[offset] + 1089 * buffer[offset + 1] + 33 * buffer[offset + 2] + buffer[offset+ 3]) % 4096;
+            unsigned int hash = 2629 + 33 * buffer[offset] + buffer[offset + 1];
+            //unsigned int hash = 1445 + buffer[offset];
+            //unsigned int hash = 5381;
+            for(unsigned char i = 2; i < length; i ++)
+                hash = ((hash << 5) + hash) + buffer[i + offset];
+            return hash % 4096;
+    }
+    /*unsigned int hash = 5381 * 33 + buffer[offset];
+    //unsigned int limit = length <= maxWordLength ? length : maxWordLength;
+    for(unsigned char i = 1; i < length; i ++)
+        hash = ((hash << 5) + hash) + buffer[i + offset];
+    return hash % hashSize;
+    //return (buffer[offset] + (length > 1 ? buffer[offset + 1] << 8 : 0)) % hashSize;*/
 }
 
 unsigned short int BernsteinHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
-    unsigned int hash = 5381;
-	unsigned int limit = length <= maxWordLength ? length : maxWordLength;
-	for(unsigned int i = 0; i < limit; i ++)
-		hash = ((hash << 5) + hash) + buffer[i + offset];
-	return hash % hashSize;
+    switch(length) {
+        /*case 1:
+            return lookupTableOne[buffer[offset]];*/
+        case 2:
+            return lookupTableTwo[buffer[offset]][buffer[offset + 1]];
+        /*case 3:
+            return lookupTableThree[buffer[offset]][buffer[offset + 1]][buffer[offset + 2]];*/
+        default:
+            return calculateHash(buffer, offset, length);
+    }
 }

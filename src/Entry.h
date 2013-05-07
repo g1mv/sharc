@@ -37,6 +37,8 @@
 
 class Entry {
 public:
+    virtual ~Entry();
+    
 	virtual byte* getValue() = 0;
 	virtual unsigned int getLength() = 0;
 	virtual unsigned short int getHashCode() = 0;
@@ -49,6 +51,9 @@ static bool areIdentical(Entry* entry, byte* buffer, unsigned int offset, unsign
 		if(entry->getValue()[i + offset] != buffer[i + offset])
 			return false;
     return true;
+}
+
+inline Entry::~Entry() {
 }
 
 #endif
