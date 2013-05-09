@@ -35,6 +35,7 @@
 
 #include "../HashFunction.h"
 #include "stdlib.h"
+#include <stdint.h>
 
 #if defined(_MSC_VER)
 #define FORCE_INLINE    __forceinline
@@ -43,9 +44,6 @@
 #endif
 
 #define HASH_BITS 16
-
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
 
 class CHash1 : public HashFunction {
 public:

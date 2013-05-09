@@ -32,6 +32,9 @@
 
 #include "CHash1.h"
 
+//typedef unsigned char uint8_t;
+//typedef unsigned __int32 uint32_t;
+
 #define FNV_OFFSET_BASIS    2166115717
 #define FNV_PRIME           16777619
 //#define TINY_MASK(x)        (((u_int32_t)1<<(x))-1)
@@ -54,6 +57,9 @@ FORCE_INLINE unsigned int CHash1::hash(byte* buffer, unsigned int offset, unsign
     unsigned int hash = FNV_OFFSET_BASIS;
     
     const uint8_t * data8 = (const uint8_t*)(&buffer[offset]);
+
+//#ifdef _WIN64 || X86_64
+//#else
     const uint32_t * data32 = (const uint32_t *)(data8);
     
     const unsigned int nblocks = length >> 2;
@@ -67,6 +73,7 @@ FORCE_INLINE unsigned int CHash1::hash(byte* buffer, unsigned int offset, unsign
         hash ^= data8[c];
         hash *= FNV_PRIME;
     }
+//#endif
     
 //#if HASH_BITS >= 16
 //    return (hash >> 16) ^ (hash & 0xFFFF);

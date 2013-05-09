@@ -43,6 +43,7 @@
 #include <fstream>
 #include <cstring>
 #include <string.h>
+#include <stdint.h>
 
 typedef struct {
     bool exists;

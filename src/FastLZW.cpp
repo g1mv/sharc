@@ -78,19 +78,12 @@ FORCE_INLINE static bool fastEqual(ENTRY* entry, byte* buffer, unsigned int offs
     
     //if(input_data8[0] != entry_data8[0])
     //    return false;
-    
     const uint32_t* entry_data32 = (const uint32_t*)(entry_data8);
     const uint32_t* input_data32 = (const uint32_t*)(input_data8);
     
     switch(length) {
         case 4:
             return input_data32[0] == entry_data32[0];
-        //case 8:
-        //    return input_data32[0] == entry_data32[0] && input_data32[1] == entry_data32[1];
-        /*case 12:
-            return input_data32[0] == entry_data32[0] && input_data32[1] == entry_data32[1] && input_data32[2] == entry_data32[2];
-        case 16:
-            return input_data32[0] == entry_data32[0] && input_data32[1] == entry_data32[1] && input_data32[2] == entry_data32[2] && input_data32[3] == entry_data32[3];*/
     }
     
     const unsigned int nblocks = length >> 2;
@@ -101,8 +94,8 @@ FORCE_INLINE static bool fastEqual(ENTRY* entry, byte* buffer, unsigned int offs
     
     for(unsigned int i = nblocks << 2; i < length; i ++)
 		if(input_data8[i] != entry_data8[i])
-			return false;        
-    
+			return false;
+
     return true;
 }
 
@@ -220,12 +213,12 @@ int main(int argc, char *argv[]) {
     chrono->stop();
     std::cout << "Hash algorithm prepared in " << chrono->getElapsedMillis() << " ms" << std::endl;
     
-    byte* test = (byte*)"testanouveautesttestanouveautest";
+    /*byte* test = (byte*)"testanouveautesttestanouveautest";
     chrono->start();
     for(unsigned int i = 0; i < 1000000000; i++)
         hashFunction->hash(test, 0, i % 32);
     chrono->stop();
-    std::cout << "Performed 1000000000 1 to 32-byte hashes in " << chrono->getElapsedMillis() << " ms, Speed = " << (16.0 * 1000 * 1000000000) / (1024.0 * 1024 * chrono->getElapsedMillis()) << " MB/s" << std::endl;
+    std::cout << "Performed 1000000000 1 to 32-byte hashes in " << chrono->getElapsedMillis() << " ms, Speed = " << (16.0 * 1000 * 1000000000) / (1024.0 * 1024 * chrono->getElapsedMillis()) << " MB/s" << std::endl;*/
     
     /*ENTRY entry;
     entry.offset = 0;
@@ -253,13 +246,13 @@ int main(int argc, char *argv[]) {
     
 	for(int i = 1; i < argc; i ++) {
         chrono->start();
-        for(unsigned int i = 0; i < 256; i ++)
-            testArray[i] = (byte)i;
+        for(unsigned int j = 0; j < 256; j ++)
+            testArray[j] = (byte)i;
 		unsigned int index = 256;
 		std::ifstream file (argv[i], std::ios::in | std::ios::binary);
 		while(file) {
 			file.read ((char*)(testArray + index), readBuffer);
-			index += file.gcount();
+			index += (unsigned int)file.gcount();
 		}
 		//index += (unsigned int)file.gcount() - readBuffer;
         //std::cout << index << ", " << file.gcount() << std::endl;
