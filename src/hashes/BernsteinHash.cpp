@@ -84,24 +84,24 @@ BernsteinHash::~BernsteinHash() {
     //delete[] lookupTableOne;
 }
 
-unsigned short int BernsteinHash::calculateHash(byte* buffer, unsigned int offset, unsigned int length) {
+FORCE_INLINE unsigned short int BernsteinHash::calculateHash(byte* buffer, unsigned int offset, unsigned int length) {
     switch(length) {
         case 1:
-            return 1445 + buffer[offset];
+            return /*1445*/46501 + buffer[offset];
         case 2:
-            return (2629 + 33 * buffer[offset] + buffer[offset + 1]) % 4096;
+            return (/*2629*/27205 + 33 * buffer[offset] + buffer[offset + 1]) & 65535;
         /*case 3:
             return (741 + 1089 * buffer[offset] + 33 * buffer[offset + 1] + buffer[offset + 2]) % 4096;
         case 4:
             return (3973 + 35937 * buffer[offset] + 1089 * buffer[offset + 1] + 33 * buffer[offset + 2] + buffer[offset + 3]) % 4096;*/
         default:
             //unsigned int hash = (3973 + 35937 * buffer[offset] + 1089 * buffer[offset + 1] + 33 * buffer[offset + 2] + buffer[offset+ 3]) % 4096;
-            unsigned int hash = 2629 + 33 * buffer[offset] + buffer[offset + 1];
+            unsigned int hash = /*2629*/27205 + 33 * buffer[offset] + buffer[offset + 1];
             //unsigned int hash = 1445 + buffer[offset];
             //unsigned int hash = 5381;
             for(unsigned char i = 2; i < length; i ++)
                 hash = ((hash << 5) + hash) + buffer[i + offset];
-            return hash % 4096;
+            return hash & 65535;
     }
     /*unsigned int hash = 5381 * 33 + buffer[offset];
     //unsigned int limit = length <= maxWordLength ? length : maxWordLength;
@@ -111,7 +111,7 @@ unsigned short int BernsteinHash::calculateHash(byte* buffer, unsigned int offse
     //return (buffer[offset] + (length > 1 ? buffer[offset + 1] << 8 : 0)) % hashSize;*/
 }
 
-unsigned short int BernsteinHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
+FORCE_INLINE unsigned short int BernsteinHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
     switch(length) {
         /*case 1:
             return lookupTableOne[buffer[offset]];*/

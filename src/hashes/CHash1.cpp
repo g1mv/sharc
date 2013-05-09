@@ -26,43 +26,51 @@
  *
  * acceLZW
  *
- * 07/05/13 16:52
+ * 08/05/13 02:07
  * @author gpnuma
  */
 
-#ifndef FAST_LZW_H
-#define FAST_LZW_H
+#include "CHash1.h"
 
-#include "LZW.h"
-#include "hashes/BernsteinHash.h"
-#include "hashes/MurmurHash3.h"
-#include "hashes/DefaultHash.h"
-#include "hashes/CHash1.h"
-#include "hashes/SdbmHash.h"
-#include "commons.h"
-#include <fstream>
-#include <cstring>
+#define FNV_OFFSET_BASIS    2166136261
+#define FNV_PRIME           16777619
+//#define TINY_MASK(x)        (((u_int32_t)1<<(x))-1)
 
-typedef struct {
-    bool exists;
-	unsigned int offset;
-	unsigned int length;
-} ENTRY;
+FORCE_INLINE unsigned short rotl32 (unsigned int x, byte r) {
+    return (x << r) | (x >> (32 - r));
+}
 
-class FastLZW : public LZW {
-private:
-    unsigned int usedKeys;
-    unsigned int maxKeyLength;
-    unsigned int* keyLengthSpread;
-    ENTRY* dictionary;
-	HashFunction* hashFunction;
+FORCE_INLINE unsigned short rotr32 (unsigned int x, byte r) {
+    return (x >> r) | (x << (32 - r));
+}
+
+CHash1::CHash1(unsigned int hashSize, unsigned int maxWordLength) : HashFunction(hashSize, maxWordLength) {
+}
+
+CHash1::~CHash1() {
+}
+
+FORCE_INLINE unsigned short CHash1::hash(byte* buffer, unsigned int offset, unsigned int length) {
+    unsigned int hash = FNV_OFFSET_BASIS;
     
-public:
-	FastLZW(HashFunction*);
-	~FastLZW();
-    unsigned int compress(byte*, unsigned int, byte*);
-    unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
-};
+    const uint8_t * data8 = (const uint8_t*)(&buffer[offset]);
+    const uint32_t * data32 = (const uint32_t *)(data8);
+    
+    const int nblocks = length >> 2;
 
-#endif
+    for(unsigned short c = 0; c < nblocks; c++) {
+        hash ^= data32[c];
+        hash *= FNV_PRIME;
+    }
+    
+    for(unsigned short c = nblocks << 2; c < length; c ++) {
+        hash ^= data8[c];
+        hash *= FNV_PRIME;
+    }
+    
+    return (hash >> 16) ^ (hash & 0xFFFF);
+    //return ((hash >> 12) ^ hash) & 0x0FFF;
+    //return (hash >> 20) ^ (hash & 0x0FFF);
+    //return (((hash >> 12) ^ hash) & 0x00000FFF);
+    //return hash >> 20;
+}

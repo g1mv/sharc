@@ -64,6 +64,7 @@ unsigned int FastLZW::compress(byte* input, unsigned int inputLength, byte* outp
 	for(unsigned int i = 256; i < inputLength; i++) {
         unsigned int length = i + 1 - indexStart;
         unsigned short hashCode = hashFunction->hash(input, indexStart, length);
+        //std::cout << "Hash = " << hashCode << std::endl;
         ENTRY* found = &dictionary[hashCode];
         if(!found->exists) {
             //std::cout << hashCode << ", " << &dictionary[hashCode] << std::endl;
@@ -73,7 +74,7 @@ unsigned int FastLZW::compress(byte* input, unsigned int inputLength, byte* outp
             if(length > maxKeyLength)
                 maxKeyLength = length;
             found->length = length;
-            compressedBits += 12;
+            compressedBits += 16;
             indexStart = i;
         } else if(!theSame(input, found, indexStart, length)) {
             if(length > maxKeyLength)
@@ -81,7 +82,7 @@ unsigned int FastLZW::compress(byte* input, unsigned int inputLength, byte* outp
             keyLengthSpread[length - 1]++;
             found->offset = indexStart;
             found->length = length;
-            compressedBits += 12;
+            compressedBits += 16;
             indexStart = i;
         }
 	}
@@ -101,6 +102,8 @@ unsigned int FastLZW::decompress(byte* input, unsigned int inputLength, byte* ou
 }
 
 void FastLZW::reset() {
+    for(unsigned int i = 0; i < hashFunction->getHashSize(); i++)
+        dictionary[i].exists = false;
     byte* temporary = new byte[1];
     for(unsigned short i = 0; i < 256; i ++) {
         temporary[0] = (byte)i;
@@ -130,9 +133,16 @@ int main(int argc, char *argv[]) {
 	/*if(info->getSse42())
      hashFunction = new NehalemHash(4096);
      else*/
-    hashFunction = new BernsteinHash(4096, 64);
+    hashFunction = new CHash1(65536, 128);
     chrono->stop();
     std::cout << "Hash algorithm prepared in " << chrono->getElapsedMillis() << " ms" << std::endl;
+    
+    byte* test = (byte*)"testanouveautesttestanouveautest";
+    chrono->start();
+    for(unsigned int i = 0; i < 1000000000; i++)
+        hashFunction->hash(test, 0, i % 32);
+    chrono->stop();
+    std::cout << "Performed 1000000000 1 to 32-byte hashes in " << chrono->getElapsedMillis() << " ms, Speed = " << (16.0 * 1000 * 1000000000) / (1024.0 * 1024 * chrono->getElapsedMillis()) << " MB/s" << std::endl;
     
     LZW* lzw = new FastLZW(hashFunction);
     std::cout << "LZW initialized" << std::endl;
@@ -149,9 +159,10 @@ int main(int argc, char *argv[]) {
 		std::ifstream file (argv[i], std::ios::in | std::ios::binary);
 		while(file) {
 			file.read ((char*)(testArray + index), readBuffer);
-			index += readBuffer;
+			index += file.gcount();
 		}
-		index += (unsigned int)file.gcount() - readBuffer;
+		//index += (unsigned int)file.gcount() - readBuffer;
+        //std::cout << index << ", " << file.gcount() << std::endl;
 		file.close();
         chrono->stop();
 		std::cout << "--------------------------------------------------------------------" << std::endl << "Loaded file " << argv[i] << " in " << chrono->getElapsedMillis() << " ms" << std::endl;

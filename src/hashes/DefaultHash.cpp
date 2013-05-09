@@ -45,5 +45,5 @@ unsigned short int DefaultHash::hash(byte* buffer, unsigned int offset, unsigned
 	unsigned int limit = length <= maxWordLength ? length : maxWordLength;
     for(unsigned int i = 0; i < limit; i ++)
         hash += buffer[i + offset] * hashCoeffs[i];
-    return hash % hashSize;
+    return hash % 4096;
 }

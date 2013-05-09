@@ -40,8 +40,8 @@ SdbmHash::~SdbmHash() {
 
 unsigned short int SdbmHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
     unsigned int hash = 0;
-	unsigned int limit = length <= maxWordLength ? length : maxWordLength;
-    for(unsigned int i = 0; i < limit; i ++)
+	//unsigned int limit = length <= maxWordLength ? length : maxWordLength;
+    for(unsigned int i = 0; i < length; i ++)
         hash = buffer[i + offset] + (hash << 6) + (hash << 16) - hash;
-    return hash % hashSize;
+    return hash >> 16;
 }

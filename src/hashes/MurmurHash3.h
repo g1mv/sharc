@@ -26,43 +26,70 @@
  *
  * acceLZW
  *
- * 07/05/13 16:52
+ * 06/05/13 17:38
  * @author gpnuma
  */
 
-#ifndef FAST_LZW_H
-#define FAST_LZW_H
+#ifndef MURMUR_HASH_3_H
+#define MURMUR_HASH_3_H
 
-#include "LZW.h"
-#include "hashes/BernsteinHash.h"
-#include "hashes/MurmurHash3.h"
-#include "hashes/DefaultHash.h"
-#include "hashes/CHash1.h"
-#include "hashes/SdbmHash.h"
-#include "commons.h"
-#include <fstream>
-#include <cstring>
+#include "../HashFunction.h"
+//#include <stdlib.h>
 
-typedef struct {
-    bool exists;
-	unsigned int offset;
-	unsigned int length;
-} ENTRY;
+#if defined(_MSC_VER)
 
-class FastLZW : public LZW {
-private:
-    unsigned int usedKeys;
-    unsigned int maxKeyLength;
-    unsigned int* keyLengthSpread;
-    ENTRY* dictionary;
-	HashFunction* hashFunction;
-    
+typedef unsigned char uint8_t;
+typedef unsigned long uint32_t;
+typedef unsigned __int64 uint64_t;
+
+// Other compilers
+
+#else   // defined(_MSC_VER)
+
+#include <stdint.h>
+
+#endif // !defined(_MSC_VER)
+
+#if defined(_MSC_VER)
+
+#define FORCE_INLINE    __forceinline
+
+#include <stdlib.h>
+
+#define ROTL32(x,y)     _rotl(x,y)
+#define ROTL64(x,y)     _rotl64(x,y)
+
+#define BIG_CONSTANT(x) (x)
+
+// Other compilers
+
+#else   // defined(_MSC_VER)
+
+#define FORCE_INLINE __attribute__((always_inline))
+
+inline uint32_t rotl32 ( uint32_t x, int8_t r )
+{
+    return (x << r) | (x >> (32 - r));
+}
+
+inline uint64_t rotl64 ( uint64_t x, int8_t r )
+{
+    return (x << r) | (x >> (64 - r));
+}
+
+#define ROTL32(x,y)     rotl32(x,y)
+#define ROTL64(x,y)     rotl64(x,y)
+
+#define BIG_CONSTANT(x) (x##LLU)
+
+#endif // !defined(_MSC_VER)
+
+class MurmurHash3 : public HashFunction {
 public:
-	FastLZW(HashFunction*);
-	~FastLZW();
-    unsigned int compress(byte*, unsigned int, byte*);
-    unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
+	MurmurHash3(unsigned int, unsigned int);
+	~MurmurHash3();
+    
+    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
 };
 
 #endif

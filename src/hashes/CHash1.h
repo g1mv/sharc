@@ -26,43 +26,31 @@
  *
  * acceLZW
  *
- * 07/05/13 16:52
+ * 08/05/13 02:07
  * @author gpnuma
  */
 
-#ifndef FAST_LZW_H
-#define FAST_LZW_H
+#ifndef CHASH_1_H
+#define CHASH_1_H
 
-#include "LZW.h"
-#include "hashes/BernsteinHash.h"
-#include "hashes/MurmurHash3.h"
-#include "hashes/DefaultHash.h"
-#include "hashes/CHash1.h"
-#include "hashes/SdbmHash.h"
-#include "commons.h"
-#include <fstream>
-#include <cstring>
+#include "../HashFunction.h"
+#include "stdlib.h"
 
-typedef struct {
-    bool exists;
-	unsigned int offset;
-	unsigned int length;
-} ENTRY;
+#if defined(_MSC_VER)
+#define FORCE_INLINE    __forceinline
+#else
+#define FORCE_INLINE __attribute__((always_inline))
+#endif
 
-class FastLZW : public LZW {
-private:
-    unsigned int usedKeys;
-    unsigned int maxKeyLength;
-    unsigned int* keyLengthSpread;
-    ENTRY* dictionary;
-	HashFunction* hashFunction;
-    
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
+
+class CHash1 : public HashFunction {
 public:
-	FastLZW(HashFunction*);
-	~FastLZW();
-    unsigned int compress(byte*, unsigned int, byte*);
-    unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
+	CHash1(unsigned int, unsigned int);
+	~CHash1();
+    
+    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
 };
 
 #endif
