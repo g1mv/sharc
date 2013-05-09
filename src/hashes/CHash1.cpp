@@ -32,7 +32,7 @@
 
 #include "CHash1.h"
 
-#define FNV_OFFSET_BASIS    2166136261
+#define FNV_OFFSET_BASIS    2166115717
 #define FNV_PRIME           16777619
 //#define TINY_MASK(x)        (((u_int32_t)1<<(x))-1)
 
@@ -68,9 +68,12 @@ FORCE_INLINE unsigned int CHash1::hash(byte* buffer, unsigned int offset, unsign
         hash *= FNV_PRIME;
     }
     
-    return (hash >> 16) ^ (hash & 0xFFFF);
-    //return ((hash >> 12) ^ hash) & 0x0FFF;
-    //return (hash >> 20) ^ (hash & 0x0FFF);
-    //return (((hash >> 12) ^ hash) & 0x00000FFF);
-    //return hash >> 20;
+//#if HASH_BITS >= 16
+//    return (hash >> 16) ^ (hash & 0xFFFF);
+    ////return ((hash >> 12) ^ hash) & 0x0FFF;
+    ////return (hash >> 20) ^ (hash & 0x0FFF);
+    ////return (((hash >> 12) ^ hash) & 0x00000FFF);
+//#else
+    return hash >> (32 - HASH_BITS);
+//#endif
 }

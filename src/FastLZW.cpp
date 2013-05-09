@@ -39,7 +39,7 @@ FastLZW::FastLZW(HashFunction* hashFunction) {
         dictionary[i] = *new ENTRY();
     for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
         std::cout << i << ", " << &dictionary[i] << std::endl;*/
-    keyLengthSpread = new unsigned int[hashFunction->getMaxWordLength()];
+    keyLengthSpread = new unsigned int[256];
     reset();
 }
 
@@ -111,59 +111,67 @@ unsigned int FastLZW::compress(byte* input, unsigned int inputLength, byte* outp
 	unsigned int indexStart = 256;
 	for(unsigned int i = 256; i < inputLength; i++) {
         unsigned int length = i + 1 - indexStart;
-        unsigned short hashCode = hashFunction->hash(input, indexStart, length);
+        unsigned int hashCode = hashFunction->hash(input, indexStart, length);
         //indexStart = i;
         //std::cout << "Hash = " << hashCode << std::endl;
         ENTRY* found = &dictionary[hashCode];
-        /*if(found->exists) {
-            if(!fastEqual(input, found, indexStart, length)) {
+        /*switch(found->exists) {
+            case false:
+                found->exists = true;
+                //usedKeys ++;
+                found->offset = indexStart;
+                //if(length > maxKeyLength)
+                //    maxKeyLength = length;
+                found->length = length;
+                compressedBits += HASH_BITS;
+                indexStart = i;
+                break;
+            default:
+                if(!fastEqual(found, input, indexStart, length)) {
+                    //if(length > maxKeyLength)
+                    //    maxKeyLength = length;
+                    //keyLengthSpread[length - 1]++;
+                    found->offset = indexStart;
+                    found->length = length;
+                    compressedBits += HASH_BITS;
+                    indexStart = i;
+                }
+                break;
+        }*/
+        if(found->exists) {
+            if(!fastEqual(found, input, indexStart, length)) {
+#ifdef DEBUG
                 if(length > maxKeyLength)
                     maxKeyLength = length;
                 keyLengthSpread[length - 1]++;
+#endif
                 found->offset = indexStart;
                 found->length = length;
-                compressedBits += 16;
+                compressedBits += HASH_BITS;
                 indexStart = i;
             }
         } else {
-            found->exists = true;
-            usedKeys ++;
-            found->offset = indexStart;
-            if(length > maxKeyLength)
-                maxKeyLength = length;
-            found->length = length;
-            compressedBits += 16;
-            indexStart = i;
-        }*/
-        if(!found->exists) {
             //std::cout << hashCode << ", " << &dictionary[hashCode] << std::endl;
-            found->exists = true;
+#ifdef DEBUG
             usedKeys ++;
-            found->offset = indexStart;
             if(length > maxKeyLength)
                 maxKeyLength = length;
-            found->length = length;
-            compressedBits += 16;
-            indexStart = i;
-        } else if(!fastEqual(found, input, indexStart, length)) {
-            if(length > maxKeyLength)
-                maxKeyLength = length;
-            keyLengthSpread[length - 1]++;
+#endif
+            found->exists = true;
             found->offset = indexStart;
             found->length = length;
-            compressedBits += 16;
+            compressedBits += HASH_BITS;
             indexStart = i;
         }
 	}
+#ifdef DEBUG
 	std::cout << "Dictionary used keys : " << usedKeys << " / " << hashFunction->getHashSize() << std::endl;
 	std::cout << "Dictionary max key length : " << maxKeyLength << " / " << hashFunction->getMaxWordLength() << std::endl;
     std::cout << "Key length spread :" << std::endl;
     for(unsigned int i = 0; i < hashFunction->getMaxWordLength(); i ++)
         std::cout << "Key length = " << i + 1 << " : " << keyLengthSpread[i] << std::endl;
-	double outBytes = compressedBits / 8.0;
-	std::cout << inputLength - 256 << " bytes in, " << (unsigned int)outBytes << " bytes out, ratio out / in = " << outBytes / inputLength << std::endl;
-    
-	return compressedBits;
+#endif
+    return compressedBits;
 }
 
 unsigned int FastLZW::decompress(byte* input, unsigned int inputLength, byte* output) {
@@ -171,6 +179,10 @@ unsigned int FastLZW::decompress(byte* input, unsigned int inputLength, byte* ou
 }
 
 void FastLZW::reset() {
+#ifdef DEBUG
+    for(unsigned int i = 0; i < 256; i ++)
+        keyLengthSpread[i] = 0;
+#endif
     for(unsigned int i = 0; i < hashFunction->getHashSize(); i++)
         dictionary[i].exists = false;
     byte* temporary = new byte[1];
@@ -182,9 +194,11 @@ void FastLZW::reset() {
         entry->offset = i;
         entry->length = 1;
     }
+#ifdef DEBUG
     usedKeys = 256;
     maxKeyLength = 1;
     keyLengthSpread[0] = 256;
+#endif
 }
 
 int main(int argc, char *argv[]) {
@@ -202,7 +216,7 @@ int main(int argc, char *argv[]) {
 	/*if(info->getSse42())
      hashFunction = new NehalemHash(4096);
      else*/
-    hashFunction = new CHash1(65536, 128);
+    hashFunction = new CHash1(1 << HASH_BITS, 128);
     chrono->stop();
     std::cout << "Hash algorithm prepared in " << chrono->getElapsedMillis() << " ms" << std::endl;
     
@@ -254,10 +268,17 @@ int main(int argc, char *argv[]) {
 		std::cout << "--------------------------------------------------------------------" << std::endl << "Loaded file " << argv[i] << " in " << chrono->getElapsedMillis() << " ms" << std::endl;
         
 		chrono->start();
-		unsigned int compressedSize = lzw->compress(testArray, index, testArray);
+		unsigned int compressedBits = lzw->compress(testArray, index, testArray);
 		chrono->stop();
         
-		std::cout  << "File " << argv[i] << ", time = " << chrono->getElapsedMillis() << " ms, Speed = " << (1000.0 * index) / (chrono->getElapsedMillis() * 1024.0 * 1024.0) << " MB/s" << std::endl;
+        double outBytes = compressedBits / 8.0;
+        double ratio = outBytes / (index - 256);
+        std::cout << index - 256 << " bytes in, " << (unsigned int)outBytes << " bytes out, ratio out / in = " << ratio << std::endl;
+        
+        double outSpeed = (1000.0 * index) / (chrono->getElapsedMillis() * 1024.0 * 1024.0);
+		std::cout  << "File " << argv[i] << ", time = " << chrono->getElapsedMillis() << " ms, Speed = " << outSpeed << " MB/s" << std::endl;
+        
+        std::cout << "COMBINED = " << outSpeed / ratio << std::endl;
         
 		lzw->reset();
     }

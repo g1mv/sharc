@@ -42,6 +42,8 @@
 #define FORCE_INLINE __attribute__((always_inline))
 #endif
 
+#define HASH_BITS 16
+
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
 
