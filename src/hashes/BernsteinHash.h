@@ -42,13 +42,13 @@ private:
     unsigned short int** lookupTableTwo;
     unsigned short int*** lookupTableThree;
     
-    unsigned short int calculateHash(byte* buffer, unsigned int offset, unsigned int length);
+    unsigned int calculateHash(byte* buffer, unsigned int offset, unsigned int length);
     
 public:
 	BernsteinHash(unsigned int, unsigned int);
 	~BernsteinHash();
     
-    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
+    unsigned int hash(byte* buffer, unsigned int offset, unsigned int length);
 };
 
 #endif

@@ -40,7 +40,7 @@ public:
 	SdbmHash(unsigned int, unsigned int);
 	~SdbmHash();
 
-    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
+    unsigned int hash(byte* buffer, unsigned int offset, unsigned int length);
 };
 
 #endif

@@ -66,7 +66,7 @@ FORCE_INLINE uint32_t fmix ( uint32_t h )
     return h;
 }
 
-unsigned short int MurmurHash3::hash(byte* buffer, unsigned int offset, unsigned int length) {
+unsigned int MurmurHash3::hash(byte* buffer, unsigned int offset, unsigned int length) {
     const uint8_t * data = (const uint8_t*)(&buffer[offset]);
     const int nblocks = length / 4;
     

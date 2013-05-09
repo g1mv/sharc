@@ -55,7 +55,7 @@ public:
     ~HashFunction() {
     }
 
-    virtual unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length) = 0;
+    virtual unsigned int hash(byte* buffer, unsigned int offset, unsigned int length) = 0;
 
     unsigned int getHashSize() {
         return hashSize;

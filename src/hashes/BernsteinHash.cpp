@@ -84,7 +84,7 @@ BernsteinHash::~BernsteinHash() {
     //delete[] lookupTableOne;
 }
 
-FORCE_INLINE unsigned short int BernsteinHash::calculateHash(byte* buffer, unsigned int offset, unsigned int length) {
+FORCE_INLINE unsigned int BernsteinHash::calculateHash(byte* buffer, unsigned int offset, unsigned int length) {
     switch(length) {
         case 1:
             return /*1445*/46501 + buffer[offset];
@@ -111,7 +111,7 @@ FORCE_INLINE unsigned short int BernsteinHash::calculateHash(byte* buffer, unsig
     //return (buffer[offset] + (length > 1 ? buffer[offset + 1] << 8 : 0)) % hashSize;*/
 }
 
-FORCE_INLINE unsigned short int BernsteinHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
+FORCE_INLINE unsigned int BernsteinHash::hash(byte* buffer, unsigned int offset, unsigned int length) {
     switch(length) {
         /*case 1:
             return lookupTableOne[buffer[offset]];*/

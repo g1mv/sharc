@@ -89,7 +89,7 @@ public:
 	MurmurHash3(unsigned int, unsigned int);
 	~MurmurHash3();
     
-    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
+    unsigned int hash(byte* buffer, unsigned int offset, unsigned int length);
 };
 
 #endif

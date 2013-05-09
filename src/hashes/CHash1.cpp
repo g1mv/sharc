@@ -50,20 +50,20 @@ CHash1::CHash1(unsigned int hashSize, unsigned int maxWordLength) : HashFunction
 CHash1::~CHash1() {
 }
 
-FORCE_INLINE unsigned short CHash1::hash(byte* buffer, unsigned int offset, unsigned int length) {
+FORCE_INLINE unsigned int CHash1::hash(byte* buffer, unsigned int offset, unsigned int length) {
     unsigned int hash = FNV_OFFSET_BASIS;
     
     const uint8_t * data8 = (const uint8_t*)(&buffer[offset]);
     const uint32_t * data32 = (const uint32_t *)(data8);
     
-    const int nblocks = length >> 2;
+    const unsigned int nblocks = length >> 2;
 
-    for(unsigned short c = 0; c < nblocks; c++) {
+    for(unsigned int c = 0; c < nblocks; c++) {
         hash ^= data32[c];
         hash *= FNV_PRIME;
     }
     
-    for(unsigned short c = nblocks << 2; c < length; c ++) {
+    for(unsigned int c = nblocks << 2; c < length; c ++) {
         hash ^= data8[c];
         hash *= FNV_PRIME;
     }

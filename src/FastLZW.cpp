@@ -47,7 +47,8 @@ FastLZW::~FastLZW() {
     delete[] dictionary;
 }
 
-static bool theSame(byte* input, ENTRY* entry, unsigned int offset, unsigned int length) {
+FORCE_INLINE static bool theSame(ENTRY* entry, byte* input, unsigned int offset, unsigned int length) {
+    //for(unsigned int i = 0; i < 1000000000; i++) {
     if(entry->length != length)
         return false;
     if(input[entry->offset] != input[offset])
@@ -55,6 +56,53 @@ static bool theSame(byte* input, ENTRY* entry, unsigned int offset, unsigned int
     for(unsigned int i = 1; i < length; i ++)
 		if(input[entry->offset + i] != input[offset + i])
 			return false;
+    //}
+    return true;
+}
+
+FORCE_INLINE static bool fastEqual(ENTRY* entry, byte* buffer, unsigned int offset, unsigned int length) {
+    if(entry->length != length)
+        return false;
+    
+    const byte* entry_data8 = (const byte*)(buffer + entry->offset);
+    const byte* input_data8 = (const byte*)(buffer + offset);
+    
+    switch(length) {
+        case 1:
+            return input_data8[0] == entry_data8[0];
+        case 2:
+            return input_data8[0] == entry_data8[0] && input_data8[1] == entry_data8[1];
+        case 3:
+            return input_data8[0] == entry_data8[0] && input_data8[1] == entry_data8[1] && input_data8[2] == entry_data8[2];
+    }
+    
+    //if(input_data8[0] != entry_data8[0])
+    //    return false;
+    
+    const uint32_t* entry_data32 = (const uint32_t*)(entry_data8);
+    const uint32_t* input_data32 = (const uint32_t*)(input_data8);
+    
+    switch(length) {
+        case 4:
+            return input_data32[0] == entry_data32[0];
+        //case 8:
+        //    return input_data32[0] == entry_data32[0] && input_data32[1] == entry_data32[1];
+        /*case 12:
+            return input_data32[0] == entry_data32[0] && input_data32[1] == entry_data32[1] && input_data32[2] == entry_data32[2];
+        case 16:
+            return input_data32[0] == entry_data32[0] && input_data32[1] == entry_data32[1] && input_data32[2] == entry_data32[2] && input_data32[3] == entry_data32[3];*/
+    }
+    
+    const unsigned int nblocks = length >> 2;
+    
+    for(unsigned int i = 0; i < nblocks; i ++)
+		if(input_data32[i] != entry_data32[i])
+			return false;
+    
+    for(unsigned int i = nblocks << 2; i < length; i ++)
+		if(input_data8[i] != entry_data8[i])
+			return false;        
+    
     return true;
 }
 
@@ -64,8 +112,29 @@ unsigned int FastLZW::compress(byte* input, unsigned int inputLength, byte* outp
 	for(unsigned int i = 256; i < inputLength; i++) {
         unsigned int length = i + 1 - indexStart;
         unsigned short hashCode = hashFunction->hash(input, indexStart, length);
+        //indexStart = i;
         //std::cout << "Hash = " << hashCode << std::endl;
         ENTRY* found = &dictionary[hashCode];
+        /*if(found->exists) {
+            if(!fastEqual(input, found, indexStart, length)) {
+                if(length > maxKeyLength)
+                    maxKeyLength = length;
+                keyLengthSpread[length - 1]++;
+                found->offset = indexStart;
+                found->length = length;
+                compressedBits += 16;
+                indexStart = i;
+            }
+        } else {
+            found->exists = true;
+            usedKeys ++;
+            found->offset = indexStart;
+            if(length > maxKeyLength)
+                maxKeyLength = length;
+            found->length = length;
+            compressedBits += 16;
+            indexStart = i;
+        }*/
         if(!found->exists) {
             //std::cout << hashCode << ", " << &dictionary[hashCode] << std::endl;
             found->exists = true;
@@ -76,7 +145,7 @@ unsigned int FastLZW::compress(byte* input, unsigned int inputLength, byte* outp
             found->length = length;
             compressedBits += 16;
             indexStart = i;
-        } else if(!theSame(input, found, indexStart, length)) {
+        } else if(!fastEqual(found, input, indexStart, length)) {
             if(length > maxKeyLength)
                 maxKeyLength = length;
             keyLengthSpread[length - 1]++;
@@ -143,6 +212,23 @@ int main(int argc, char *argv[]) {
         hashFunction->hash(test, 0, i % 32);
     chrono->stop();
     std::cout << "Performed 1000000000 1 to 32-byte hashes in " << chrono->getElapsedMillis() << " ms, Speed = " << (16.0 * 1000 * 1000000000) / (1024.0 * 1024 * chrono->getElapsedMillis()) << " MB/s" << std::endl;
+    
+    /*ENTRY entry;
+    entry.offset = 0;
+    entry.length = 2;
+    unsigned int total = 0;
+    chrono->start();
+    for(unsigned int i = 0; i < 1000000000; i++)
+        total += theSame(&entry, test, 0, 2 + i % 2);
+    chrono->stop();
+    std::cout << "Total = " << total << ", performed " << 1000000000 << " 20-byte compares in " << chrono->getElapsedMillis() << " ms, Speed = " << (20.0 * 1000 * 1000000000) / (1024.0 * 1024 * chrono->getElapsedMillis()) << " MB/s" << std::endl;
+    total = 0;
+    chrono->start();
+    for(unsigned int i = 0; i < 1000000000; i++)
+        total += fastEqual(&entry, test, 0, 2 + i % 2);
+    chrono->stop();
+    std::cout << "Total = " << total << ", performed " << 1000000000 << " 20-byte compares in " << chrono->getElapsedMillis() << " ms, Speed = " << (20.0 * 1000 * 1000000000) / (1024.0 * 1024 * chrono->getElapsedMillis()) << " MB/s" << std::endl;*/
+    
     
     LZW* lzw = new FastLZW(hashFunction);
     std::cout << "LZW initialized" << std::endl;

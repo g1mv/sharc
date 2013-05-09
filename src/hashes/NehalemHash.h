@@ -44,7 +44,7 @@ public:
 	NehalemHash(unsigned int);
 	~NehalemHash();
 
-    unsigned short int hash(byte* buffer, unsigned int offset, unsigned int length);
+    unsigned unsigned int hash(byte* buffer, unsigned int offset, unsigned int length);
 };
 
 #endif
