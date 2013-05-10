@@ -45,18 +45,26 @@
 #include <string.h>
 #include <stdint.h>
 
+//#pragma pack(push)
 typedef struct {
-    bool exists;
-	unsigned int offset;
-	unsigned int length;
+    bool exists				/*:1*/;
+	unsigned char length	/*:7*/;
+	unsigned int offset		/*:24*/;
 } ENTRY;
+//#pragma pack(pop)
+
+//#define DICTIONARY_HEAP
 
 class FastLZW : public LZW {
 private:
     unsigned int usedKeys;
     unsigned int maxKeyLength;
     unsigned int* keyLengthSpread;
+#ifdef DICTIONARY_HEAP
     ENTRY* dictionary;
+#else
+	ENTRY dictionary[1 << HASH_BITS];
+#endif
 	HashFunction* hashFunction;
     
 public:

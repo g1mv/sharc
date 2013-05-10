@@ -34,7 +34,9 @@
 
 FastLZW::FastLZW(HashFunction* hashFunction) {
 	this->hashFunction = hashFunction;
+#ifdef DICTIONARY_HEAP
     dictionary = new ENTRY[hashFunction->getHashSize()];
+#endif
     /*for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
         dictionary[i] = *new ENTRY();
     for(unsigned int i = 0; i < hashFunction->getHashSize(); i ++)
@@ -44,7 +46,9 @@ FastLZW::FastLZW(HashFunction* hashFunction) {
 }
 
 FastLZW::~FastLZW() {
+#ifdef DICTIONARY_HEAP
     delete[] dictionary;
+#endif
 }
 
 FORCE_INLINE static bool theSame(ENTRY* entry, byte* input, unsigned int offset, unsigned int length) {
@@ -240,43 +244,48 @@ int main(int argc, char *argv[]) {
     LZW* lzw = new FastLZW(hashFunction);
     std::cout << "LZW initialized" << std::endl;
 	
-	unsigned int size = 1024*1024*128;
-	byte* testArray = new byte[size];
-	unsigned int readBuffer = 16384;
+	//const unsigned int size = 1024*1024*128;
+	//byte* testArray = new byte[size];
+	const unsigned int readBuffer = 1048576;
+	byte readArray[readBuffer + 256];
+    for(unsigned int j = 0; j < 256; j ++)
+        readArray[j] = (byte)j;
+	unsigned int compressedBits = 0;
+	unsigned int totalRead = 0;
     
 	for(int i = 1; i < argc; i ++) {
-        chrono->start();
-        for(unsigned int j = 0; j < 256; j ++)
-            testArray[j] = (byte)i;
-		unsigned int index = 256;
 		std::ifstream file (argv[i], std::ios::in | std::ios::binary);
+        chrono->start();
 		while(file) {
-			file.read ((char*)(testArray + index), readBuffer);
-			index += (unsigned int)file.gcount();
+			file.read ((char*)(readArray + 256), readBuffer);
+			unsigned int read = (unsigned int)file.gcount();
+			totalRead += read;
+
+			//index += (unsigned int)file.gcount() - readBuffer;
+			//std::cout << index << ", " << file.gcount() << std::endl;
+        
+			//chrono->start();
+			compressedBits += lzw->compress(readArray, read + 256, readArray);
+			//chrono->stop();
+        
+			lzw->reset();
 		}
-		//index += (unsigned int)file.gcount() - readBuffer;
-        //std::cout << index << ", " << file.gcount() << std::endl;
-		file.close();
-        chrono->stop();
-		std::cout << "--------------------------------------------------------------------" << std::endl << "Loaded file " << argv[i] << " in " << chrono->getElapsedMillis() << " ms" << std::endl;
-        
-		chrono->start();
-		unsigned int compressedBits = lzw->compress(testArray, index, testArray);
 		chrono->stop();
+		file.close();
+
+		std::cout << "--------------------------------------------------------------------" << std::endl/* << "Loaded file " << argv[i] << " in " << chrono->getElapsedMillis() << " ms" << std::endl*/;
         
-        double outBytes = compressedBits / 8.0;
-        double ratio = outBytes / (index - 256);
-        std::cout << index - 256 << " bytes in, " << (unsigned int)outBytes << " bytes out, ratio out / in = " << ratio << std::endl;
+		double outBytes = compressedBits / 8.0;
+		double ratio = outBytes / totalRead;
+		std::cout << totalRead << " bytes in, " << (unsigned int)outBytes << " bytes out, ratio out / in = " << ratio << std::endl;
         
-        double outSpeed = (1000.0 * index) / (chrono->getElapsedMillis() * 1024.0 * 1024.0);
+		double outSpeed = (1000.0 * totalRead) / (chrono->getElapsedMillis() * 1024.0 * 1024.0);
 		std::cout  << "File " << argv[i] << ", time = " << chrono->getElapsedMillis() << " ms, Speed = " << outSpeed << " MB/s" << std::endl;
         
-        std::cout << "COMBINED = " << outSpeed / ratio << std::endl;
-        
-		lzw->reset();
+		std::cout << "COMBINED = " << outSpeed / ratio << std::endl;
     }
     
-	delete testArray;
+	//delete testArray;
 	delete lzw;
     delete chrono;
 }
