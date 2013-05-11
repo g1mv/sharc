@@ -35,47 +35,70 @@
 #define HASH_BITS 16
 
 Sharc::Sharc() {
-    dictionary = new ENTRY[1 << HASH_BITS];
-    reset();
+    //dictionary = new ENTRY[1 << HASH_BITS];
+	reset();
 }
 
 Sharc::~Sharc() {
-    delete[] dictionary;
+    //delete[] dictionary;
 }
 
 FORCE_INLINE static void computeHash(unsigned int* hash, const unsigned int* value) {
-    *hash = 2166115717;
+    *hash = HASH_OFFSET_BASIS;
     *hash ^= *value;
-    *hash *= 16777619;
+    *hash *= HASH_PRIME;
     *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
 }
 
-FORCE_INLINE static void updateEntry(ENTRY* entry, unsigned int* index, unsigned int* outBits) {
-    *(unsigned int*)entry = (*index << 1 | 1);
-    *outBits += 33;
+FORCE_INLINE static void updateEntry(ENTRY* entry, const unsigned int* buffer, const unsigned int* index, BitWriter* writer) {
+	//entry->offset = *index;
+	//entry->exists = true;
+//#if __BYTE_ORDER == __LITTLE_ENDIAN
+	//*(unsigned int*)entry = (*index | 1 << 24);
+	/*entry->offset_0 = *index & 0xFFFF;
+	entry->offset_1 = *index >> 16;
+	entry->exists = true;*/
+	*(unsigned int*)entry = *index & 0xFFFFFF | (1 << 24);
+	//std::bitset<32> c(*(unsigned int*)entry);
+	//std::bitset<32> i(*index);
+    ////*(unsigned int*)entry = (*index << 1 | 1);
+	////std::cout << sizeof(entry) << std::endl;
+	//std::bitset<32> x(*index << 1 | 1);
+	////std::bitset<32> y(*(unsigned int*)entry);
+	//std::cout << sizeof(entry) /*<< ", " << c << ", " << i << " = " << x*/ << std::endl;
+//#elif __BYTE_ORDER == __BIG_ENDIAN
+//    *(unsigned int*)entry = (*index << 1 | 1);
+//#elif
+//#error
+//#endif
+	writer->write(false);
+	writer->write(buffer[*index]);
 }
 
-FORCE_INLINE unsigned int Sharc::compress(byte* byteBuffer, unsigned int* byteLength) {
-    unsigned int outBits = 0;
+FORCE_INLINE void Sharc::compress(byte* byteBuffer, unsigned int* byteLength, BitWriter* writer) {
+    //unsigned int outBits = 0;
     unsigned int hash;
     
     const unsigned int length = *byteLength >> 2;
     const unsigned int* buffer = (const unsigned int*)byteBuffer;
     
     for(unsigned int i = 0; i < length; i ++) {
-        computeHash(&hash, &buffer[i]);
+        computeHash(&hash, buffer + i);
         ENTRY* found = &dictionary[hash];
         if(found->exists) {
-            if(buffer[i] ^ buffer[found->offset])
-                updateEntry(found, &i, &outBits);
-            else
-                outBits += (HASH_BITS + 1);
+			if(buffer[i] ^ buffer[*(unsigned int*)found & 0xFFFFFF/*found->offset_0 + (found->offset_1 << 16)*/])
+                updateEntry(found, buffer, &i, writer);
+            else {
+				writer->write(true);
+				writer->write((unsigned short)hash);
+                //outBits += (HASH_BITS + 1);
+			}
         } else {
-            updateEntry(found, &i, &outBits);
+            updateEntry(found, buffer, &i, writer);
         }
     }
     
-	return outBits;
+	//return outBits;
 }
 
 void Sharc::reset() {
@@ -93,33 +116,42 @@ int main(int argc, char *argv[]) {
     Sharc* sharc = new Sharc();
     std::cout << "Sharc initialized" << std::endl;
     
-    
-    const unsigned int readBuffer = 1 << 24;  // Maximum depending on ENTRY.offset length
-    std::cout << "Allocating " << readBuffer << " as buffer read" << std::endl;
-	byte* readArray = new byte[readBuffer];
+    const unsigned int readBufferSize = 1 << 24;  // Maximum depending on ENTRY.offset length
+    std::cout << "Allocating " << readBufferSize << " as buffer read" << std::endl;
+	byte* readArray = new byte[readBufferSize];
+	byte* writeArray = new byte[readBufferSize << 1];
     std::cout << "Read array initialized" << std::endl;
     
     for(int i = 1; i < argc; i ++) {
-        unsigned int outBits = 0;
+        //unsigned int outBits = 0;
         unsigned int totalRead = 0;
         
-		std::ifstream file (argv[i], std::ios::in | std::ios::binary);
+		std::string inFileName = std::string(argv[i]);
+		std::string outFileName = inFileName + ".sha";
+		std::ifstream inFile (inFileName, std::ios::in | std::ios::binary);
+		std::ofstream outFile (outFileName, std::ios::out | std::ios::binary);
+		BitWriter* bitOutputStream = new BitWriter(&outFile);
+
         chrono->start();
-		while(file) {
-			file.read ((char*)(readArray), readBuffer);
-			unsigned int read = (unsigned int)file.gcount();
-			totalRead += read;
+		while(inFile) {
+			inFile.read ((char*)(readArray), readBufferSize);
+			unsigned int bytesRead = (unsigned int)inFile.gcount();
+			totalRead += bytesRead;
             
-            outBits += sharc->compress(readArray, &read);
+            /*outBits += */sharc->compress(readArray, &bytesRead, bitOutputStream);
 			
 			sharc->reset();
 		}
 		chrono->stop();
-		file.close();
+
+		byte remaining = *(bitOutputStream->flush());
+		outFile.flush();
+		inFile.close();
+		outFile.close();
         
 		std::cout << "--------------------------------------------------------------------" << std::endl;
         
-		double outBytes = outBits / 8.0;
+		double outBytes = bitOutputStream->getBitsWritten() / 8.0;
 		double ratio = outBytes / totalRead;
 		std::cout << "File " << argv[i] << ", " << totalRead << " bytes in, " << (unsigned int)outBytes << " bytes out" << std::endl;
         
@@ -127,6 +159,10 @@ int main(int argc, char *argv[]) {
 		std::cout  << "Ratio out / in = " << ratio << ", time = " << chrono->getElapsedMillis() << " ms, Speed = " << outSpeed << " MB/s" << std::endl;
         
 		std::cout << "COMBINED SCORE = " << outSpeed / ratio << std::endl;
+
+		delete bitOutputStream;
+		//delete inFile;
+		//delete outFile;
     }
     
 	delete readArray;

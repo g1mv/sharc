@@ -169,7 +169,7 @@ void FastLZW::reset() {
 #endif
 }
 
-int main(int argc, char *argv[]) {
+int mainOld(int argc, char *argv[]) {
 	if(argc <= 1)
 		exit(0);
     

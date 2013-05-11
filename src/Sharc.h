@@ -33,31 +33,33 @@
 #ifndef SHARC_H
 #define SHARC_H
 
-#include "LZW.h"
-#include "hashes/BernsteinHash.h"
-#include "hashes/MurmurHash3.h"
-#include "hashes/DefaultHash.h"
-#include "hashes/CHash1.h"
-#include "hashes/SdbmHash.h"
 #include "commons.h"
 #include <fstream>
+#include <string>
 #include <cstring>
-#include <string.h>
-#include <stdint.h>
+#include <bitset>
 
+#define HASH_BITS 16
+#define HASH_OFFSET_BASIS    2166115717
+#define HASH_PRIME           16777619
+
+#pragma pack(push)
+#pragma pack(4)
 typedef struct {
-    bool exists				:1;
-	unsigned int offset		:31;
+	byte offset[3];
+    byte exists;
 } ENTRY;
+#pragma pack(pop)
 
 class Sharc {
 private:
-    ENTRY* dictionary;
+    //ENTRY* dictionary;
+	ENTRY dictionary[1 << HASH_BITS];
     
 public:
 	Sharc();
 	~Sharc();
-    unsigned int compress(byte*, unsigned int*);
+    void compress(byte*, unsigned int*, BitWriter*);
     //unsigned int decompress(byte*, unsigned int, byte*);
 	void reset();
 };
