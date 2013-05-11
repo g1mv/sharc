@@ -51,114 +51,85 @@ FastLZW::~FastLZW() {
 #endif
 }
 
-FORCE_INLINE static bool theSame(ENTRY* entry, byte* input, unsigned int offset, unsigned int length) {
-    //for(unsigned int i = 0; i < 1000000000; i++) {
-    if(entry->length != length)
-        return false;
-    if(input[entry->offset] != input[offset])
-        return false;
-    for(unsigned int i = 1; i < length; i ++)
-		if(input[entry->offset + i] != input[offset + i])
-			return false;
-    //}
-    return true;
-}
-
 FORCE_INLINE static bool fastEqual(ENTRY* entry, byte* buffer, unsigned int offset, unsigned int length) {
-    if(entry->length != length)
+    if(entry->length ^ length)
         return false;
     
-    const byte* entry_data8 = (const byte*)(buffer + entry->offset);
-    const byte* input_data8 = (const byte*)(buffer + offset);
+    const uint32_t* entry_data32 = (const uint32_t*)(buffer + entry->offset);
+    const uint32_t* input_data32 = (const uint32_t*)(buffer + offset);
     
     switch(length) {
         case 1:
-            return input_data8[0] == entry_data8[0];
+            return !((input_data32[0] ^ entry_data32[0]) & 0x000F);
         case 2:
-            return input_data8[0] == entry_data8[0] && input_data8[1] == entry_data8[1];
+            return !((input_data32[0] ^ entry_data32[0]) & 0x00FF);
         case 3:
-            return input_data8[0] == entry_data8[0] && input_data8[1] == entry_data8[1] && input_data8[2] == entry_data8[2];
-    }
-    
-    //if(input_data8[0] != entry_data8[0])
-    //    return false;
-    const uint32_t* entry_data32 = (const uint32_t*)(entry_data8);
-    const uint32_t* input_data32 = (const uint32_t*)(input_data8);
-    
-    switch(length) {
+            return !((input_data32[0] ^ entry_data32[0]) & 0x0FFF);
         case 4:
-            return input_data32[0] == entry_data32[0];
+            return !(input_data32[0] ^ entry_data32[0]);
+        case 5:
+            return !((input_data32[0] ^ entry_data32[0]) | ((input_data32[1] ^ entry_data32[1]) & 0x000F));
+        case 6:
+            return !((input_data32[0] ^ entry_data32[0]) | ((input_data32[1] ^ entry_data32[1]) & 0x00FF));
+        case 7:
+            return !((input_data32[0] ^ entry_data32[0]) | ((input_data32[1] ^ entry_data32[1]) & 0x0FFF));
+        case 8:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]));
+        /*case 9:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]) | ((input_data32[2] ^ entry_data32[2]) & 0x000F));
+        case 10:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]) | ((input_data32[2] ^ entry_data32[2]) & 0x00FF));
+        case 11:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]) | ((input_data32[2] ^ entry_data32[2]) & 0x0FFF));
+        case 12:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]) | (input_data32[2] ^ entry_data32[2]));
+        case 13:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]) | (input_data32[2] ^ entry_data32[2]) | ((input_data32[3] ^ entry_data32[3]) & 0x000F));
+        case 14:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]) | (input_data32[2] ^ entry_data32[2]) | ((input_data32[3] ^ entry_data32[3]) & 0x00FF));
+        case 15:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]) | (input_data32[2] ^ entry_data32[2]) | ((input_data32[3] ^ entry_data32[3]) & 0x0FFF));
+        case 16:
+            return !((input_data32[0] ^ entry_data32[0]) | (input_data32[1] ^ entry_data32[1]) | (input_data32[2] ^ entry_data32[2]) | (input_data32[3] ^ entry_data32[3]));*/
     }
     
     const unsigned int nblocks = length >> 2;
     
     for(unsigned int i = 0; i < nblocks; i ++)
-		if(input_data32[i] != entry_data32[i])
+		if(input_data32[i] ^ entry_data32[i])
 			return false;
     
-    for(unsigned int i = nblocks << 2; i < length; i ++)
-		if(input_data8[i] != entry_data8[i])
-			return false;
-
-    return true;
+    return !((input_data32[nblocks] ^ entry_data32[nblocks]) & ((1 << ((length - (nblocks << 2)) << 3)) - 1));
 }
 
-unsigned int FastLZW::compress(byte* input, unsigned int inputLength, byte* output) {
+FORCE_INLINE static void addEntry(ENTRY* found, byte* buffer, unsigned int* indexStart, unsigned int* length, unsigned int* compressedBits, unsigned int* counter, unsigned int* maxKeyLength, unsigned int*keyLengthSpread) {
+#ifdef DEBUG
+    if(length > *maxKeyLength)
+        *maxKeyLength = length;
+    keyLengthSpread[length - 1]++;
+#endif
+    *(unsigned int*)found = (*length << 25 | *indexStart << 1 | 1);
+    *compressedBits += HASH_BITS;
+    *indexStart = *counter;
+}
+
+FORCE_INLINE unsigned int FastLZW::compress(byte* input, unsigned int inputLength, byte* output) {
 	unsigned int compressedBits = 0;
 	unsigned int indexStart = 256;
 	for(unsigned int i = 256; i < inputLength; i++) {
         unsigned int length = i + 1 - indexStart;
         unsigned int hashCode = hashFunction->hash(input, indexStart, length);
-        //indexStart = i;
-        //std::cout << "Hash = " << hashCode << std::endl;
-        ENTRY* found = &dictionary[hashCode];
-        /*switch(found->exists) {
-            case false:
-                found->exists = true;
-                //usedKeys ++;
-                found->offset = indexStart;
-                //if(length > maxKeyLength)
-                //    maxKeyLength = length;
-                found->length = length;
-                compressedBits += HASH_BITS;
-                indexStart = i;
-                break;
-            default:
-                if(!fastEqual(found, input, indexStart, length)) {
-                    //if(length > maxKeyLength)
-                    //    maxKeyLength = length;
-                    //keyLengthSpread[length - 1]++;
-                    found->offset = indexStart;
-                    found->length = length;
-                    compressedBits += HASH_BITS;
-                    indexStart = i;
-                }
-                break;
-        }*/
+        ENTRY* found = &dictionary[hashCode];        
         if(found->exists) {
-            if(!fastEqual(found, input, indexStart, length)) {
-#ifdef DEBUG
-                if(length > maxKeyLength)
-                    maxKeyLength = length;
-                keyLengthSpread[length - 1]++;
-#endif
-                found->offset = indexStart;
-                found->length = length;
-                compressedBits += HASH_BITS;
-                indexStart = i;
-            }
+            if(!fastEqual(found, input, indexStart, length))
+                addEntry(found, input, &indexStart, &length, &compressedBits, &i, &maxKeyLength, keyLengthSpread);
+            else if(length >= (1 << 7))
+                addEntry(found, input, &indexStart, &length, &compressedBits, &i, &maxKeyLength, keyLengthSpread);
         } else {
-            //std::cout << hashCode << ", " << &dictionary[hashCode] << std::endl;
 #ifdef DEBUG
             usedKeys ++;
-            if(length > maxKeyLength)
-                maxKeyLength = length;
 #endif
-            found->exists = true;
-            found->offset = indexStart;
-            found->length = length;
-            compressedBits += HASH_BITS;
-            indexStart = i;
+            addEntry(found, input, &indexStart, &length, &compressedBits, &i, &maxKeyLength, keyLengthSpread);
         }
 	}
 #ifdef DEBUG
@@ -245,15 +216,19 @@ int main(int argc, char *argv[]) {
     std::cout << "LZW initialized" << std::endl;
 	
 	//const unsigned int size = 1024*1024*128;
-	//byte* testArray = new byte[size];
-	const unsigned int readBuffer = 1048576;
+    const unsigned int readBuffer = 1 << 24;//1048576*8;  // Maximum due to ENTRY.offset length
+#ifdef READ_ARRAY_HEAP
+	byte* readArray = new byte[readBuffer + 256];
+#else
 	byte readArray[readBuffer + 256];
+#endif
     for(unsigned int j = 0; j < 256; j ++)
         readArray[j] = (byte)j;
-	unsigned int compressedBits = 0;
-	unsigned int totalRead = 0;
     
 	for(int i = 1; i < argc; i ++) {
+        unsigned int compressedBits = 0;
+        unsigned int totalRead = 0;
+        
 		std::ifstream file (argv[i], std::ios::in | std::ios::binary);
         chrono->start();
 		while(file) {
@@ -285,7 +260,9 @@ int main(int argc, char *argv[]) {
 		std::cout << "COMBINED = " << outSpeed / ratio << std::endl;
     }
     
-	//delete testArray;
+#ifdef READ_ARRAY_HEAP
+	delete readArray;
+#endif
 	delete lzw;
     delete chrono;
 }

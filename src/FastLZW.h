@@ -44,16 +44,18 @@
 #include <cstring>
 #include <string.h>
 #include <stdint.h>
+//#include <pmmintrin.h>
 
 //#pragma pack(push)
 typedef struct {
-    bool exists				/*:1*/;
-	unsigned char length	/*:7*/;
-	unsigned int offset		/*:24*/;
+    bool exists				:1;
+	unsigned int offset		:24;
+	unsigned char length	:7;
 } ENTRY;
 //#pragma pack(pop)
 
-//#define DICTIONARY_HEAP
+#define DICTIONARY_HEAP
+#define READ_ARRAY_HEAP
 
 class FastLZW : public LZW {
 private:
