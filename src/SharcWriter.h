@@ -26,44 +26,49 @@
  *
  * acceLZW
  *
- * 11/05/13 18:19
+ * 12/05/13 02:38
  * @author gpnuma
  */
 
-#ifndef SHARC_H
-#define SHARC_H
+#ifndef SHARC_WRITER_H
+#define SHARC_WRITER_H
 
 #include "commons.h"
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <bitset>
 
-#include "SharcWriter.h"
+typedef unsigned char byte;
 
-#define HASH_BITS 16
-#define HASH_OFFSET_BASIS    2166115717
-#define HASH_PRIME           16777619
+/*byte bitsSetTable[256];
+bitsSetTable[0] = 0;
+for (int i = 0; i < 256; i++) {
+    bitsSetTable[i] = (i & 1) + BitsSetTable256[i / 2];
+}*/
 
-#pragma pack(push)
-#pragma pack(4)
-typedef struct {
-	byte offset[3];
-    byte exists;
-} ENTRY;
-#pragma pack(pop)
-
-class Sharc {
+class SharcWriter {
 private:
-    //ENTRY* dictionary;
-	ENTRY dictionary[1 << HASH_BITS];
+	byte state;
+    byte chunksModes;
+    unsigned int chunks[8];
+    
+	unsigned int position;
+	byte* buffer;
+    unsigned int length;
+    unsigned int limit;
+    
+    bool checkState();
+	void writeMode(bool);
     
 public:
-	Sharc();
-	~Sharc();
-    bool compress(byte*, SharcWriter*);
-    //unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
+	SharcWriter(byte*, unsigned int);
+	~SharcWriter();
+    
+	bool writeChunk(unsigned short);
+	bool writeChunk(unsigned int);
+	void resetModes();
+	void resetBuffer();
+	bool flush();
+    unsigned int getPosition();
+    void setLimit(unsigned int);
+    unsigned int getLimit();
 };
 
 #endif

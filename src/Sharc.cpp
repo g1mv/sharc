@@ -32,8 +32,6 @@
 
 #include "Sharc.h"
 
-#define HASH_BITS 16
-
 Sharc::Sharc() {
     //dictionary = new ENTRY[1 << HASH_BITS];
 	reset();
@@ -50,7 +48,7 @@ FORCE_INLINE static void computeHash(unsigned int* hash, const unsigned int* val
     *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
 }
 
-FORCE_INLINE static void updateEntry(ENTRY* entry, const unsigned int* buffer, const unsigned int* index, BitWriter* writer) {
+FORCE_INLINE static bool updateEntry(ENTRY* entry, const unsigned int* buffer, const unsigned int* index, SharcWriter* writer) {
 	//entry->offset = *index;
 	//entry->exists = true;
 //#if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -58,7 +56,7 @@ FORCE_INLINE static void updateEntry(ENTRY* entry, const unsigned int* buffer, c
 	/*entry->offset_0 = *index & 0xFFFF;
 	entry->offset_1 = *index >> 16;
 	entry->exists = true;*/
-	*(unsigned int*)entry = *index & 0xFFFFFF | (1 << 24);
+	*(unsigned int*)entry = (*index & 0xFFFFFF) | (1 << 24);
 	//std::bitset<32> c(*(unsigned int*)entry);
 	//std::bitset<32> i(*index);
     ////*(unsigned int*)entry = (*index << 1 | 1);
@@ -71,34 +69,38 @@ FORCE_INLINE static void updateEntry(ENTRY* entry, const unsigned int* buffer, c
 //#elif
 //#error
 //#endif
-	writer->write(false);
-	writer->write(buffer[*index]);
+	//writer->writeMode(false);
+	return writer->writeChunk((unsigned int)*(buffer + *index));
 }
 
-FORCE_INLINE void Sharc::compress(byte* byteBuffer, unsigned int* byteLength, BitWriter* writer) {
+FORCE_INLINE bool Sharc::compress(byte* byteBuffer, SharcWriter* writer) {
     //unsigned int outBits = 0;
     unsigned int hash;
     
-    const unsigned int length = *byteLength >> 2;
+    const unsigned int length = writer->getLimit() >> 2;
     const unsigned int* buffer = (const unsigned int*)byteBuffer;
     
     for(unsigned int i = 0; i < length; i ++) {
         computeHash(&hash, buffer + i);
         ENTRY* found = &dictionary[hash];
         if(found->exists) {
-			if(buffer[i] ^ buffer[*(unsigned int*)found & 0xFFFFFF/*found->offset_0 + (found->offset_1 << 16)*/])
-                updateEntry(found, buffer, &i, writer);
-            else {
-				writer->write(true);
-				writer->write((unsigned short)hash);
+			if(buffer[i] ^ buffer[*(unsigned int*)found & 0xFFFFFF/*found->offset_0 + (found->offset_1 << 16)*/]) {
+                if(!updateEntry(found, buffer, &i, writer))
+                    return false;
+            } else {
+				//writer->writeMode(true);
+                if(!writer->writeChunk((unsigned short)hash))
+                    return false;
                 //outBits += (HASH_BITS + 1);
 			}
         } else {
-            updateEntry(found, buffer, &i, writer);
+            if(!updateEntry(found, buffer, &i, writer))
+                return false;
         }
     }
     
 	//return outBits;
+    return true;
 }
 
 void Sharc::reset() {
@@ -119,39 +121,57 @@ int main(int argc, char *argv[]) {
     const unsigned int readBufferSize = 1 << 24;  // Maximum depending on ENTRY.offset length
     std::cout << "Allocating " << readBufferSize << " as buffer read" << std::endl;
 	byte* readArray = new byte[readBufferSize];
-	byte* writeArray = new byte[readBufferSize << 1];
-    std::cout << "Read array initialized" << std::endl;
+	byte* writeArray = new byte[readBufferSize];
+    std::cout << "Read / write arrays initialized" << std::endl;
     
     for(int i = 1; i < argc; i ++) {
         //unsigned int outBits = 0;
         unsigned int totalRead = 0;
+        unsigned int totalWritten = 0;
         
 		std::string inFileName = std::string(argv[i]);
 		std::string outFileName = inFileName + ".sha";
-		std::ifstream inFile (inFileName, std::ios::in | std::ios::binary);
-		std::ofstream outFile (outFileName, std::ios::out | std::ios::binary);
-		BitWriter* bitOutputStream = new BitWriter(&outFile);
-
+		
+        //std::ifstream inFile (inFileName, std::ios::in | std::ios::binary);
+		//std::ofstream outFile (outFileName, std::ios::out | std::ios::binary);
+        
+        FILE* inFile = fopen(inFileName.c_str(), "rb");
+        FILE* outFile = fopen(outFileName.c_str(), "wb+");
+        
+		SharcWriter* writer = new SharcWriter(writeArray, readBufferSize);
+        std::cout << "SharcWriter initialized" << std::endl;
+        
+        /*writer->writeChunk((unsigned int)65266236);
+        writer->flush();
+        std::cout << "ok " << writer->getPosition() << std::endl;*/
+        unsigned int bytesRead;
+        
         chrono->start();
-		while(inFile) {
-			inFile.read ((char*)(readArray), readBufferSize);
-			unsigned int bytesRead = (unsigned int)inFile.gcount();
+		while((bytesRead = (unsigned int)fread(readArray, sizeof(byte), readBufferSize, inFile)) > 0) {
+			//inFile.read ((char*)(readArray), readBufferSize);
+			//unsigned int bytesRead = (unsigned int);//(unsigned int)inFile.gcount();
 			totalRead += bytesRead;
             
-            /*outBits += */sharc->compress(readArray, &bytesRead, bitOutputStream);
-			
-			sharc->reset();
+            writer->setLimit(bytesRead);
+            
+            if(sharc->compress(readArray, writer)) {
+                writer->flush(); // todo manage remaining bytes
+                totalWritten += fwrite(writeArray, sizeof(byte), writer->getPosition(), outFile);
+            } else {
+                std::cout << "No compress" << std::endl;
+                totalWritten += fwrite(readArray, sizeof(byte), bytesRead, outFile);
+            }
+            sharc->reset();
+            writer->resetModes();
+            writer->resetBuffer();
 		}
 		chrono->stop();
+                
+        //outFile.flush();
 
-		byte remaining = *(bitOutputStream->flush());
-		outFile.flush();
-		inFile.close();
-		outFile.close();
-        
 		std::cout << "--------------------------------------------------------------------" << std::endl;
         
-		double outBytes = bitOutputStream->getBitsWritten() / 8.0;
+        double outBytes = totalWritten;
 		double ratio = outBytes / totalRead;
 		std::cout << "File " << argv[i] << ", " << totalRead << " bytes in, " << (unsigned int)outBytes << " bytes out" << std::endl;
         
@@ -159,8 +179,12 @@ int main(int argc, char *argv[]) {
 		std::cout  << "Ratio out / in = " << ratio << ", time = " << chrono->getElapsedMillis() << " ms, Speed = " << outSpeed << " MB/s" << std::endl;
         
 		std::cout << "COMBINED SCORE = " << outSpeed / ratio << std::endl;
-
-		delete bitOutputStream;
+        
+        fclose(inFile);
+        fclose(outFile);
+		//inFile.close();
+		//outFile.close();
+		//delete bitOutputStream;
 		//delete inFile;
 		//delete outFile;
     }
