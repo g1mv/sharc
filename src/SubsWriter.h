@@ -24,48 +24,50 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * acceLZW
+ * Sharc
  *
- * 11/05/13 18:19
+ * 12/05/13 02:38
  * @author gpnuma
  */
 
-#ifndef SHARC_H
-#define SHARC_H
+#ifndef SUBS_WRITER_H
+#define SUBS_WRITER_H
 
 #include "commons.h"
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <bitset>
 
-#include "SharcWriter.h"
-#include "SubsWriter.h"
+typedef unsigned char byte;
 
-#define HASH_BITS 16
-#define HASH_OFFSET_BASIS    2166115717
-#define HASH_PRIME           16777619
-
-#pragma pack(push)
-#pragma pack(4)
-typedef struct {
-	byte offset[3];
-    byte exists;
-} ENTRY;
-#pragma pack(pop)
-
-class Sharc {
+class SubsWriter {
 private:
-    //ENTRY* dictionary;
-	ENTRY dictionary[1 << HASH_BITS];
+    byte lookupTable[16384/*65536*/];
+    
+	byte state;
+    byte chunksModes;
+    unsigned int chunks[8];
+    //byte cache[8];
+    
+	unsigned int position;
+    //unsigned int cachePosition;
+	byte* buffer;
+    unsigned int length;
+    unsigned int limit;
+    
+    bool checkState();
+	void writeMode(bool);
     
 public:
-	Sharc();
-	~Sharc();
-    bool compress(byte*, SharcWriter*);
-    bool subs(byte*, SubsWriter*);
-    //unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
+	SubsWriter(byte*, unsigned int);
+	~SubsWriter();
+    
+	bool writeShort(unsigned short);
+	bool writeChunk(unsigned int);
+	void resetModes();
+	void resetBuffer();
+	void prepareLookupTable();
+	bool flush();
+    unsigned int getPosition();
+    void setLimit(unsigned int);
+    unsigned int getLimit();
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Centaurean
+ * Copyright (c) 2013, Guillaume Voirin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,48 +24,30 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * acceLZW
+ * Sharc
+ * www.centaurean.com
  *
- * 11/05/13 18:19
- * @author gpnuma
+ * 21/05/13 02:58
  */
 
-#ifndef SHARC_H
-#define SHARC_H
+#include "Cipher.h"
 
-#include "commons.h"
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <bitset>
-
-#include "SharcWriter.h"
-#include "SubsWriter.h"
-
-#define HASH_BITS 16
-#define HASH_OFFSET_BASIS    2166115717
-#define HASH_PRIME           16777619
-
-#pragma pack(push)
-#pragma pack(4)
-typedef struct {
-	byte offset[3];
-    byte exists;
-} ENTRY;
-#pragma pack(pop)
-
-class Sharc {
-private:
-    //ENTRY* dictionary;
-	ENTRY dictionary[1 << HASH_BITS];
+void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
+    this->inBuffer = inBuffer;
+    this->inSize = inSize;
+    this->inPosition = 0;
     
-public:
-	Sharc();
-	~Sharc();
-    bool compress(byte*, SharcWriter*);
-    bool subs(byte*, SubsWriter*);
-    //unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
-};
+    this->outBuffer = outBuffer;
+    this->outSize = outSize;
+    this->outPosition = 0;
+}
 
-#endif
+bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
+    prepareData(inBuffer, inSize, outBuffer, outSize);
+    return processEncoding();
+}
+
+bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
+    return true;
+}
+

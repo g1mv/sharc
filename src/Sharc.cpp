@@ -103,6 +103,19 @@ FORCE_INLINE bool Sharc::compress(byte* byteBuffer, SharcWriter* writer) {
     return true;
 }
 
+FORCE_INLINE bool Sharc::subs(byte* byteBuffer, SubsWriter* writer) {
+    const unsigned int length = writer->getLimit() >> 2;
+    const unsigned int* buffer = (const unsigned int*)byteBuffer;
+    
+    for(unsigned int i = 0; i < length; i ++) {
+        //std::cout << (char)((buffer[i] >> 24) & 0xFFFF) << (char)((buffer[i] >> 16) & 0xFFFF) << (char)((buffer[i] >> 8) & 0xFFFF) << (char)((buffer[i]) & 0xFFFF) << ", " << i << std::endl;
+        if(!writer->writeChunk(buffer[i]))
+            return false;
+    }
+    
+    return true;
+}
+
 void Sharc::reset() {
     for(unsigned int i = 0; i < (1 << HASH_BITS); i++)
         *(unsigned int*)(dictionary + i) = 0;
@@ -138,7 +151,10 @@ int main(int argc, char *argv[]) {
         FILE* inFile = fopen(inFileName.c_str(), "rb");
         FILE* outFile = fopen(outFileName.c_str(), "wb+");
         
-		SharcWriter* writer = new SharcWriter(writeArray, readBufferSize);
+		SubsWriter* swriter = new SubsWriter(writeArray/*readArray*/, readBufferSize);
+        std::cout << "SubsWriter initialized" << std::endl;
+        
+		SharcWriter* writer = new SharcWriter(readArray/*writeArray*/, readBufferSize);
         std::cout << "SharcWriter initialized" << std::endl;
         
         /*writer->writeChunk((unsigned int)65266236);
@@ -152,16 +168,31 @@ int main(int argc, char *argv[]) {
 			//unsigned int bytesRead = (unsigned int);//(unsigned int)inFile.gcount();
 			totalRead += bytesRead;
             
-            writer->setLimit(bytesRead);
+            swriter->setLimit(bytesRead/*writer->getPosition()*/);
             
-            if(sharc->compress(readArray, writer)) {
-                writer->flush(); // todo manage remaining bytes
-                totalWritten += fwrite(writeArray, sizeof(byte), writer->getPosition(), outFile);
+            if(sharc->subs(readArray, swriter)) {
+                //std::cout << "Subs : compress" << std::endl;
+                swriter->flush();
             } else {
-                std::cout << "No compress" << std::endl;
-                totalWritten += fwrite(readArray, sizeof(byte), bytesRead, outFile);
+                std::cout << "Subs : no compress" << std::endl;
             }
+            //std::cout << bytesRead/*writer->getPosition()*/ << " > " << swriter->getPosition() << std::endl;
+            
+            writer->setLimit(swriter->getPosition()/*bytesRead*/);
+             
+             if(sharc->compress(readArray, writer)) {
+                 writer->flush(); // todo manage remaining bytes
+                 totalWritten += fwrite(readArray, sizeof(byte), writer->getPosition(), outFile);
+             } else {
+                 std::cout << "Sharc : No compress" << std::endl;
+                 totalWritten += fwrite(writeArray, sizeof(byte), bytesRead, outFile);
+             }
+             //std::cout << swriter->getPosition()/*bytesRead*/ << " > " << writer->getPosition() << std::endl << "-----" << std::endl;
+            
+            
             sharc->reset();
+            swriter->resetModes();
+            swriter->resetBuffer();
             writer->resetModes();
             writer->resetBuffer();
 		}
@@ -178,7 +209,7 @@ int main(int argc, char *argv[]) {
 		double outSpeed = (1000.0 * totalRead) / (chrono->getElapsedMillis() * 1024.0 * 1024.0);
 		std::cout  << "Ratio out / in = " << ratio << ", time = " << chrono->getElapsedMillis() << " ms, Speed = " << outSpeed << " MB/s" << std::endl;
         
-		std::cout << "COMBINED SCORE = " << outSpeed / ratio << std::endl;
+		std::cout << "COMBINED SCORE = " << outSpeed / ratio << std::endl << "------" << std::endl;
         
         fclose(inFile);
         fclose(outFile);

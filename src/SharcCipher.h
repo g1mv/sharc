@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Centaurean
+ * Copyright (c) 2013, Guillaume Voirin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,48 +24,60 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * acceLZW
+ * Sharc
+ * www.centaurean.com
  *
- * 11/05/13 18:19
- * @author gpnuma
+ * 12/05/13 02:38
  */
 
-#ifndef SHARC_H
-#define SHARC_H
+#ifndef SHARC_CIPHER_H
+#define SHARC_CIPHER_H
 
 #include "commons.h"
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <bitset>
 
-#include "SharcWriter.h"
-#include "SubsWriter.h"
+#define SHARC_CIPHER_ERROR          0
+#define LOOKUP_TABLE_LENGTH         16384
+#define INTERMEDIATE_CACHE_LENGTH   16384
 
-#define HASH_BITS 16
-#define HASH_OFFSET_BASIS    2166115717
-#define HASH_PRIME           16777619
+typedef unsigned char byte;
 
-#pragma pack(push)
-#pragma pack(4)
-typedef struct {
-	byte offset[3];
-    byte exists;
-} ENTRY;
-#pragma pack(pop)
-
-class Sharc {
+class SharcCipher {
 private:
-    //ENTRY* dictionary;
-	ENTRY dictionary[1 << HASH_BITS];
+    byte lookupTable[LOOKUP_TABLE_LENGTH];
+    byte intermediateCache[INTERMEDIATE_CACHE_LENGTH];
+    
+	byte state;
+    byte chunksModes;
+    unsigned int chunks[8];
+    
+	unsigned int position;
+	byte* buffer;
+    unsigned int length;
+    unsigned int limit;
+    
+    inline void prepareLookupTable();
+    inline void processLookup(byte*, byte*, const unsigned short, unsigned int*);
+    
+	inline void updateSignature(byte*, byte*, const bool);
+	inline bool incrementOffset(byte*, byte*, unsigned int*, byte*, unsigned int*);
+    
+    bool checkState();
     
 public:
-	Sharc();
-	~Sharc();
-    bool compress(byte*, SharcWriter*);
-    bool subs(byte*, SubsWriter*);
-    //unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
+	SharcCipher();
+	~SharcCipher();
+    
+    unsigned int encode(const byte*, const unsigned int, const byte*, const unsigned int);
+    unsigned int decode(byte*, unsigned int, byte*, unsigned int);
+    
+	bool writeChunk(unsigned short);
+	bool writeChunk(unsigned int);
+	void resetModes();
+	void resetBuffer();
+	bool flush();
+    unsigned int getPosition();
+    void setLimit(unsigned int);
+    unsigned int getLimit();
 };
 
 #endif

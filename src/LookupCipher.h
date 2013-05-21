@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Centaurean
+ * Copyright (c) 2013, Guillaume Voirin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,48 +24,41 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * acceLZW
+ * Sharc
+ * www.centaurean.com
  *
- * 11/05/13 18:19
- * @author gpnuma
+ * 21/05/13 02:38
  */
 
-#ifndef SHARC_H
-#define SHARC_H
+#ifndef LOOKUP_CIPHER_H
+#define LOOKUP_CIPHER_H
 
-#include "commons.h"
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <bitset>
+#include "Cipher.h"
 
-#include "SharcWriter.h"
-#include "SubsWriter.h"
+#define LOOKUP_TABLE_LENGTH         65536
 
-#define HASH_BITS 16
-#define HASH_OFFSET_BASIS    2166115717
-#define HASH_PRIME           16777619
-
-#pragma pack(push)
-#pragma pack(4)
-typedef struct {
-	byte offset[3];
-    byte exists;
-} ENTRY;
-#pragma pack(pop)
-
-class Sharc {
+class LookupCipher : public Cipher {
 private:
-    //ENTRY* dictionary;
-	ENTRY dictionary[1 << HASH_BITS];
+    byte lookupTable[LOOKUP_TABLE_LENGTH];
+    
+    byte signature;
+    byte state;
+    unsigned int chunks[8];
+    
+    inline void prepareLookupTable();
+    inline void writeSignature(const bool);
+    inline bool flush();
+    inline void reset();
+    inline bool checkState();
+    inline bool encodeShort(const unsigned short);
+    
+protected:
+    inline bool processEncoding();
+    inline bool processDecoding();
     
 public:
-	Sharc();
-	~Sharc();
-    bool compress(byte*, SharcWriter*);
-    bool subs(byte*, SubsWriter*);
-    //unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
+    LookupCipher();
+    ~LookupCipher();
 };
 
 #endif

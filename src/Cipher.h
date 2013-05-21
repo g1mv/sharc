@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Centaurean
+ * Copyright (c) 2013, Guillaume Voirin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,48 +24,35 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * acceLZW
+ * Sharc
+ * www.centaurean.com
  *
- * 11/05/13 18:19
- * @author gpnuma
+ * 21/05/13 02:35
  */
 
-#ifndef SHARC_H
-#define SHARC_H
+#ifndef CIPHER_H
+#define CIPHER_H
 
-#include "commons.h"
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <bitset>
+typedef unsigned char byte;
 
-#include "SharcWriter.h"
-#include "SubsWriter.h"
-
-#define HASH_BITS 16
-#define HASH_OFFSET_BASIS    2166115717
-#define HASH_PRIME           16777619
-
-#pragma pack(push)
-#pragma pack(4)
-typedef struct {
-	byte offset[3];
-    byte exists;
-} ENTRY;
-#pragma pack(pop)
-
-class Sharc {
-private:
-    //ENTRY* dictionary;
-	ENTRY dictionary[1 << HASH_BITS];
+class Cipher {
+protected:
+    byte* inBuffer;
+    unsigned int inSize;
+    unsigned int inPosition;
+    
+    byte* outBuffer;
+    unsigned int outSize;
+    unsigned int outPosition;
+    
+    void prepareData(byte*, unsigned int, byte*, unsigned int);
+    
+    virtual inline bool processEncoding() = 0;
+    virtual inline bool processDecoding() = 0;
     
 public:
-	Sharc();
-	~Sharc();
-    bool compress(byte*, SharcWriter*);
-    bool subs(byte*, SubsWriter*);
-    //unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
+    bool encode(byte*, unsigned int, byte*, unsigned int);
+    bool decode(byte*, unsigned int, byte*, unsigned int);
 };
 
 #endif
