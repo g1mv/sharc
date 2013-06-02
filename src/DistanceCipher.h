@@ -27,35 +27,33 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 29/05/13 19:46
  */
+
+#ifndef DISTANCE_CIPHER_H
+#define DISTANCE_CIPHER_H
 
 #include "Cipherz.h"
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
+#define FREQUENCY_TABLE_LENGTH      65536
+
+class DistanceCipher : public Cipher {
+private:
+    unsigned int frequencyTable[FREQUENCY_TABLE_LENGTH];
     
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
-}
+    inline byte distance(byte, byte);
+    inline void updateFrequency(unsigned short value);
+    inline void resetLookupTable();
+    
+protected:
+    inline bool processEncoding();
+    inline bool processDecoding();
+    
+public:
+    DistanceCipher();
+    ~DistanceCipher();
+    
+    unsigned int* getFrequencyTable();
+};
 
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
-}
-
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
-    return true;
-}
-
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
-
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
-}
-
+#endif

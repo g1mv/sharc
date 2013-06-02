@@ -27,35 +27,42 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 01/06/13 13:10
  */
 
-#include "Cipherz.h"
+#include "XORHashCipher.h"
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
+XORHashCipher::XORHashCipher() {
+}
+
+XORHashCipher::~XORHashCipher() {
+}
+
+FORCE_INLINE bool XORHashCipher::traverse(const unsigned int* intInBuffer, unsigned int intInSize) {
+    unsigned int chunk;
+    unsigned int xorChunk;
+    unsigned int hash;
     
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
-}
-
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
-}
-
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
+    for(unsigned int i = 0; i < intInSize; i ++) {
+        chunk = intInBuffer[i];
+        xorChunk = chunk ^ 0xFF0000FF;
+        computeHash(&hash, &xorChunk);
+        ENTRY* found = &dictionary[hash];
+        if(found->exists) {
+            if(xorChunk ^ intInBuffer[*(unsigned int*)found & 0xFFFFFF]) {
+                if(!updateEntry(found, xorChunk, i))
+                    return false;
+            } else {
+                writeSignature(true);
+                unsigned short value = (unsigned short)hash;
+                chunks[state++] = value;
+                if(!checkState())
+                    return false;
+            }
+        } else {
+            if(!updateEntry(found, xorChunk, i))
+                return false;
+        }
+    }
     return true;
 }
-
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
-
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
-}
-

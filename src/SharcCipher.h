@@ -27,57 +27,37 @@
  * Sharc
  * www.centaurean.com
  *
- * 12/05/13 02:38
+ * 22/05/13 03:04
  */
 
 #ifndef SHARC_CIPHER_H
 #define SHARC_CIPHER_H
 
-#include "commons.h"
+#include "Cipherz.h"
+#include "DistanceCipher.h"
+#include "LookupCipher.h"
+#include "DirectHashCipher.h"
+#include "XORHashCipher.h"
 
-#define SHARC_CIPHER_ERROR          0
-#define LOOKUP_TABLE_LENGTH         16384
-#define INTERMEDIATE_CACHE_LENGTH   16384
+#include <cmath>
+#include <fstream>
+#include <cstdlib>
 
-typedef unsigned char byte;
-
-class SharcCipher {
+class SharcCipher : public Cipher {
 private:
-    byte lookupTable[LOOKUP_TABLE_LENGTH];
-    byte intermediateCache[INTERMEDIATE_CACHE_LENGTH];
+    byte* intermediateBuffer;
     
-	byte state;
-    byte chunksModes;
-    unsigned int chunks[8];
+    DirectHashCipher* directHashCipher;
+    XORHashCipher* xorHashCipher;
+    HashCipher* hashCipher;
     
-	unsigned int position;
-	byte* buffer;
-    unsigned int length;
-    unsigned int limit;
-    
-    inline void prepareLookupTable();
-    inline void processLookup(byte*, byte*, const unsigned short, unsigned int*);
-    
-	inline void updateSignature(byte*, byte*, const bool);
-	inline bool incrementOffset(byte*, byte*, unsigned int*, byte*, unsigned int*);
-    
-    bool checkState();
+protected:
+    inline bool processEncoding();
+    inline bool processDecoding();
     
 public:
-	SharcCipher();
-	~SharcCipher();
-    
-    unsigned int encode(const byte*, const unsigned int, const byte*, const unsigned int);
-    unsigned int decode(byte*, unsigned int, byte*, unsigned int);
-    
-	bool writeChunk(unsigned short);
-	bool writeChunk(unsigned int);
-	void resetModes();
-	void resetBuffer();
-	bool flush();
-    unsigned int getPosition();
-    void setLimit(unsigned int);
-    unsigned int getLimit();
+    SharcCipher();
+    ~SharcCipher();
 };
 
 #endif

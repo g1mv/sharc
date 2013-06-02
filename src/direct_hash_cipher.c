@@ -27,35 +27,56 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 01/06/13 13:08
  */
 
-#include "Cipherz.h"
+#include "direct_hash_cipher.h"
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
+bool directHashEncode(byte* _inBuffer, unsigned int _inSize, byte* _outBuffer, unsigned int _outSize) {
+    prepareWorkspace(_inBuffer, _inSize, _outBuffer, _outSize);
     
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
+    reset();
+    resetDictionary();
+    
+    const unsigned int* intInBuffer = (const unsigned int*)inBuffer;
+    const unsigned int intInSize = inSize >> 2;
+    
+    unsigned int chunk;
+    unsigned int hash;
+    
+    for(unsigned int i = 0; i < intInSize; i ++) {
+        chunk = intInBuffer[i];
+        computeHash(&hash, chunk);
+        ENTRY* found = &dictionary[hash];
+        if((*(unsigned int*)found) & MAX_BUFFER_REFERENCES) {
+            if(chunk ^ intInBuffer[*(unsigned int*)found & 0xFFFFFF]) {
+                if(!updateEntry(found, chunk, i))
+                    return FALSE;
+            } else {
+                writeSignature(/*TRUE*/);
+                chunks[state++] = (unsigned short)hash;
+                if(!checkState())
+                    return FALSE;
+            }
+        } else {
+            if(!updateEntry(found, chunk, i))
+                return FALSE;
+        }
+    }
+    
+    flush();
+    
+    const unsigned int remaining = inSize - inPosition;
+    for(unsigned int i = 0; i < remaining; i ++) {
+        if(outPosition < outSize - 1)
+            outBuffer[outPosition ++] = inBuffer[inPosition ++];
+        else
+            return FALSE;
+    }
+    
+    return TRUE;
 }
 
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
+bool directHashDecode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
+    return TRUE;
 }
-
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
-    return true;
-}
-
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
-
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
-}
-

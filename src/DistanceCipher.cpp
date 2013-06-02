@@ -27,35 +27,63 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 29/05/13 19:45
  */
 
-#include "Cipherz.h"
+#include "DistanceCipher.h"
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
+DistanceCipher::DistanceCipher() {
+}
+
+DistanceCipher::~DistanceCipher() {
+}
+
+FORCE_INLINE void DistanceCipher::updateFrequency(unsigned short value) {
+    frequencyTable[value] ++;
+}
+
+FORCE_INLINE byte DistanceCipher::distance(byte a, byte b) {
+    //return (a ^ b) ^ 0xFF;
+    //return a +< b;
+    //return b;
+    return b ^ 0xF0;
+    /*if(b >= a) {
+        return b - a;
+    } else {
+        return (a - b) ^ 0xFF;
+    }*/
+}
+
+FORCE_INLINE void DistanceCipher::resetLookupTable() {
+    for(unsigned int i = 0; i < FREQUENCY_TABLE_LENGTH; i ++)
+        frequencyTable[i] = 0;
+}
+
+unsigned int* DistanceCipher::getFrequencyTable() {
+    return frequencyTable;
+}
+
+inline bool DistanceCipher::processEncoding() {
+    resetLookupTable();
     
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
-}
-
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
-}
-
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
+    outBuffer[outPosition] = inBuffer[inPosition];
+    
+    while(inPosition < inSize - 1) {
+        byte apart = distance(inBuffer[inPosition], inBuffer[++ inPosition]);
+        outBuffer[++ outPosition] = apart;
+        switch(outPosition & 0x1) {
+            case 1:
+                updateFrequency(*(unsigned short*)(outBuffer + outPosition - 1));
+                break;
+        }
+    }
+    inPosition ++;
+    outPosition ++;
+    
     return true;
 }
 
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
-
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
+inline bool DistanceCipher::processDecoding() {
+    return true;
 }
 

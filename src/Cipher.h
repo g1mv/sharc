@@ -27,32 +27,32 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:35
+ * 01/06/13 17:39
  */
 
 #ifndef CIPHER_H
 #define CIPHER_H
 
-typedef unsigned char byte;
+#if defined(_MSC_VER)
+#define FORCE_INLINE __forceinline
+#else
+#define FORCE_INLINE __attribute__((always_inline))
+#endif
 
-class Cipher {
-protected:
-    byte* inBuffer;
-    unsigned int inSize;
-    unsigned int inPosition;
+#define FALSE 0
+#define TRUE  1
+
+typedef unsigned char byte;
+typedef unsigned char bool;
+
+byte* inBuffer;
+unsigned int inSize;
+unsigned int inPosition;
     
-    byte* outBuffer;
-    unsigned int outSize;
-    unsigned int outPosition;
-    
-    void prepareData(byte*, unsigned int, byte*, unsigned int);
-    
-    virtual inline bool processEncoding() = 0;
-    virtual inline bool processDecoding() = 0;
-    
-public:
-    bool encode(byte*, unsigned int, byte*, unsigned int);
-    bool decode(byte*, unsigned int, byte*, unsigned int);
-};
+byte* outBuffer;
+unsigned int outSize;
+unsigned int outPosition;
+
+void prepareWorkspace(byte*, unsigned int, byte*, unsigned int);
 
 #endif

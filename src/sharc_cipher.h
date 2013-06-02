@@ -27,35 +27,23 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 01/06/13 20:51
  */
 
-#include "Cipherz.h"
+#ifndef SHARC_CIPHER_H
+#define SHARC_CIPHER_H
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
-    
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
-}
+#include "direct_hash_cipher.h"
+#include "xor_hash_cipher.h"
 
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
-}
+#define MODE_SINGLE_PASS_DIRECT  0
+#define MODE_DUAL_PASS_XOR       1
 
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
-    return true;
-}
+#define XOR_MASK 0xFF0000FF
 
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
+byte intermediateBuffer[PREFERRED_BUFFER_SIZE];
 
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
-}
+bool sharcEncode(byte*, unsigned int, byte*, unsigned int, byte mode);
+bool sharcDecode(byte*, unsigned int, byte*, unsigned int);
 
+#endif

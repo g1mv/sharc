@@ -33,14 +33,17 @@
 #include "LookupCipher.h"
 
 LookupCipher::LookupCipher() {    
-    prepareLookupTable();
     reset();
 }
 
 LookupCipher::~LookupCipher() {
 }
 
-inline void LookupCipher::prepareLookupTable() {
+void LookupCipher::setLookupTable(byte* lookupTable) {
+    this->lookupTable = lookupTable;
+}
+
+/*inline void LookupCipher::prepareLookupTable() {
     for(unsigned int i = 0; i < LOOKUP_TABLE_LENGTH; i ++)
         lookupTable[i] = 0;
     
@@ -302,19 +305,19 @@ inline void LookupCipher::prepareLookupTable() {
     lookupTable['o' + ('g' << 8)] = ++counter;
     lookupTable['k' + (' ' << 8)] = ++counter;
     //lookupTable['e' + ('f' << 8)] = ++counter;
+}*/
+
+FORCE_INLINE void LookupCipher::writeSignature(const bool bit) {
+    signature |= bit << (31 - state);
 }
 
-inline void LookupCipher::writeSignature(const bool bit) {
-    signature |= bit << (7 - state);
-}
-
-inline bool LookupCipher::flush() {
-    if((outPosition + 1 + 16) > outSize)
+FORCE_INLINE bool LookupCipher::flush() {
+    if((outPosition + 4 + 64) > outSize)
         return false;
-	outBuffer[outPosition] = signature;
-    outPosition ++;
+	*(unsigned int*)(outBuffer + outPosition) = signature;
+    outPosition += 4;
     for(byte b = 0; b < state; b ++) {
-        switch((signature >> (7 - b)) & 0x1) {
+        switch((signature >> (31 - b)) & 0x1) {
             case 0:
                 *(unsigned short*)(outBuffer + outPosition) = chunks[b];
                 outPosition += 2;
@@ -329,14 +332,14 @@ inline bool LookupCipher::flush() {
     return true;
 }
 
-inline void LookupCipher::reset() {
+FORCE_INLINE void LookupCipher::reset() {
     state = 0;
     signature = 0;
 }
 
-inline bool LookupCipher::checkState() {
+FORCE_INLINE bool LookupCipher::checkState() {
     switch(state) {
-        case 8:
+        case 32:
             if(!flush())
                 return false;
             reset();
@@ -345,7 +348,7 @@ inline bool LookupCipher::checkState() {
     return true;
 }
 
-inline bool LookupCipher::encodeShort(const unsigned short chunk) {
+FORCE_INLINE bool LookupCipher::encodeShort(const unsigned short chunk) {
     const byte found = lookupTable[chunk];
     if(found) {
         writeSignature(true);
@@ -375,7 +378,7 @@ inline bool LookupCipher::processEncoding() {
     
     const unsigned int remaining = inSize - inPosition;
     for(unsigned int i = 0; i < remaining; i ++) {
-        if(outPosition < outSize - 1)
+        if(outPosition < outSize)
             outBuffer[outPosition ++] = inBuffer[inPosition ++];
         else
             return false;
@@ -386,13 +389,5 @@ inline bool LookupCipher::processEncoding() {
 
 inline bool LookupCipher::processDecoding() {
     return true;
-}
-
-int main(int argc, char *argv[]) {
-    byte* in = (byte*)"This is a test test test test test test test te";
-    byte out[64];
-    
-    LookupCipher* look = new LookupCipher();
-    look->encode(in, 47, out, 64);
 }
 

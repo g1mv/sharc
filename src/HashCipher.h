@@ -27,35 +27,55 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 22/05/13 02:40
  */
+
+#ifndef HASH_CIPHER_H
+#define HASH_CIPHER_H
 
 #include "Cipherz.h"
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
+#define HASH_BITS                   16
+#define HASH_OFFSET_BASIS           2166115717
+#define HASH_PRIME                  16777619
+
+#define MAX_BUFFER_SIZE_INT         (1 << 24) // 3 bytes, = ENTRY offset size
+#define PREFERRED_BUFFER_SIZE       MAX_BUFFER_SIZE_INT >> 2 // Has to be < to MAX_BUFFER_SIZE_INT << 2
+
+
+#pragma pack(push)
+#pragma pack(4)
+typedef struct {
+	byte offset[3];
+    byte exists;
+} ENTRY;
+#pragma pack(pop)
+
+class HashCipher : public Cipher {
+protected:
+    inline bool traverse(const unsigned int*, unsigned int);
     
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
-}
+    ENTRY dictionary[1 << HASH_BITS];
+    
+    unsigned int signature;
+    byte state;
+    unsigned int chunks[32];
+    
+    virtual inline void writeSignature(const bool);
+    inline bool flush();
+    virtual inline void reset();
+    virtual inline void resetDictionary();
+    virtual inline bool checkState();
+    
+    virtual inline void computeHash(unsigned int*, const unsigned int*);
+    virtual inline bool updateEntry(ENTRY*, const unsigned int, const unsigned int);
+    
+    inline bool processEncoding();
+    inline bool processDecoding();
+    
+public:
+    HashCipher();
+    ~HashCipher();
+};
 
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
-}
-
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
-    return true;
-}
-
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
-
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
-}
-
+#endif

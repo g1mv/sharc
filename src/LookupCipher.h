@@ -39,13 +39,13 @@
 
 class LookupCipher : public Cipher {
 private:
-    byte lookupTable[LOOKUP_TABLE_LENGTH];
+    byte* lookupTable;
     
-    byte signature;
+    unsigned int signature;
     byte state;
-    unsigned int chunks[8];
+    unsigned int chunks[32];
     
-    inline void prepareLookupTable();
+    //inline void prepareLookupTable();
     inline void writeSignature(const bool);
     inline bool flush();
     inline void reset();
@@ -59,6 +59,8 @@ protected:
 public:
     LookupCipher();
     ~LookupCipher();
+    
+    void setLookupTable(byte*);
 };
 
 #endif

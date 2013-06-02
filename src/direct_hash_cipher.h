@@ -27,35 +27,15 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 01/06/13 17:47
  */
 
-#include "Cipherz.h"
+#ifndef DIRECT_HASH_CIPHER_H
+#define DIRECT_HASH_CIPHER_H
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
-    
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
-}
+#include "hash_cipher.h"
 
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
-}
+bool directHashEncode(byte*, unsigned int, byte*, unsigned int);
+bool directHashDecode(byte*, unsigned int, byte*, unsigned int);
 
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
-    return true;
-}
-
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
-
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
-}
-
+#endif

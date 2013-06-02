@@ -27,23 +27,20 @@
  * Sharc
  * www.centaurean.com
  *
- * 18/05/13 18:38
+ * 01/06/13 17:27
  */
 
-#ifndef SHARC_ENCODER_H
-#define SHARC_ENCODER_H
+#ifndef HASH_CIPHER_H
+#define HASH_CIPHER_H
 
-#include <string>
-#include <iostream>
-
-#define LOOKUP_TABLE_LENGTH         65536
-#define CACHE_SIZE                  16384
+#include "cipher.h"
 
 #define HASH_BITS                   16
 #define HASH_OFFSET_BASIS           2166115717
 #define HASH_PRIME                  16777619
 
-typedef unsigned char byte;
+#define MAX_BUFFER_REFERENCES       (1 << 24) // 3 bytes, = ENTRY offset size
+#define PREFERRED_BUFFER_SIZE       MAX_BUFFER_REFERENCES >> 2 // Has to be < to MAX_BUFFER_REFERENCES << 2
 
 #pragma pack(push)
 #pragma pack(4)
@@ -53,69 +50,17 @@ typedef struct {
 } ENTRY;
 #pragma pack(pop)
 
-typedef struct {
-    byte size;
-    unsigned int* value;
-} CACHE_READ;
+ENTRY dictionary[1 << HASH_BITS];
+unsigned int signature;
+byte state;
+unsigned int chunks[32];
 
-class SharcEncoder {
-private:
-    byte lookupTable[LOOKUP_TABLE_LENGTH];
-    ENTRY dictionary[1 << HASH_BITS];
-    
-    CACHE_READ cacheRead;
-    
-    byte* inBuffer;
-    unsigned int inSize;
-    unsigned int inPosition;
-    
-    byte cache[CACHE_SIZE];
-    //unsigned int cacheSize;
-    unsigned int cachePosition;
-    unsigned int cacheMarker;
-    bool lastFill;
-    
-    byte* outBuffer;
-    unsigned int outSize;
-    unsigned int outPosition;
-    
-	byte stateLookup;
-    byte signatureLookup;
-    unsigned int chunksLookup[8];
-    
-    byte stateHash;
-    byte signatureHash;
-    unsigned int chunksHash[8];
-    
-    inline void prepareLookupTable();
-    inline void writeLookupSignature(const bool);
-	inline void flushCache();
-	inline void lookupEncode(const unsigned short);
-    inline bool fillCache();
-    
-    inline bool readFromLookupCache();
-    
-    inline void computeHash(unsigned int*, const unsigned int*);
-    inline bool hashEncode();
-    inline bool updateEntry(ENTRY*, const unsigned int*, const unsigned int*);
-    inline bool checkHashState();
-    inline void writeHashSignature(const bool);
-	inline bool flushHash();
-    
-public:
-	SharcEncoder(byte*, const unsigned int, byte*, const unsigned int);
-	~SharcEncoder();
-    
-    
-    inline void resetDictionary();
-	void resetLookupSignature();
-	void resetHashSignature();
-	void resetBuffer();
-    void resetCache();
-    
-	inline bool encode();
-    
-    //CACHE_READ getCacheRead();
-};
+void writeSignature(/*const bool*/);
+bool flush();
+void reset();
+void resetDictionary();
+bool checkState();
+void computeHash(unsigned int*, const unsigned int);
+bool updateEntry(ENTRY*, const unsigned int, const unsigned int);
 
 #endif

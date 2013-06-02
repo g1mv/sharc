@@ -1,4 +1,4 @@
-SHArc
+SHARC
 =======
 
 Simple Highspeed Archiver

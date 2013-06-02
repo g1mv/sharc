@@ -30,7 +30,7 @@
  * @author gpnuma
  */
 
-#include "Sharc.h"
+#include "Sharcz.h"
 
 Sharc::Sharc() {
     //dictionary = new ENTRY[1 << HASH_BITS];

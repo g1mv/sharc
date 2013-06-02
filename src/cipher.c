@@ -27,35 +27,17 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 01/06/13 18:46
  */
 
-#include "Cipherz.h"
+#include "cipher.h"
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
+FORCE_INLINE void prepareWorkspace(byte* _inBuffer, unsigned int _inSize, byte* _outBuffer, unsigned int _outSize) {
+    inBuffer = _inBuffer;
+    inSize = _inSize;
+    inPosition = 0;
     
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
+    outBuffer = _outBuffer;
+    outSize = _outSize;
+    outPosition = 0;
 }
-
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
-}
-
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
-    return true;
-}
-
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
-
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
-}
-

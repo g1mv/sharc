@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Centaurean
+ * Copyright (c) 2013, Guillaume Voirin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,48 +24,20 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * acceLZW
+ * Sharc
+ * www.centaurean.com
  *
- * 11/05/13 18:19
- * @author gpnuma
+ * 01/06/13 17:55
  */
 
 #ifndef SHARC_H
 #define SHARC_H
 
-#include "commons.h"
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <bitset>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
 
-#include "SharcWriter.h"
-#include "SubsWriter.h"
-
-#define HASH_BITS 16
-#define HASH_OFFSET_BASIS    2166115717
-#define HASH_PRIME           16777619
-
-#pragma pack(push)
-#pragma pack(4)
-typedef struct {
-	byte offset[3];
-    byte exists;
-} ENTRY;
-#pragma pack(pop)
-
-class Sharc {
-private:
-    //ENTRY* dictionary;
-	ENTRY dictionary[1 << HASH_BITS];
-    
-public:
-	Sharc();
-	~Sharc();
-    bool compress(byte*, SharcWriter*);
-    bool subs(byte*, SubsWriter*);
-    //unsigned int decompress(byte*, unsigned int, byte*);
-	void reset();
-};
+#include "sharc_cipher.h"
 
 #endif

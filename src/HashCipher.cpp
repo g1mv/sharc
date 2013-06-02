@@ -43,34 +43,20 @@ FORCE_INLINE void HashCipher::writeSignature(const bool bit) {
     signature |= bit << (31 - state);
 }
 
-/*FORCE_INLINE void HashCipher::updateFrequency(byte value) {
-    frequencyTable[value] ++;
-}*/
-
 FORCE_INLINE bool HashCipher::flush() {
     if((outPosition + 4 + 128) > outSize)
         return false;
 	*(unsigned int*)(outBuffer + outPosition) = signature;
-    //updateFrequency(signature & 0xFF);
-    //updateFrequency((signature >> 8) & 0xFF);
-    //updateFrequency((signature >> 16) & 0xFF);
-    //updateFrequency((signature >> 24) & 0xFF);
     outPosition += 4;
     for(byte b = 0; b < state; b ++) {
         unsigned int chunk = chunks[b];
         switch((signature >> (31 - b)) & 0x1) {
             case 0:
                 *(unsigned int*)(outBuffer + outPosition) = chunk;
-                //updateFrequency(chunk & 0xFF);
-                //updateFrequency((chunk >> 8) & 0xFF);
-                //updateFrequency((chunk >> 16) & 0xFF);
-                //updateFrequency((chunk >> 24) & 0xFF);
                 outPosition += 4;
                 break;
             case 1:
                 *(unsigned short*)(outBuffer + outPosition) = chunk;
-                //updateFrequency(chunk & 0xFF);
-                //updateFrequency((chunk >> 8) & 0xFF);
                 outPosition += 2;
                 break;
         }
@@ -88,11 +74,6 @@ inline void HashCipher::resetDictionary() {
     for(unsigned int i = 0; i < (1 << HASH_BITS); i ++)
         dictionary[i].exists = 0;
 }
-
-/*inline void HashCipher::resetLookupTable() {
-    for(unsigned int i = 0; i < FREQUENCY_TABLE_LENGTH; i ++)
-        frequencyTable[i] = 0;
-}*/
 
 FORCE_INLINE bool HashCipher::checkState() {
     switch(state) {
@@ -112,31 +93,24 @@ FORCE_INLINE void HashCipher::computeHash(unsigned int* hash, const unsigned int
     *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
 }
 
-FORCE_INLINE bool HashCipher::updateEntry(ENTRY* entry, const unsigned int* intInBuffer, const unsigned int* index) {
-	*(unsigned int*)entry = (*index & 0xFFFFFF) | (1 << 24);
+FORCE_INLINE bool HashCipher::updateEntry(ENTRY* entry, const unsigned int chunk, const unsigned int index) {
+	*(unsigned int*)entry = (index & 0xFFFFFF) | (1 << 24);
 	writeSignature(false);
-    unsigned int value = transform((unsigned int)*(intInBuffer + *index));
-    chunks[state++] = value;
+    chunks[state++] = chunk;
     return checkState();
 }
 
-inline bool HashCipher::processEncoding() {
-    reset();
-    resetDictionary();
-    //resetLookupTable();
-    
+FORCE_INLINE bool HashCipher::traverse(const unsigned int* intInBuffer, unsigned int intInSize) {
+    unsigned int chunk;
     unsigned int hash;
     
-    const unsigned int* intInBuffer = (const unsigned int*)inBuffer;
-    const unsigned int intInSize = inSize >> 2;
-    
     for(unsigned int i = 0; i < intInSize; i ++) {
-        const unsigned int chunk = transform(intInBuffer[i])/* ^ 0xF0F0F0F0*//* ^ 0xFFFFFFFF*/;
+        chunk = intInBuffer[i];
         computeHash(&hash, &chunk);
         ENTRY* found = &dictionary[hash];
         if(found->exists) {
-            if(transform(intInBuffer[i]) ^ transform(intInBuffer[*(unsigned int*)found & 0xFFFFFF])) {
-                if(!updateEntry(found, intInBuffer, &i))
+            if(chunk ^ intInBuffer[*(unsigned int*)found & 0xFFFFFF]) {
+                if(!updateEntry(found, chunk, i))
                     return false;
             } else {
                 writeSignature(true);
@@ -146,7 +120,42 @@ inline bool HashCipher::processEncoding() {
                     return false;
             }
         } else {
-            if(!updateEntry(found, intInBuffer, &i))
+            if(!updateEntry(found, chunk, i))
+                return false;
+        }
+    }
+    return true;
+}
+
+inline bool HashCipher::processEncoding() {
+    reset();
+    resetDictionary();
+    
+    const unsigned int* intInBuffer = (const unsigned int*)inBuffer;
+    const unsigned int intInSize = inSize >> 2;
+    
+    /*if(!traverse(intInBuffer, intInSize))
+        return false;*/
+    unsigned int chunk;
+    unsigned int hash;
+    
+    for(unsigned int i = 0; i < intInSize; i ++) {
+        chunk = intInBuffer[i];
+        computeHash(&hash, &chunk);
+        ENTRY* found = &dictionary[hash];
+        if(found->exists) {
+            if(chunk ^ intInBuffer[*(unsigned int*)found & 0xFFFFFF]) {
+                if(!updateEntry(found, chunk, i))
+                    return false;
+            } else {
+                writeSignature(true);
+                unsigned short value = (unsigned short)hash;
+                chunks[state++] = value;
+                if(!checkState())
+                    return false;
+            }
+        } else {
+            if(!updateEntry(found, chunk, i))
                 return false;
         }
     }
@@ -167,16 +176,3 @@ inline bool HashCipher::processEncoding() {
 inline bool HashCipher::processDecoding() {
     return true;
 }
-
-/*unsigned int* HashCipher::getFrequencyTable() {
-    return frequencyTable;
-}*/
-
-/*int main(int argc, char *argv[]) {
- byte* in = (byte*)"This is a test test test test test test test te";
- byte out[64];
- 
- HashCipher* look = new HashCipher();
- look->encode(in, 47, out, 64);
-}*/
-

@@ -27,35 +27,41 @@
  * Sharc
  * www.centaurean.com
  *
- * 21/05/13 02:58
+ * 21/05/13 02:35
  */
 
-#include "Cipherz.h"
+#ifndef CIPHER_H
+#define CIPHER_H
 
-void Cipher::prepareData(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    this->inBuffer = inBuffer;
-    this->inSize = inSize;
-    this->inPosition = 0;
+#if defined(_MSC_VER)
+#define FORCE_INLINE __forceinline
+#else
+#define FORCE_INLINE __attribute__((always_inline))
+#endif
+
+typedef unsigned char byte;
+
+class Cipher {
+protected:
+    byte* inBuffer;
+    unsigned int inSize;
+    unsigned int inPosition;
     
-    this->outBuffer = outBuffer;
-    this->outSize = outSize;
-    this->outPosition = 0;
-}
+    byte* outBuffer;
+    unsigned int outSize;
+    unsigned int outPosition;
+    
+    void prepareData(byte*, unsigned int, byte*, unsigned int);
+    
+    virtual inline bool processEncoding() = 0;
+    virtual inline bool processDecoding() = 0;
+    
+public:
+    bool encode(byte*, unsigned int, byte*, unsigned int);
+    bool decode(byte*, unsigned int, byte*, unsigned int);
+    
+    unsigned int getInPosition();
+    unsigned int getOutPosition();
+};
 
-bool Cipher::encode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
-    prepareData(inBuffer, inSize, outBuffer, outSize);
-    return processEncoding();
-}
-
-bool Cipher::decode(byte*, unsigned int, byte*, unsigned int) {
-    return true;
-}
-
-unsigned int Cipher::getInPosition() {
-    return inPosition;
-}
-
-unsigned int Cipher::getOutPosition() {
-    return outPosition;
-}
-
+#endif
