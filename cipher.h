@@ -48,7 +48,7 @@ typedef unsigned char bool;
 byte* inBuffer;
 unsigned int inSize;
 unsigned int inPosition;
-    
+
 byte* outBuffer;
 unsigned int outSize;
 unsigned int outPosition;
