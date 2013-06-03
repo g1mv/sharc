@@ -92,3 +92,23 @@ FORCE_INLINE bool updateEntry(ENTRY* entry, const uint32_t chunk, const uint32_t
 	chunks[state++] = chunk;
     return checkState();
 }
+
+FORCE_INLINE bool kernel(uint32_t chunk, uint32_t modifiedChunk, const uint32_t* buffer, uint32_t index) {
+    computeHash(&hash, modifiedChunk);
+    ENTRY* found = &dictionary[hash];
+    if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
+        if(chunk ^ buffer[*(uint32_t*)found & 0xFFFFFF]) {
+            if(updateEntry(found, modifiedChunk, index) ^ 0x1)
+                return FALSE;
+        } else {
+            writeSignature();
+            chunks[state++] = (uint16_t)hash;
+            if(checkState() ^ 0x1)
+                return FALSE;
+        }
+    } else {
+        if(updateEntry(found, modifiedChunk, index) ^ 0x1)
+            return FALSE;
+    }
+    return TRUE;
+}

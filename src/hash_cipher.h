@@ -54,6 +54,7 @@ ENTRY dictionary[1 << HASH_BITS];
 uint64_t signature;
 byte state;
 uint32_t chunks[64];
+uint32_t hash;
 
 void writeSignature();
 bool flush();
@@ -62,5 +63,6 @@ void resetDictionary();
 bool checkState();
 void computeHash(uint32_t*, const uint32_t);
 bool updateEntry(ENTRY*, const uint32_t, const uint32_t);
+bool kernel(uint32_t, uint32_t, const uint32_t*, uint32_t);
 
 #endif

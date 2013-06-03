@@ -42,26 +42,10 @@ FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _out
     const uint32_t intInSize = inSize >> 2;
     
     uint32_t chunk;
-    uint32_t hash;
     
     for(uint32_t i = 0; i < intInSize; i ++) {
         chunk = intInBuffer[i];
-        computeHash(&hash, chunk);
-        ENTRY* found = &dictionary[hash];        
-        if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
-            if(chunk ^ intInBuffer[*(uint32_t*)found & 0xFFFFFF]) {
-                if(updateEntry(found, chunk, i) ^ 0x1)
-                    return FALSE;
-            } else {
-                writeSignature();
-                chunks[state++] = (uint16_t)hash;
-                if(checkState() ^ 0x1)
-                    return FALSE;
-            }
-        } else {
-            if(updateEntry(found, chunk, i) ^ 0x1)
-                return FALSE;
-        }
+        kernel(chunk, chunk, intInBuffer, i);
     }
     
     flush();
