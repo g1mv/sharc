@@ -32,7 +32,7 @@
 
 #include "cipher.h"
 
-FORCE_INLINE void prepareWorkspace(byte* _inBuffer, unsigned int _inSize, byte* _outBuffer, unsigned int _outSize) {
+FORCE_INLINE void prepareWorkspace(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
     inBuffer = _inBuffer;
     inSize = _inSize;
     inPosition = 0;

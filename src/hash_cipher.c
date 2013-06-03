@@ -32,25 +32,25 @@
 
 #include "hash_cipher.h"
 
-FORCE_INLINE void writeSignature(/*const bool bit*/) {
-    signature |= 1 << /*(31 - */state/*)*/;
+FORCE_INLINE void writeSignature() {
+    signature |= 1 << state;
 }
 
 FORCE_INLINE bool flush() {
     if((outPosition + 4 + 128) > outSize)
         return FALSE;
-    *(unsigned int*)(outBuffer + outPosition) = signature;
+    *(uint32_t*)(outBuffer + outPosition) = signature;
     outPosition += 4;
 #pragma unroll(32)
     for(byte b = 0; b < state; b ++) {
-        unsigned int chunk = chunks[b];
-        switch((signature >> /*(31 - */b/*)*/) & 0x1) {
+        uint32_t chunk = chunks[b];
+        switch((signature >> b) & 0x1) {
             case 0:
-                *(unsigned int*)(outBuffer + outPosition) = chunk;
+                *(uint32_t*)(outBuffer + outPosition) = chunk;
                 outPosition += 4;
                 break;
             case 1:
-                *(unsigned short*)(outBuffer + outPosition) = chunk;
+                *(uint16_t*)(outBuffer + outPosition) = chunk;
                 outPosition += 2;
                 break;
         }
@@ -68,7 +68,7 @@ FORCE_INLINE void resetDictionary() {
     for(unsigned int i = 0; i < (1 << HASH_BITS); i ++)
         //*(unsigned int*)&dictionary[i] &= 0xFFFFFF;
         //dictionary[i].exists = 0;
-        *(unsigned int*)&dictionary[i] = 0;
+        *(uint32_t*)&dictionary[i] = 0;
 }
 
 FORCE_INLINE bool checkState() {
@@ -82,15 +82,15 @@ FORCE_INLINE bool checkState() {
     return TRUE;
 }
 
-FORCE_INLINE void computeHash(unsigned int* hash, const unsigned int value) {
+FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value) {
     *hash = HASH_OFFSET_BASIS;
     *hash ^= value;
     *hash *= HASH_PRIME;
-    *hash = /*(*hash >> (32 - HASH_BITS));*/(*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
+    *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);///*(*hash >> (32 - HASH_BITS));*/(*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
 }
 
-FORCE_INLINE bool updateEntry(ENTRY* entry, const unsigned int chunk, const unsigned int index) {
-	*(unsigned int*)entry = (index & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
+FORCE_INLINE bool updateEntry(ENTRY* entry, const uint32_t chunk, const uint32_t index) {
+	*(uint32_t*)entry = (index & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
 	//writeSignature(FALSE);
     chunks[state++] = chunk;
     return checkState();

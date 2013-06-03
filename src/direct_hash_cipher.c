@@ -32,29 +32,29 @@
 
 #include "direct_hash_cipher.h"
 
-bool directHashEncode(byte* _inBuffer, unsigned int _inSize, byte* _outBuffer, unsigned int _outSize) {
+FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
     prepareWorkspace(_inBuffer, _inSize, _outBuffer, _outSize);
     
     reset();
     resetDictionary();
     
-    const unsigned int* intInBuffer = (const unsigned int*)inBuffer;
-    const unsigned int intInSize = inSize >> 2;
+    const uint32_t* intInBuffer = (const uint32_t*)inBuffer;
+    const uint32_t intInSize = inSize >> 2;
     
-    unsigned int chunk;
-    unsigned int hash;
+    uint32_t chunk;
+    uint32_t hash;
     
-    for(unsigned int i = 0; i < intInSize; i ++) {
+    for(uint32_t i = 0; i < intInSize; i ++) {
         chunk = intInBuffer[i];
         computeHash(&hash, chunk);
         ENTRY* found = &dictionary[hash];
-        if((*(unsigned int*)found) & MAX_BUFFER_REFERENCES) {
-            if(chunk ^ intInBuffer[*(unsigned int*)found & 0xFFFFFF]) {
+        if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
+            if(chunk ^ intInBuffer[*(uint32_t*)found & 0xFFFFFF]) {
                 if(!updateEntry(found, chunk, i))
                     return FALSE;
             } else {
                 writeSignature(/*TRUE*/);
-                chunks[state++] = (unsigned short)hash;
+                chunks[state++] = (uint16_t)hash;
                 if(!checkState())
                     return FALSE;
             }
@@ -66,8 +66,8 @@ bool directHashEncode(byte* _inBuffer, unsigned int _inSize, byte* _outBuffer, u
     
     flush();
     
-    const unsigned int remaining = inSize - inPosition;
-    for(unsigned int i = 0; i < remaining; i ++) {
+    const uint32_t remaining = inSize - inPosition;
+    for(uint32_t i = 0; i < remaining; i ++) {
         if(outPosition < outSize - 1)
             outBuffer[outPosition ++] = inBuffer[inPosition ++];
         else
@@ -77,6 +77,6 @@ bool directHashEncode(byte* _inBuffer, unsigned int _inSize, byte* _outBuffer, u
     return TRUE;
 }
 
-bool directHashDecode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
+bool directHashDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {
     return TRUE;
 }

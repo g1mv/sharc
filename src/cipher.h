@@ -33,6 +33,8 @@
 #ifndef CIPHER_H
 #define CIPHER_H
 
+#include <stdint.h>
+
 #if defined(_MSC_VER)
 #define FORCE_INLINE __forceinline
 #else
@@ -42,17 +44,17 @@
 #define FALSE 0
 #define TRUE  1
 
-typedef unsigned char byte;
-typedef unsigned char bool;
+typedef uint8_t byte;
+typedef uint8_t bool;
 
 byte* inBuffer;
-unsigned int inSize;
-unsigned int inPosition;
+uint32_t inSize;
+uint32_t inPosition;
 
 byte* outBuffer;
-unsigned int outSize;
-unsigned int outPosition;
+uint32_t outSize;
+uint32_t outPosition;
 
-void prepareWorkspace(byte*, unsigned int, byte*, unsigned int);
+void prepareWorkspace(byte*, uint32_t, byte*, uint32_t);
 
 #endif

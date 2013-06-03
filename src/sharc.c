@@ -36,15 +36,15 @@ int main(int argc, char *argv[]) {
     if(argc <= 1)
 		exit(0);
     
-    const unsigned int readBufferSize = PREFERRED_BUFFER_SIZE;  // Maximum depending on ENTRY.offset byte length
+    const uint32_t readBufferSize = PREFERRED_BUFFER_SIZE;  // Maximum depending on ENTRY.offset byte length
     //byte readArray[PREFERRED_BUFFER_SIZE];
     byte* readArray = (byte*)malloc(readBufferSize * sizeof(byte));
 	byte writeArray[readBufferSize];
     //byte* writeArray = (byte*)malloc(readBufferSize * sizeof(byte));
     
     for(int i = 1; i < argc; i ++) {
-        unsigned int totalRead = 0;
-        unsigned int totalWritten = 0;
+        uint64_t totalRead = 0;
+        uint64_t totalWritten = 0;
         
 		char* inFileName = argv[i];
 		char* outFileName = (char*)malloc((strlen(inFileName) + 6) * sizeof(char));
@@ -56,10 +56,10 @@ int main(int argc, char *argv[]) {
         FILE* inFile = fopen(inFileName, "rb");
         FILE* outFile = fopen(outFileName, "wb+");
         
-        unsigned int bytesRead;
+        uint32_t bytesRead;
         
         time_t chrono = clock();
-		while((bytesRead = (unsigned int)fread(readArray, sizeof(byte), readBufferSize, inFile)) > 0) {
+		while((bytesRead = (uint32_t)fread(readArray, sizeof(byte), readBufferSize, inFile)) > 0) {
 			totalRead += bytesRead;
             
             if(sharcEncode(readArray, bytesRead, writeArray, bytesRead, MODE_SINGLE_PASS_DIRECT))
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
         double outBytes = totalWritten;
 		double ratio = outBytes / totalRead;
         double speed = (1000.0 * totalRead) / (chrono * 1024.0 * 1024.0);
-        printf("File %s, %i bytes in, %i bytes out, ", argv[i], totalRead, totalWritten);
+        printf("File %s, %lli bytes in, %lli bytes out, ", argv[i], totalRead, totalWritten);
         printf("Ratio out / in = %g, Time = %ld ms, Speed = %g MB/s\n", ratio, chrono, speed);
 		
         free(outFileName);

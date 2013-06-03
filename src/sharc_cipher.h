@@ -43,7 +43,7 @@
 
 byte intermediateBuffer[PREFERRED_BUFFER_SIZE];
 
-bool sharcEncode(byte*, unsigned int, byte*, unsigned int, byte mode);
-bool sharcDecode(byte*, unsigned int, byte*, unsigned int);
+bool sharcEncode(byte*, uint32_t, byte*, uint32_t, byte mode);
+bool sharcDecode(byte*, uint32_t, byte*, uint32_t);
 
 #endif

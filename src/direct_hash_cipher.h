@@ -35,7 +35,7 @@
 
 #include "hash_cipher.h"
 
-bool directHashEncode(byte*, unsigned int, byte*, unsigned int);
-bool directHashDecode(byte*, unsigned int, byte*, unsigned int);
+bool directHashEncode(byte*, uint32_t, byte*, uint32_t);
+bool directHashDecode(byte*, uint32_t, byte*, uint32_t);
 
 #endif

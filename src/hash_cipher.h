@@ -36,8 +36,8 @@
 #include "cipher.h"
 
 #define HASH_BITS                   16
-#define HASH_OFFSET_BASIS           2166115717
-#define HASH_PRIME                  16777619
+#define HASH_OFFSET_BASIS           2166115717//14695981039346656037//
+#define HASH_PRIME                  16777619//1099511628211//
 
 #define MAX_BUFFER_REFERENCES       (1 << 24) // 3 bytes, = ENTRY offset size
 #define PREFERRED_BUFFER_SIZE       MAX_BUFFER_REFERENCES >> 2 // Has to be < to MAX_BUFFER_REFERENCES << 2
@@ -51,16 +51,16 @@ typedef struct {
 #pragma pack(pop)
 
 ENTRY dictionary[1 << HASH_BITS];
-unsigned int signature;
+uint32_t signature;
 byte state;
-unsigned int chunks[32];
+uint32_t chunks[32];
 
 void writeSignature(/*const bool*/);
 bool flush();
 void reset();
 void resetDictionary();
 bool checkState();
-void computeHash(unsigned int*, const unsigned int);
-bool updateEntry(ENTRY*, const unsigned int, const unsigned int);
+void computeHash(uint32_t*, const uint32_t);
+bool updateEntry(ENTRY*, const uint32_t, const uint32_t);
 
 #endif

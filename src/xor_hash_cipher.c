@@ -32,18 +32,18 @@
 
 #include "xor_hash_cipher.h"
 
-bool xorHashEncode(byte* _inBuffer, unsigned int _inSize, byte* _outBuffer, unsigned int _outSize, const unsigned int mask) {
+bool xorHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, const uint32_t mask) {
     prepareWorkspace(_inBuffer, _inSize, _outBuffer, _outSize);
     
     reset();
     resetDictionary();
     
-    const unsigned int* intInBuffer = (const unsigned int*)inBuffer;
-    const unsigned int intInSize = inSize >> 2;
+    const uint32_t* intInBuffer = (const uint32_t*)inBuffer;
+    const uint32_t intInSize = inSize >> 2;
     
-    unsigned int chunk;
-    unsigned int xorChunk;
-    unsigned int hash;
+    uint32_t chunk;
+    uint32_t xorChunk;
+    uint32_t hash;
     
     for(unsigned int i = 0; i < intInSize; i ++) {
         chunk = intInBuffer[i];
