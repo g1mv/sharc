@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 		while((bytesRead = (uint32_t)fread(readArray, sizeof(byte), readBufferSize, inFile)) > 0) {
 			totalRead += bytesRead;
             
-            if(sharcEncode(readArray, bytesRead, writeArray, bytesRead, MODE_DUAL_PASS_XOR))
+            if(sharcEncode(readArray, bytesRead, writeArray, bytesRead, MODE_SINGLE_PASS_DIRECT))
                 totalWritten += fwrite(writeArray, sizeof(byte), outPosition, outFile);
             else
                 totalWritten += fwrite(readArray, sizeof(byte), bytesRead, outFile);

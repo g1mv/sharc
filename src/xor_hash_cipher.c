@@ -47,7 +47,8 @@ FORCE_INLINE bool xorHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuf
     for(unsigned int i = 0; i < intInSize; i ++) {
         chunk = intInBuffer[i];
         xorChunk = chunk ^ mask;
-        kernel(chunk, xorChunk, intInBuffer, i);
+        if(kernel(chunk, xorChunk, intInBuffer, i) ^ 0x1)
+            return FALSE;
     }
     
     flush();

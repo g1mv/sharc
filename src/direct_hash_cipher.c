@@ -45,9 +45,10 @@ FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _out
     
     for(uint32_t i = 0; i < intInSize; i ++) {
         chunk = intInBuffer[i];
-        kernel(chunk, chunk, intInBuffer, i);
+        if(kernel(chunk, chunk, intInBuffer, i) ^ 0x1)
+            return FALSE;
     }
-    
+     
     flush();
     
     const uint32_t remaining = inSize - inPosition;
