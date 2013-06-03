@@ -32,7 +32,7 @@
 
 #include "sharc_cipher.h"
 
-bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, byte mode) {
+FORCE_INLINE bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, byte mode) {
     switch(mode) {
         case MODE_SINGLE_PASS_DIRECT:
             return directHashEncode(_inBuffer, _inSize, _outBuffer, _outSize);
@@ -53,6 +53,6 @@ bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _
     }
 }
 
-bool sharcDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {
+FORCE_INLINE bool sharcDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {
     return TRUE;
 }

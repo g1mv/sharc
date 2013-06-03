@@ -77,6 +77,6 @@ FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _out
     return TRUE;
 }
 
-bool directHashDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {
+FORCE_INLINE bool directHashDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {
     return TRUE;
 }
