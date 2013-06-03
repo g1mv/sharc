@@ -51,11 +51,11 @@ typedef struct {
 #pragma pack(pop)
 
 ENTRY dictionary[1 << HASH_BITS];
-uint32_t signature;
+uint64_t signature;
 byte state;
-uint32_t chunks[32];
+uint32_t chunks[64];
 
-void writeSignature(/*const bool*/);
+void writeSignature();
 bool flush();
 void reset();
 void resetDictionary();

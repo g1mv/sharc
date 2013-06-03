@@ -55,7 +55,7 @@ FORCE_INLINE bool xorHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuf
                 if(updateEntry(found, xorChunk, i) ^ 0x1)
                     return FALSE;
             } else {
-                writeSignature(/*TRUE*/);
+                writeSignature();
                 chunks[state++] = (unsigned short)hash;
                 if(checkState() ^ 0x1)
                     return FALSE;

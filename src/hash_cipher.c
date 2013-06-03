@@ -33,15 +33,15 @@
 #include "hash_cipher.h"
 
 FORCE_INLINE void writeSignature() {
-    signature |= 1 << state;
+    signature |= ((uint64_t)1) << state;
 }
 
 FORCE_INLINE bool flush() {
-    if((outPosition + 4 + 128) > outSize)
+    if((outPosition + 8 + 256) > outSize)
         return FALSE;
-    *(uint32_t*)(outBuffer + outPosition) = signature;
-    outPosition += 4;
-#pragma unroll(32)
+    *(uint64_t*)(outBuffer + outPosition) = signature;
+    outPosition += 8;
+#pragma unroll(64)
     for(byte b = 0; b < state; b ++) {
         uint32_t chunk = chunks[b];
         switch((signature >> b) & 0x1) {
@@ -66,14 +66,12 @@ FORCE_INLINE void reset() {
 
 FORCE_INLINE void resetDictionary() {
     for(unsigned int i = 0; i < (1 << HASH_BITS); i ++)
-        //*(unsigned int*)&dictionary[i] &= 0xFFFFFF;
-        //dictionary[i].exists = 0;
         *(uint32_t*)&dictionary[i] = 0;
 }
 
 FORCE_INLINE bool checkState() {
     switch(state) {
-        case 32:
+        case 64:
             if(!flush())
                 return FALSE;
             reset();
@@ -86,12 +84,11 @@ FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value) {
     *hash = HASH_OFFSET_BASIS;
     *hash ^= value;
     *hash *= HASH_PRIME;
-    *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);///*(*hash >> (32 - HASH_BITS));*/(*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
+    *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
 }
 
 FORCE_INLINE bool updateEntry(ENTRY* entry, const uint32_t chunk, const uint32_t index) {
 	*(uint32_t*)entry = (index & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
-	//writeSignature(FALSE);
-    chunks[state++] = chunk;
+	chunks[state++] = chunk;
     return checkState();
 }
