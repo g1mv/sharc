@@ -52,16 +52,16 @@ bool xorHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t
         ENTRY* found = &dictionary[hash];
         if((*(unsigned int*)found) & MAX_BUFFER_REFERENCES) {
             if(chunk ^ intInBuffer[*(unsigned int*)found & 0xFFFFFF]) {
-                if(!updateEntry(found, xorChunk, i))
+                if(updateEntry(found, xorChunk, i) ^ 0x1)
                     return FALSE;
             } else {
                 writeSignature(/*TRUE*/);
                 chunks[state++] = (unsigned short)hash;
-                if(!checkState())
+                if(checkState() ^ 0x1)
                     return FALSE;
             }
         } else {
-            if(!updateEntry(found, xorChunk, i))
+            if(updateEntry(found, xorChunk, i) ^ 0x1)
                 return FALSE;
         }
     }
