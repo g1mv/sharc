@@ -47,19 +47,19 @@ FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _out
     for(uint32_t i = 0; i < intInSize; i ++) {
         chunk = intInBuffer[i];
         computeHash(&hash, chunk);
-        ENTRY* found = &dictionary[hash];
+        ENTRY* found = &dictionary[hash];        
         if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
             if(chunk ^ intInBuffer[*(uint32_t*)found & 0xFFFFFF]) {
-                if(!updateEntry(found, chunk, i))
+                if(updateEntry(found, chunk, i) ^ 0x1)
                     return FALSE;
             } else {
-                writeSignature(/*TRUE*/);
+                writeSignature();
                 chunks[state++] = (uint16_t)hash;
-                if(!checkState())
+                if(checkState() ^ 0x1)
                     return FALSE;
             }
         } else {
-            if(!updateEntry(found, chunk, i))
+            if(updateEntry(found, chunk, i) ^ 0x1)
                 return FALSE;
         }
     }
