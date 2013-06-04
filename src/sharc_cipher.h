@@ -36,8 +36,8 @@
 #include "direct_hash_cipher.h"
 #include "xor_hash_cipher.h"
 
-#define MODE_SINGLE_PASS_DIRECT  0
-#define MODE_DUAL_PASS_XOR       1
+#define MODE_SINGLE_PASS        0
+#define MODE_DUAL_PASS          1
 
 #define XOR_MASK 0xFF0000FF
 

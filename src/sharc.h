@@ -40,4 +40,6 @@
 
 #include "sharc_cipher.h"
 
+void compress(char*, byte, byte*, byte*, uint32_t);
+
 #endif

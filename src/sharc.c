@@ -32,55 +32,72 @@
 
 #include "sharc.h"
 
+FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* writeBuffer, uint32_t size) {
+    uint64_t totalRead = 0;
+    uint64_t totalWritten = 0;
+    
+    char* outFileName = (char*)malloc((strlen(inFileName) + 6) * sizeof(char));
+    
+    outFileName[0] = '\0';
+    strcat(outFileName, inFileName);
+    strcat(outFileName, ".sharc");
+    
+    FILE* inFile = fopen(inFileName, "rb");
+    FILE* outFile = fopen(outFileName, "wb+");
+    
+    uint32_t bytesRead;
+    
+    time_t chrono = clock();
+    while((bytesRead = (uint32_t)fread(readBuffer, sizeof(byte), size, inFile)) > 0) {
+        totalRead += bytesRead;
+        
+        if(sharcEncode(readBuffer, bytesRead, writeBuffer, bytesRead, mode))
+            totalWritten += fwrite(writeBuffer, sizeof(byte), outPosition, outFile);
+        else
+            totalWritten += fwrite(readBuffer, sizeof(byte), bytesRead, outFile);
+    }
+    chrono = (1000 * (clock() - chrono)) / CLOCKS_PER_SEC;
+    
+    fclose(inFile);
+    fclose(outFile);
+    
+    double ratio = (1.0 * totalWritten) / totalRead;
+    double speed = (1000.0 * totalRead) / (chrono * 1024.0 * 1024.0);
+    printf("File %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
+    printf("Ratio out / in = %g, Time = %ld ms, Speed = %g MB/s\n", ratio, chrono, speed);
+    
+    free(outFileName);
+}
+
 int main(int argc, char *argv[]) {
     if(argc <= 1)
 		exit(0);
     
-    const uint32_t readBufferSize = PREFERRED_BUFFER_SIZE;  // Maximum depending on ENTRY.offset byte length
-    //byte readArray[PREFERRED_BUFFER_SIZE];
-    byte* readArray = (byte*)malloc(readBufferSize * sizeof(byte));
-	byte writeArray[readBufferSize];
-    //byte* writeArray = (byte*)malloc(readBufferSize * sizeof(byte));
+    byte* readBuffer = (byte*)malloc(PREFERRED_BUFFER_SIZE * sizeof(byte));
+	byte writeBuffer[PREFERRED_BUFFER_SIZE];
     
+    byte mode = MODE_SINGLE_PASS;
+    
+    size_t argLength;
     for(int i = 1; i < argc; i ++) {
-        uint64_t totalRead = 0;
-        uint64_t totalWritten = 0;
-        
-		char* inFileName = argv[i];
-		char* outFileName = (char*)malloc((strlen(inFileName) + 6) * sizeof(char));
-        
-        outFileName[0] = '\0';
-        strcat(outFileName, inFileName);
-        strcat(outFileName, ".sharc");
-		
-        FILE* inFile = fopen(inFileName, "rb");
-        FILE* outFile = fopen(outFileName, "wb+");
-        
-        uint32_t bytesRead;
-        
-        time_t chrono = clock();
-		while((bytesRead = (uint32_t)fread(readArray, sizeof(byte), readBufferSize, inFile)) > 0) {
-			totalRead += bytesRead;
-            
-            if(sharcEncode(readArray, bytesRead, writeArray, bytesRead, MODE_SINGLE_PASS_DIRECT))
-                totalWritten += fwrite(writeArray, sizeof(byte), outPosition, outFile);
-            else
-                totalWritten += fwrite(readArray, sizeof(byte), bytesRead, outFile);
-		}
-        chrono = (1000 * (clock() - chrono)) / CLOCKS_PER_SEC;
-        
-        double outBytes = totalWritten;
-		double ratio = outBytes / totalRead;
-        double speed = (1000.0 * totalRead) / (chrono * 1024.0 * 1024.0);
-        printf("File %s, %lli bytes in, %lli bytes out, ", argv[i], totalRead, totalWritten);
-        printf("Ratio out / in = %g, Time = %ld ms, Speed = %g MB/s\n", ratio, chrono, speed);
-		
-        free(outFileName);
-        
-        fclose(inFile);
-        fclose(outFile);
+        switch(argv[i][0]) {
+            case '-':
+                argLength = strlen(argv[i]);
+                if(argLength < 2)
+                    break;
+                switch(argv[i][1]) {
+                    case 'c':
+                        if(argLength != 3)
+                            break;
+                        mode = argv[i][2] - '0';
+                        break;
+                }
+                break;
+            default:
+                compress(argv[i], mode, readBuffer, writeBuffer, PREFERRED_BUFFER_SIZE);
+                break;
+        }
     }
     
-	free(readArray);
-    //free(writeArray);
+	free(readBuffer);
 }
