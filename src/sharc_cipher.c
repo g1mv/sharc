@@ -30,6 +30,9 @@
  * 01/06/13 20:52
  */
 
+#ifndef SHARC_CIPHER_C
+#define SHARC_CIPHER_C
+
 #include "sharc_cipher.h"
 
 FORCE_INLINE bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, byte mode) {
@@ -56,3 +59,5 @@ FORCE_INLINE bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffe
 FORCE_INLINE bool sharcDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {
     return TRUE;
 }
+
+#endif

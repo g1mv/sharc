@@ -35,7 +35,9 @@
 
 #include <stdint.h>
 
-#if defined(_MSC_VER)
+#if defined(__INTEL_COMPILER)
+#define FORCE_INLINE __forceinline
+#elif defined(_MSC_VER)
 #define FORCE_INLINE __forceinline
 #else
 #define FORCE_INLINE __attribute__((always_inline))

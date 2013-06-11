@@ -30,6 +30,9 @@
  * 01/06/13 20:03
  */
 
+#ifndef XOR_HASH_CIPHER_C
+#define XOR_HASH_CIPHER_C
+
 #include "xor_hash_cipher.h"
 
 FORCE_INLINE bool xorHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, const uint32_t mask) {
@@ -67,3 +70,5 @@ FORCE_INLINE bool xorHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuf
 FORCE_INLINE bool xorHashDecode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize, const unsigned int mask) {
     return TRUE;
 }
+
+#endif

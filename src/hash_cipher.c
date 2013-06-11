@@ -30,6 +30,9 @@
  * 01/06/13 17:31
  */
 
+#ifndef HASH_CIPHER_C
+#define HASH_CIPHER_C
+
 #include "hash_cipher.h"
 
 FORCE_INLINE void writeSignature() {
@@ -112,3 +115,5 @@ FORCE_INLINE bool kernel(uint32_t chunk, uint32_t modifiedChunk, const uint32_t*
     }
     return TRUE;
 }
+
+#endif

@@ -36,8 +36,8 @@
 #include "cipher.h"
 
 #define HASH_BITS                   16
-#define HASH_OFFSET_BASIS           2166115717//14695981039346656037//
-#define HASH_PRIME                  16777619//1099511628211//
+#define HASH_OFFSET_BASIS           2166115717	//14695981039346656037//
+#define HASH_PRIME                  16777619	//1099511628211//
 
 #define MAX_BUFFER_REFERENCES       (1 << 24) // 3 bytes, = ENTRY offset size
 #define PREFERRED_BUFFER_SIZE       MAX_BUFFER_REFERENCES >> 2 // Has to be < to MAX_BUFFER_REFERENCES << 2
