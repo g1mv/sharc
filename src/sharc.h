@@ -39,6 +39,14 @@
 #include <time.h>
 
 #include "sharc_cipher.h"
+#include "sharc_cipher.c"
+#include "xor_hash_cipher.c"
+#include "direct_hash_cipher.c"
+#include "hash_cipher.c"
+#include "cipher.c"
+
+byte readBuffer[PREFERRED_BUFFER_SIZE];
+byte writeBuffer[PREFERRED_BUFFER_SIZE];
 
 void compress(char*, byte, byte*, byte*, uint32_t);
 

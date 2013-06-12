@@ -30,6 +30,9 @@
  * 01/06/13 18:46
  */
 
+#ifndef CIPHER_C
+#define CIPHER_C
+
 #include "cipher.h"
 
 FORCE_INLINE void prepareWorkspace(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
@@ -41,3 +44,5 @@ FORCE_INLINE void prepareWorkspace(byte* _inBuffer, uint32_t _inSize, byte* _out
     outSize = _outSize;
     outPosition = 0;
 }
+
+#endif

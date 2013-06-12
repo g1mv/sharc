@@ -37,6 +37,7 @@ FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* 
     uint64_t totalWritten = 0;
     
     char* outFileName = (char*)malloc((strlen(inFileName) + 6) * sizeof(char));
+	byte* intermediateBuffer = (byte*)malloc(PREFERRED_BUFFER_SIZE * sizeof(byte));
     
     outFileName[0] = '\0';
     strcat(outFileName, inFileName);
@@ -50,7 +51,7 @@ FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* 
     time_t chrono = clock();
     while((bytesRead = (uint32_t)fread(readBuffer, sizeof(byte), size, inFile)) > 0) {
         totalRead += bytesRead;
-        
+		
         if(sharcEncode(readBuffer, bytesRead, writeBuffer, bytesRead, mode))
             totalWritten += fwrite(writeBuffer, sizeof(byte), outPosition, outFile);
         else
@@ -60,23 +61,21 @@ FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* 
     
     fclose(inFile);
     fclose(outFile);
-    
+
     double ratio = (1.0 * totalWritten) / totalRead;
     double speed = (1000.0 * totalRead) / (chrono * 1024.0 * 1024.0);
     printf("File %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
-    printf("Ratio out / in = %g, Time = %ld ms, Speed = %g MB/s\n", ratio, chrono, speed);
+    printf("Ratio out / in = %g, Time = %lld ms, Speed = %g MB/s\n", ratio, chrono, speed);
     
     free(outFileName);
+	free(intermediateBuffer);
 }
 
 int main(int argc, char *argv[]) {
     if(argc <= 1)
 		exit(0);
-    
-    byte* readBuffer = (byte*)malloc(PREFERRED_BUFFER_SIZE * sizeof(byte));
-	byte writeBuffer[PREFERRED_BUFFER_SIZE];
-    
-    byte mode = MODE_SINGLE_PASS;
+
+	byte mode = MODE_SINGLE_PASS;
     
     size_t argLength;
     for(int i = 1; i < argc; i ++) {
@@ -98,6 +97,4 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    
-	free(readBuffer);
 }
