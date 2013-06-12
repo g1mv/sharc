@@ -36,7 +36,7 @@
 #include <stdint.h>
 
 #if defined(__INTEL_COMPILER)
-#define FORCE_INLINE __)
+#define FORCE_INLINE __forceinline
 #elif defined(__GNUC__)
 #define FORCE_INLINE __attribute__((always_inline))
 #elif defined(_MSC_VER)
