@@ -36,11 +36,13 @@
 #include <stdint.h>
 
 #if defined(__INTEL_COMPILER)
-#define FORCE_INLINE __forceinline
+#define FORCE_INLINE __)
+#elif defined(__GNUC__)
+#define FORCE_INLINE __attribute__((always_inline))
 #elif defined(_MSC_VER)
 #define FORCE_INLINE __forceinline
 #else
-#define FORCE_INLINE __attribute__((always_inline))
+#warning Impossible to inline functions.
 #endif
 
 #define FALSE 0

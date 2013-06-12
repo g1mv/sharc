@@ -30,16 +30,77 @@
 # 01/06/13 17:27
 #
 
-CLANG= clang -O3
-LCC = lcc -O3
-ICL = icl /Qstd=c99 /O3 /Qinline-forceinline 
 
+# Build options
+OUTPUTNAME = sharc
+
+ifndef ARCH
+#make ARCH=32
+#make ARCH=64
+ARCH=64
+endif
+
+ifndef OPTIM
+# gcc -O option
+OPTIM=3
+endif
+
+#windows compilers
+ifdef SystemRoot
+CLANG= clang -O$(OPTIM)
+LCC = lcc -O$(OPTIM)
+ICL = icl /Qstd=c99 /O$(OPTIM) /Qinline-forceinline 
 CC = $(ICL) $^ -o $@
 
-sharc.exe : sharc.c
+RM = del sharc.obj
+CP = copy /y
+EXT = .exe
+EXEC=
+else
+#linux compilers
+CFLAGS = -O$(OPTIM) -std=gnu99 -m$(ARCH) -Winline
+CC = gcc $(CFLAGS) $^ -o $@
+
+RM = rm -f
+CP = cp -f
+EXT=
+EXEC=./
+endif
+
+SRC = sharc.c
+
+TARGET = $(OUTPUTNAME)_$(ARCH)_$(OPTIM)$(EXT)
+
+.DELETE_ON_ERROR:
+
+#Receipes
+
+all :
+
+# main full described name target
+$(TARGET) : $(SRC)
 	$(CC)
 
-all : sharc.exe
+# short target name
+$(OUTPUTNAME)$(EXT) : $(TARGET) 
+	$(CP) $< $@
+
+all :  $(OUTPUTNAME)$(EXT) 
 
 clean :
-	del sharc.exe sharc.obj
+	-$(RM) $(TARGET) $(OUTPUTNAME)$(EXT)
+
+unittest : $(TARGET) 
+	$(EXEC)$(TARGET) $(TEST)
+
+test:
+	$(MAKE) unittest ARCH=32 OPTIM=1 TEST=$(TEST)
+	$(MAKE) unittest ARCH=32 OPTIM=2 TEST=$(TEST)
+	$(MAKE) unittest ARCH=32 OPTIM=3 TEST=$(TEST)
+	$(MAKE) unittest ARCH=64 OPTIM=1 TEST=$(TEST)
+	$(MAKE) unittest ARCH=64 OPTIM=2 TEST=$(TEST)
+	$(MAKE) unittest ARCH=64 OPTIM=3 TEST=$(TEST)
+
+cleantest :
+	-$(RM) sharc sharc_32_1 sharc_32_2 sharc_32_3 sharc_64_1 sharc_64_2 sharc_64_3
+
