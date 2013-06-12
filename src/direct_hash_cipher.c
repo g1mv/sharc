@@ -36,33 +36,7 @@
 #include "direct_hash_cipher.h"
 
 FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
-    prepareWorkspace(_inBuffer, _inSize, _outBuffer, _outSize);
-    
-    reset();
-    resetDictionary();
-    
-    const uint32_t* intInBuffer = (const uint32_t*)inBuffer;
-    const uint32_t intInSize = inSize >> 2;
-    
-    uint32_t chunk;
-    
-    for(uint32_t i = 0; i < intInSize; i ++) {
-        chunk = intInBuffer[i];
-        if(kernel(chunk, chunk, intInBuffer, i) ^ 0x1)
-            return FALSE;
-    }
-     
-    flush();
-    
-    const uint32_t remaining = inSize - inPosition;
-    for(uint32_t i = 0; i < remaining; i ++) {
-        if(outPosition < outSize - 1)
-            outBuffer[outPosition ++] = inBuffer[inPosition ++];
-        else
-            return FALSE;
-    }
-    
-    return TRUE;
+    return hashEncode(_inBuffer, _inSize, _outBuffer, _outSize, DIRECT_XOR_MASK);
 }
 
 FORCE_INLINE bool directHashDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {

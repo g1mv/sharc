@@ -35,39 +35,11 @@
 
 #include "xor_hash_cipher.h"
 
-FORCE_INLINE bool xorHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, const uint32_t mask) {
-    prepareWorkspace(_inBuffer, _inSize, _outBuffer, _outSize);
-    
-    reset();
-    resetDictionary();
-    
-    const uint32_t* intInBuffer = (const uint32_t*)inBuffer;
-    const uint32_t intInSize = inSize >> 2;
-    
-    uint32_t chunk;
-    uint32_t xorChunk;
-    
-    for(unsigned int i = 0; i < intInSize; i ++) {
-        chunk = intInBuffer[i];
-        xorChunk = chunk ^ mask;
-        if(kernel(chunk, xorChunk, intInBuffer, i) ^ 0x1)
-            return FALSE;
-    }
-    
-    flush();
-    
-    const unsigned int remaining = inSize - inPosition;
-    for(unsigned int i = 0; i < remaining; i ++) {
-        if(outPosition < outSize - 1)
-            outBuffer[outPosition ++] = inBuffer[inPosition ++];
-        else
-            return FALSE;
-    }
-    
-    return TRUE;
+FORCE_INLINE bool xorHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
+    return hashEncode(_inBuffer, _inSize, _outBuffer, _outSize, XOR_MASK);
 }
 
-FORCE_INLINE bool xorHashDecode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize, const unsigned int mask) {
+FORCE_INLINE bool xorHashDecode(byte* inBuffer, unsigned int inSize, byte* outBuffer, unsigned int outSize) {
     return TRUE;
 }
 

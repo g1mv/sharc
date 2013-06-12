@@ -40,11 +40,11 @@ FORCE_INLINE bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffe
     
     switch(mode) {
         case MODE_SINGLE_PASS:
-            return xorHashEncode(_inBuffer, _inSize, _outBuffer, _outSize, XOR_MASK_1);
+            return xorHashEncode(_inBuffer, _inSize, _outBuffer, _outSize);
         case MODE_DUAL_PASS:
             if(directHashEncode(_inBuffer, _inSize, intermediateBuffer, _inSize)) {
                 const uint32_t initialOutPosition = outPosition;
-                if(xorHashEncode(intermediateBuffer, initialOutPosition, _outBuffer, initialOutPosition, XOR_MASK_1))
+                if(xorHashEncode(intermediateBuffer, initialOutPosition, _outBuffer, initialOutPosition))
                     return TRUE;
                 else {
                     outBuffer = intermediateBuffer;
@@ -63,9 +63,9 @@ FORCE_INLINE bool sharcDecode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffe
     
     switch(mode) {
         case MODE_SINGLE_PASS:
-            return xorHashDecode(_inBuffer, _inSize, _outBuffer, _outSize, XOR_MASK_1);
+            return xorHashDecode(_inBuffer, _inSize, _outBuffer, _outSize);
         case MODE_DUAL_PASS:
-            xorHashDecode(_inBuffer, _inSize, intermediateBuffer, _outSize, XOR_MASK_1);
+            xorHashDecode(_inBuffer, _inSize, intermediateBuffer, _outSize);
             return directHashDecode(intermediateBuffer, _outSize, _outBuffer, _outSize);
         default:
             return FALSE;

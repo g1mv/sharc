@@ -35,7 +35,9 @@
 
 #include "hash_cipher.h"
 
-bool xorHashEncode(byte*, uint32_t, byte*, uint32_t, const uint32_t);
-bool xorHashDecode(byte*, uint32_t, byte*, uint32_t, const uint32_t);
+#define XOR_MASK    0xFF0000FF
+
+bool xorHashEncode(byte*, uint32_t, byte*, uint32_t);
+bool xorHashDecode(byte*, uint32_t, byte*, uint32_t);
 
 #endif

@@ -39,8 +39,6 @@
 #define MODE_SINGLE_PASS        0
 #define MODE_DUAL_PASS          1
 
-#define XOR_MASK_1              0xFF0000FF
-
 byte intermediateBuffer[PREFERRED_BUFFER_SIZE];
 
 bool sharcEncode(byte*, uint32_t, byte*, uint32_t, byte mode);

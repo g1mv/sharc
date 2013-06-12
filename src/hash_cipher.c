@@ -83,9 +83,9 @@ FORCE_INLINE bool checkState() {
     return TRUE;
 }
 
-FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value) {
+FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value, const uint32_t xorMask) {
     *hash = HASH_OFFSET_BASIS;
-    *hash ^= value;
+    *hash ^= (value ^ xorMask);
     *hash *= HASH_PRIME;
     *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
 }
@@ -96,12 +96,12 @@ FORCE_INLINE bool updateEntry(ENTRY* entry, const uint32_t chunk, const uint32_t
     return checkState();
 }
 
-FORCE_INLINE bool kernel(uint32_t chunk, uint32_t modifiedChunk, const uint32_t* buffer, uint32_t index) {
-    computeHash(&hash, modifiedChunk);
+FORCE_INLINE bool kernel(uint32_t chunk, uint32_t xorMask, const uint32_t* buffer, uint32_t index) {
+    computeHash(&hash, chunk, xorMask);
     ENTRY* found = &dictionary[hash];
     if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
         if(chunk ^ buffer[*(uint32_t*)found & 0xFFFFFF]) {
-            if(updateEntry(found, modifiedChunk, index) ^ 0x1)
+            if(updateEntry(found, chunk, index) ^ 0x1)
                 return FALSE;
         } else {
             writeSignature();
@@ -110,9 +110,35 @@ FORCE_INLINE bool kernel(uint32_t chunk, uint32_t modifiedChunk, const uint32_t*
                 return FALSE;
         }
     } else {
-        if(updateEntry(found, modifiedChunk, index) ^ 0x1)
+        if(updateEntry(found, chunk, index) ^ 0x1)
             return FALSE;
     }
+    return TRUE;
+}
+
+FORCE_INLINE bool hashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, const uint32_t xorMask) {
+    prepareWorkspace(_inBuffer, _inSize, _outBuffer, _outSize);
+    
+    reset();
+    resetDictionary();
+    
+    const uint32_t* intInBuffer = (const uint32_t*)inBuffer;
+    const uint32_t intInSize = inSize >> 2;
+    
+    for(uint32_t i = 0; i < intInSize; i ++)
+        if(kernel(intInBuffer[i], xorMask, intInBuffer, i) ^ 0x1)
+            return FALSE;
+    
+    flush();
+    
+    const uint32_t remaining = inSize - inPosition;
+    for(uint32_t i = 0; i < remaining; i ++) {
+        if(outPosition < outSize - 1)
+            outBuffer[outPosition ++] = inBuffer[inPosition ++];
+        else
+            return FALSE;
+    }
+    
     return TRUE;
 }
 

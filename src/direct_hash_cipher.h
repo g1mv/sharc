@@ -35,6 +35,8 @@
 
 #include "hash_cipher.h"
 
+#define DIRECT_XOR_MASK 0x00000000
+
 bool directHashEncode(byte*, uint32_t, byte*, uint32_t);
 bool directHashDecode(byte*, uint32_t, byte*, uint32_t);
 

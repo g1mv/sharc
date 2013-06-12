@@ -61,8 +61,9 @@ bool flush();
 void reset();
 void resetDictionary();
 bool checkState();
-void computeHash(uint32_t*, const uint32_t);
+void computeHash(uint32_t*, const uint32_t, const uint32_t);
 bool updateEntry(ENTRY*, const uint32_t, const uint32_t);
 bool kernel(uint32_t, uint32_t, const uint32_t*, uint32_t);
+bool hashEncode(byte*, uint32_t, byte*, uint32_t, const uint32_t);
 
 #endif
