@@ -33,13 +33,15 @@
 #include "sharc_cipher.h"
 
 FORCE_INLINE bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, byte mode) {
+    _outBuffer[outPosition ++] = mode;
+    
     switch(mode) {
         case MODE_SINGLE_PASS:
-            return xorHashEncode(_inBuffer, _inSize, _outBuffer, _outSize, XOR_MASK);
+            return xorHashEncode(_inBuffer, _inSize, _outBuffer, _outSize, XOR_MASK_1);
         case MODE_DUAL_PASS:
             if(directHashEncode(_inBuffer, _inSize, intermediateBuffer, _inSize)) {
                 const uint32_t initialOutPosition = outPosition;
-                if(xorHashEncode(intermediateBuffer, initialOutPosition, _outBuffer, initialOutPosition, XOR_MASK))
+                if(xorHashEncode(intermediateBuffer, initialOutPosition, _outBuffer, initialOutPosition, XOR_MASK_1))
                     return TRUE;
                 else {
                     outBuffer = intermediateBuffer;
@@ -53,6 +55,18 @@ FORCE_INLINE bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffe
     }
 }
 
-FORCE_INLINE bool sharcDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {
+FORCE_INLINE bool sharcDecode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
+    const byte mode = _inBuffer[0];
+    
+    switch(mode) {
+        case MODE_SINGLE_PASS:
+            return xorHashDecode(_inBuffer, _inSize, _outBuffer, _outSize, XOR_MASK_1);
+        case MODE_DUAL_PASS:
+            xorHashDecode(_inBuffer, _inSize, intermediateBuffer, _outSize, XOR_MASK_1);
+            return directHashDecode(intermediateBuffer, _outSize, _outBuffer, _outSize);
+        default:
+            return FALSE;
+    }
+    
     return TRUE;
 }

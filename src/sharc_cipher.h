@@ -39,7 +39,7 @@
 #define MODE_SINGLE_PASS        0
 #define MODE_DUAL_PASS          1
 
-#define XOR_MASK 0xFF0000FF
+#define XOR_MASK_1              0xFF0000FF
 
 byte intermediateBuffer[PREFERRED_BUFFER_SIZE];
 
