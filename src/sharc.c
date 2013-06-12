@@ -37,8 +37,7 @@ FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* 
     uint64_t totalWritten = 0;
     
     char* outFileName = (char*)malloc((strlen(inFileName) + 6) * sizeof(char));
-	byte* intermediateBuffer = (byte*)malloc(PREFERRED_BUFFER_SIZE * sizeof(byte));
-    
+	
     outFileName[0] = '\0';
     strcat(outFileName, inFileName);
     strcat(outFileName, ".sharc");
@@ -65,10 +64,9 @@ FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* 
     double ratio = (1.0 * totalWritten) / totalRead;
     double speed = (1000.0 * totalRead) / (chrono * 1024.0 * 1024.0);
     printf("File %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
-    printf("Ratio out / in = %g, Time = %lld ms, Speed = %g MB/s\n", ratio, chrono, speed);
+    printf("Ratio out / in = %g, Time = %ld ms, Speed = %g MB/s\n", ratio, chrono, speed);
     
     free(outFileName);
-	free(intermediateBuffer);
 }
 
 int main(int argc, char *argv[]) {
