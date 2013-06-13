@@ -59,13 +59,18 @@ FORCE_INLINE void writeBlockHeader(const byte mode, byte* writeBuffer) {
 }
 
 FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* writeBuffer, uint32_t size) {
-    char* outFileName = (char*)malloc((strlen(inFileName) + 6) * sizeof(char));
-	
+    char outFileName[strlen(inFileName) + 6];
+    
     outFileName[0] = '\0';
     strcat(outFileName, inFileName);
     strcat(outFileName, ".sharc");
     
     FILE* inFile = fopen(inFileName, "rb");
+    if(inFile == NULL) {
+        printf("Unable to open file : %s\n", inFileName);
+        exit(0);
+    }
+    
     FILE* outFile = fopen(outFileName, "wb+");
     
     uint32_t bytesRead;
@@ -93,8 +98,6 @@ FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* 
     double speed = (1000.0 * totalRead) / (chrono * 1024.0 * 1024.0);
     printf("File %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
     printf("Ratio out / in = %g, Time = %ld ms, Speed = %g MB/s\n", ratio, chrono, speed);
-    
-    free(outFileName);
 }
 
 int main(int argc, char *argv[]) {
