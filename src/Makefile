@@ -45,27 +45,24 @@ ifndef OPTIM
 OPTIM=3
 endif
 
-#windows compilers
+#windows
 ifdef SystemRoot
-CLANG= clang -O$(OPTIM)
-LCC = lcc -O$(OPTIM)
-ICL = icl /Qstd=c99 /O$(OPTIM) /Qinline-forceinline 
-CC = $(ICL) $^ -o $@
-
-RM = del sharc.obj
+RM = del 
 CP = copy /y
+
 EXT = .exe
 EXEC=
 else
-#linux compilers
-CFLAGS = -O$(OPTIM) -std=gnu99 -m$(ARCH) -Winline
-CC = gcc $(CFLAGS) $^ -o $@
-
+#linux
 RM = rm -f
 CP = cp -f
+
 EXT=
 EXEC=./
 endif
+
+CFLAGS = -O$(OPTIM) -std=gnu99 -m$(ARCH) -Winline
+CC = gcc $(CFLAGS) $^ -o $@
 
 SRC = sharc.c
 
