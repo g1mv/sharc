@@ -38,10 +38,11 @@
 
 #define MODE_SINGLE_PASS        0
 #define MODE_DUAL_PASS          1
+#define MODE_COPY               255
 
 byte intermediateBuffer[PREFERRED_BUFFER_SIZE];
 
-bool sharcEncode(byte*, uint32_t, byte*, uint32_t, byte mode);
+byte sharcEncode(byte*, uint32_t, byte*, uint32_t, byte mode);
 bool sharcDecode(byte*, uint32_t, byte*, uint32_t);
 
 #endif

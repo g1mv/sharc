@@ -35,26 +35,27 @@
 
 #include "sharc_cipher.h"
 
-FORCE_INLINE bool sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, byte mode) {
-    _outBuffer[outPosition ++] = mode;
-    
+FORCE_INLINE byte sharcEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, byte mode) {
     switch(mode) {
         case MODE_SINGLE_PASS:
-            return xorHashEncode(_inBuffer, _inSize, _outBuffer, _outSize);
+            if(xorHashEncode(_inBuffer, _inSize, _outBuffer, _outSize))
+                return mode;
+            else
+                return MODE_COPY;
         case MODE_DUAL_PASS:
             if(directHashEncode(_inBuffer, _inSize, intermediateBuffer, _inSize)) {
                 const uint32_t initialOutPosition = outPosition;
-                if(xorHashEncode(intermediateBuffer, initialOutPosition, _outBuffer, initialOutPosition))
-                    return TRUE;
-                else {
+                if(xorHashEncode(intermediateBuffer, initialOutPosition, _outBuffer, initialOutPosition)) {
+                    return mode;
+                } else {
                     outBuffer = intermediateBuffer;
                     outPosition = initialOutPosition;
-                    return TRUE;
+                    return MODE_SINGLE_PASS;
                 }
             }
-            return FALSE;
+            return MODE_COPY;
         default:
-            return FALSE;
+            return MODE_COPY;
     }
 }
 

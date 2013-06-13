@@ -37,6 +37,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "sharc_cipher.h"
 #include "sharc_cipher.c"
@@ -45,9 +46,15 @@
 #include "hash_cipher.c"
 #include "cipher.c"
 
+#define MAJOR_VERSION       1
+#define MINOR_VERSION       0
+#define SUB_MINOR_VERSION   0
+
 byte readBuffer[PREFERRED_BUFFER_SIZE];
 byte writeBuffer[PREFERRED_BUFFER_SIZE];
 
+void writeFileHeader(FILE*, char*, FILE*);
+void writeBlockHeader(const byte, byte*);
 void compress(char*, byte, byte*, byte*, uint32_t);
 
 #endif

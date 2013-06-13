@@ -32,10 +32,33 @@
 
 #include "sharc.h"
 
-FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* writeBuffer, uint32_t size) {
-    uint64_t totalRead = 0;
-    uint64_t totalWritten = 0;
+FORCE_INLINE void writeFileHeader(FILE* inFile, char* inFileName, FILE* outFile) {
+    fputs("SHARC", outFile);
+    fputc(MAJOR_VERSION, outFile);
+    fputc(MINOR_VERSION, outFile);
+    fputc(SUB_MINOR_VERSION, outFile);
     
+    struct stat attributes;
+    stat(inFileName, &attributes);
+    
+    const uint64_t size = (uint64_t)attributes.st_size;
+    const uint16_t mode = (uint16_t)attributes.st_mode;
+    const uint64_t created = (uint64_t)gmtime(&(attributes.st_ctime));
+    const uint64_t accessed = (uint64_t)gmtime(&(attributes.st_atime));
+    const uint64_t modified = (uint64_t)gmtime(&(attributes.st_mtime));
+    
+    fwrite(&size, 8, 1, outFile);
+    fwrite(&mode, 2, 1, outFile);
+    fwrite(&created, 8, 1, outFile);
+    fwrite(&accessed, 8, 1, outFile);
+    fwrite(&modified, 8, 1, outFile);
+}
+
+FORCE_INLINE void writeBlockHeader(const byte mode, byte* writeBuffer) {
+    *writeBuffer = mode;
+}
+
+FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* writeBuffer, uint32_t size) {
     char* outFileName = (char*)malloc((strlen(inFileName) + 6) * sizeof(char));
 	
     outFileName[0] = '\0';
@@ -46,17 +69,22 @@ FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* 
     FILE* outFile = fopen(outFileName, "wb+");
     
     uint32_t bytesRead;
+    byte reachableMode;
     
     time_t chrono = clock();
+    writeFileHeader(inFile, inFileName, outFile);
     while((bytesRead = (uint32_t)fread(readBuffer, sizeof(byte), size, inFile)) > 0) {
-        totalRead += bytesRead;
-		
-        if(sharcEncode(readBuffer, bytesRead, writeBuffer, bytesRead, mode))
-            totalWritten += fwrite(writeBuffer, sizeof(byte), outPosition, outFile);
+        reachableMode = sharcEncode(readBuffer, bytesRead, writeBuffer + 1, bytesRead - 1, mode);
+        writeBlockHeader(reachableMode, writeBuffer);
+        if(reachableMode ^ MODE_COPY)
+            fwrite(writeBuffer, sizeof(byte), outPosition, outFile);
         else
-            totalWritten += fwrite(readBuffer, sizeof(byte), bytesRead, outFile);
+            fwrite(readBuffer, sizeof(byte), bytesRead, outFile);
     }
     chrono = (1000 * (clock() - chrono)) / CLOCKS_PER_SEC;
+    
+    uint64_t totalRead = ftell(inFile);
+    uint64_t totalWritten = ftell(outFile);
     
     fclose(inFile);
     fclose(outFile);
