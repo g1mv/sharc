@@ -30,9 +30,6 @@
  * 01/06/13 13:08
  */
 
-#ifndef DIRECT_CIPHER_C
-#define DIRECT_CIPHER_C
-
 #include "direct_hash_cipher.h"
 
 FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
@@ -42,5 +39,3 @@ FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _out
 FORCE_INLINE bool directHashDecode(byte* inBuffer, uint32_t inSize, byte* outBuffer, uint32_t outSize) {
     return TRUE;
 }
-
-#endif

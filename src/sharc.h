@@ -40,11 +40,6 @@
 #include <sys/stat.h>
 
 #include "sharc_cipher.h"
-#include "sharc_cipher.c"
-#include "xor_hash_cipher.c"
-#include "direct_hash_cipher.c"
-#include "hash_cipher.c"
-#include "cipher.c"
 
 #define MAJOR_VERSION       1
 #define MINOR_VERSION       0
