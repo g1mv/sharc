@@ -1,90 +1,73 @@
 /*
- * Copyright (c) 2013, Guillaume Voirin
+ * Copyright (c) 2013, Guillaume Voirin (gvoirin@centaurean.com)
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Centaurean nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
+ * This software is dual-licensed: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Centaurean BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Sharc
- * www.centaurean.com
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Alternatively, you can license this software under a commercial
+ * license, as set out in licenses/commercial.txt.
+ *
+ * Centaurean SHARC
+ * www.centaurean.com/sharc
  *
  * 01/06/13 13:08
  */
 
 #include "sharc.h"
 
-FORCE_INLINE void writeFileHeader(FILE* inFile, char* inFileName, FILE* outFile) {
-    fputs("SHARC", outFile);
-    fputc(MAJOR_VERSION, outFile);
-    fputc(MINOR_VERSION, outFile);
-    fputc(SUB_MINOR_VERSION, outFile);
-    
-    struct stat attributes;
-    stat(inFileName, &attributes);
-    
-    const uint64_t size = (uint64_t)attributes.st_size;
-    const uint16_t mode = (uint16_t)attributes.st_mode;
-    const uint64_t created = (uint64_t)gmtime(&(attributes.st_ctime));
-    const uint64_t accessed = (uint64_t)gmtime(&(attributes.st_atime));
-    const uint64_t modified = (uint64_t)gmtime(&(attributes.st_mtime));
-    
-    fwrite(&size, 8, 1, outFile);
-    fwrite(&mode, 2, 1, outFile);
-    fwrite(&created, 8, 1, outFile);
-    fwrite(&accessed, 8, 1, outFile);
-    fwrite(&modified, 8, 1, outFile);
-}
-
-FORCE_INLINE void writeBlockHeader(const byte mode, byte* writeBuffer) {
-    *writeBuffer = mode;
-}
-
-FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* writeBuffer, uint32_t size) {
+FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const uint32_t blockSize) {
     char outFileName[strlen(inFileName) + 6];
     
     outFileName[0] = '\0';
     strcat(outFileName, inFileName);
     strcat(outFileName, ".sharc");
     
-    FILE* inFile = fopen(inFileName, "rb");
-    if(inFile == NULL) {
-        printf("Unable to open file : %s\n", inFileName);
-        exit(0);
-    }
+    FILE* inFile = checkOpenFile(inFileName, "rb");    
+    FILE* outFile = checkOpenFile(outFileName, "wb+");
     
-    FILE* outFile = fopen(outFileName, "wb+");
-    
-    uint32_t bytesRead;
     byte reachableMode;
+    const byte nThread = 0;
     
     time_t chrono = clock();
-    writeFileHeader(inFile, inFileName, outFile);
-    while((bytesRead = (uint32_t)fread(readBuffer, sizeof(byte), size, inFile)) > 0) {
-        reachableMode = sharcEncode(readBuffer, bytesRead, writeBuffer + 1, bytesRead - 1, mode);
-        writeBlockHeader(reachableMode, writeBuffer);
+    
+    struct stat attributes;
+    stat(inFileName, &attributes);
+    
+    FILE_HEADER fileHeader = createFileHeader(blockSize, attributes);
+    fwrite(&fileHeader, sizeof(FILE_HEADER), 1, outFile);
+    
+    BYTE_BUFFER in = createByteBuffer(readBuffer[nThread], 0, blockSize);
+    //printf("%i,%i\n", sizeof(FILE_HEADER), sizeof(BLOCK_HEADER));
+    BYTE_BUFFER out = createByteBuffer(writeBuffer[nThread], 0, blockSize - sizeof(BLOCK_HEADER));
+    
+    while((in.size = (uint32_t)fread(readBuffer[nThread], sizeof(byte), blockSize, inFile)) > 0) {
+        reachableMode = sharcEncode(&in, &out, attemptMode);
+        
+        BLOCK_HEADER blockHeader;
         if(reachableMode ^ MODE_COPY)
-            fwrite(writeBuffer, sizeof(byte), outPosition, outFile);
+            blockHeader = createBlockHeader(reachableMode, out.position);
         else
-            fwrite(readBuffer, sizeof(byte), bytesRead, outFile);
+            blockHeader = createBlockHeader(reachableMode, in.size);
+        
+        fwrite(&blockHeader, sizeof(BLOCK_HEADER), 1, outFile);
+        
+        if(reachableMode ^ MODE_COPY)
+            fwrite(writeBuffer, sizeof(byte), sizeof(BLOCK_HEADER) + out.position, outFile);
+        else
+            fwrite(readBuffer, sizeof(byte), in.size, outFile);
+        
+        rewindByteBuffer(&in);
+        rewindByteBuffer(&out);
     }
     chrono = (1000 * (clock() - chrono)) / CLOCKS_PER_SEC;
     
@@ -96,14 +79,47 @@ FORCE_INLINE void compress(char* inFileName, byte mode, byte* readBuffer, byte* 
 
     double ratio = (1.0 * totalWritten) / totalRead;
     double speed = (1000.0 * totalRead) / (chrono * 1024.0 * 1024.0);
-    printf("File %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
-    printf("Ratio out / in = %g, Time = %ld ms, Speed = %g MB/s\n", ratio, chrono, speed);
+    printf("Compressed file %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
+    printf("Ratio out / in = %g, Time = %ld ms, Speed = %f MB/s\n", ratio, chrono, speed);
+}
+
+FORCE_INLINE void decompress(char* inFileName) {
+    char outFileName[strlen(inFileName) - 3];
+    
+    outFileName[0] = '\0';
+    strcat(outFileName, inFileName);
+    
+    FILE* inFile = checkOpenFile(inFileName, "rb");
+    FILE* outFile = checkOpenFile(outFileName, "wb+");
+    
+    uint32_t bytesRead;
+    byte mode;
+    
+    time_t chrono = clock();
+    /*uint64_t decompressedSize = processFileHeader(inFile);
+    while(!feof(inFile)) {
+        mode = processBlockHeader(inFile);
+        if(sharcDecode(inFile, outFile, decompressedSize, mode) ^ 0x1)
+            error();
+    }*/
+    chrono = (1000 * (clock() - chrono)) / CLOCKS_PER_SEC;
+    
+    uint64_t totalRead = ftell(inFile);
+    uint64_t totalWritten = ftell(outFile);
+    
+    fclose(inFile);
+    fclose(outFile);
+    
+    double speed = (1000.0 * totalWritten) / (chrono * 1024.0 * 1024.0);
+    printf("Decompressed file %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
+    printf("Time = %ld ms, Speed = %f MB/s\n", chrono, speed);
 }
 
 int main(int argc, char *argv[]) {
     if(argc <= 1)
 		exit(0);
 
+    byte action = ACTION_COMPRESS;
 	byte mode = MODE_SINGLE_PASS;
     
     size_t argLength;
@@ -115,14 +131,28 @@ int main(int argc, char *argv[]) {
                     break;
                 switch(argv[i][1]) {
                     case 'c':
+                        if(argLength == 2) {
+                            mode = MODE_SINGLE_PASS;
+                            break;
+                        }
                         if(argLength != 3)
                             break;
                         mode = argv[i][2] - '0';
                         break;
+                    case 'd':
+                        action = ACTION_DECOMPRESS;
+                        break;
                 }
                 break;
             default:
-                compress(argv[i], mode, readBuffer, writeBuffer, PREFERRED_BUFFER_SIZE);
+                switch(action) {
+                    case ACTION_DECOMPRESS:
+                        decompress(argv[i]);
+                        break;
+                    default:
+                        compress(argv[i], mode, PREFERRED_BUFFER_SIZE);
+                        break;
+                }
                 break;
         }
     }

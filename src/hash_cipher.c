@@ -1,80 +1,73 @@
 /*
- * Copyright (c) 2013, Guillaume Voirin
+ * Copyright (c) 2013, Guillaume Voirin (gvoirin@centaurean.com)
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Centaurean nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
+ * This software is dual-licensed: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Centaurean BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Sharc
- * www.centaurean.com
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Alternatively, you can license this software under a commercial
+ * license, as set out in licenses/commercial.txt.
+ *
+ * Centaurean SHARC
+ * www.centaurean.com/sharc
  *
  * 01/06/13 17:31
  */
 
 #include "hash_cipher.h"
 
-FORCE_INLINE void writeSignature() {
-    signature |= ((uint64_t)1) << state;
+FORCE_INLINE void writeSignature(const byte nThread) {
+    signature/*[nThread]*/ |= ((uint64_t)1) << state/*[nThread]*/;
 }
 
-FORCE_INLINE bool flush() {
-    if((outPosition + 8 + 256) > outSize)
+FORCE_INLINE bool flush(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte nThread) {
+    if((out->position + 8 + 256) > out->size)
         return FALSE;
-    *(uint64_t*)(outBuffer + outPosition) = signature;
-    outPosition += 8;
+    *(uint64_t*)(out->pointer + out->position) = signature/*[nThread]*/;
+    out->position += 8;
 #pragma unroll(64)
-    for(byte b = 0; b < state; b ++) {
-        uint32_t chunk = chunks[b];
-        switch((signature >> b) & 0x1) {
+    for(byte b = 0; b < state/*[nThread]*/; b ++) {
+        uint32_t chunk = chunks[b]/*[nThread]*/;
+        switch((signature/*[nThread]*/ >> b) & 0x1) {
             case 0:
-                *(uint32_t*)(outBuffer + outPosition) = chunk;
-                outPosition += 4;
+                *(uint32_t*)(out->pointer + out->position) = chunk;
+                out->position += 4;
                 break;
             case 1:
-                *(uint16_t*)(outBuffer + outPosition) = chunk;
-                outPosition += 2;
+                *(uint16_t*)(out->pointer + out->position) = chunk;
+                out->position += 2;
                 break;
         }
     }
-    inPosition += (state << 2);
+    in->position += (state/*[nThread]*/ << 2);
     return TRUE;
 }
 
-FORCE_INLINE void reset() {
-    state = 0;
-    signature = 0;
+FORCE_INLINE void reset(const byte nThread) {
+    state/*[nThread]*/ = 0;
+    signature/*[nThread]*/ = 0;
 }
 
-FORCE_INLINE void resetDictionary() {
+FORCE_INLINE void resetDictionary(const byte nThread) {
     for(unsigned int i = 0; i < (1 << HASH_BITS); i ++)
-        *(uint32_t*)&dictionary[i] = 0;
+        *(uint32_t*)&dictionary[i]/*[nThread]*/ = 0;
 }
 
-FORCE_INLINE bool checkState() {
-    switch(state) {
+FORCE_INLINE bool checkState(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte nThread) {
+    switch(state/*[nThread]*/) {
         case 64:
-            if(!flush())
+            if(!flush(in, out, nThread))
                 return FALSE;
-            reset();
+            reset(nThread);
             break;
     }
     return TRUE;
@@ -87,54 +80,86 @@ FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value, const uint32
     *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
 }
 
-FORCE_INLINE bool updateEntry(ENTRY* entry, const uint32_t chunk, const uint32_t index) {
+FORCE_INLINE bool updateEntry(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* entry, const uint32_t chunk, const uint32_t index, const byte nThread) {
 	*(uint32_t*)entry = (index & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
-	chunks[state++] = chunk;
-    return checkState();
+	chunks[state/*[nThread]*/++]/*[nThread]*/ = chunk;
+    return checkState(in, out, nThread);
 }
 
-FORCE_INLINE bool kernel(uint32_t chunk, uint32_t xorMask, const uint32_t* buffer, uint32_t index) {
-    computeHash(&hash, chunk, xorMask);
-    ENTRY* found = &dictionary[hash];
+FORCE_INLINE bool kernel(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, const byte nThread) {
+    computeHash(&hash/*[nThread]*/, chunk, xorMask);
+    ENTRY* found = &dictionary[hash/*[nThread]*/]/*[nThread]*/;
     if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
         if(chunk ^ buffer[*(uint32_t*)found & 0xFFFFFF]) {
-            if(updateEntry(found, chunk, index) ^ 0x1)
+            if(updateEntry(in, out, found, chunk, index, nThread) ^ 0x1)
                 return FALSE;
         } else {
-            writeSignature();
-            chunks[state++] = (uint16_t)hash;
-            if(checkState() ^ 0x1)
+            writeSignature(nThread);
+            chunks[state/*[nThread]*/++]/*[nThread]*/ = (uint16_t)hash/*[nThread]*/;
+            if(checkState(in, out, nThread) ^ 0x1)
                 return FALSE;
         }
     } else {
-        if(updateEntry(found, chunk, index) ^ 0x1)
+        if(updateEntry(in, out, found, chunk, index, nThread) ^ 0x1)
             return FALSE;
     }
     return TRUE;
 }
 
-FORCE_INLINE bool hashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize, const uint32_t xorMask) {
-    prepareWorkspace(_inBuffer, _inSize, _outBuffer, _outSize);
+FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t xorMask, const byte nThread) {
+    reset(nThread);
+    resetDictionary(nThread);
     
-    reset();
-    resetDictionary();
-    
-    const uint32_t* intInBuffer = (const uint32_t*)inBuffer;
-    const uint32_t intInSize = inSize >> 2;
+    const uint32_t* intInBuffer = (const uint32_t*)in->pointer;
+    const uint32_t intInSize = in->size >> 2;
     
     for(uint32_t i = 0; i < intInSize; i ++)
-        if(kernel(intInBuffer[i], xorMask, intInBuffer, i) ^ 0x1)
+        if(kernel(in, out, intInBuffer[i], xorMask, intInBuffer, i, nThread) ^ 0x1)
             return FALSE;
     
-    flush();
+    flush(in, out, nThread);
     
-    const uint32_t remaining = inSize - inPosition;
+    const uint32_t remaining = in->size - in->position;
     for(uint32_t i = 0; i < remaining; i ++) {
-        if(outPosition < outSize - 1)
-            outBuffer[outPosition ++] = inBuffer[inPosition ++];
+        if(out->position < out->size - 1)
+            out->pointer[out->position ++] = in->pointer[in->position ++];
         else
             return FALSE;
     }
     
+    return TRUE;
+}
+
+FORCE_INLINE bool hashDecode(byte* a, uint32_t b, const uint32_t c) {
+    /*reset();
+    resetDictionary();
+    
+    uint32_t resultingSize = *(uint32_t*)_inBuffer;
+    //if(resultingSize > outSize)
+    //    routBuffer = realloc;
+    prepareWorkspace(_inBuffer, _inSize, writeBuffer, resultingSize);
+    
+    
+    fread((byte*)finalSize, sizeof(byte), 4, inFile);
+    
+    uint32_t totalWritten = 0;
+    
+    while(totalWritten < finalSize) {
+        fread((byte*)finalSize, sizeof(byte), 4, inFile);
+        uint64_t signature = *(uint64_t*) _inBuffer;
+    }
+    
+    while(ftell(outFile) < limit) {
+        uint64_t signature = *(uint64_t*) _inBuffer;
+        for (uint32_t i = 0; i < 64; i ++) {
+            bool mode = (signature >> i) & 0x1;
+            switch(mode) {
+                case FALSE:
+                    fwrite((_inBuffer + inPosition), sizeof(byte), 4, outFile);
+                    //inPosition
+                    break;
+            }
+        }
+    }*/
     return TRUE;
 }

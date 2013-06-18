@@ -1,31 +1,24 @@
 /*
- * Copyright (c) 2013, Guillaume Voirin
+ * Copyright (c) 2013, Guillaume Voirin (gvoirin@centaurean.com)
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Centaurean nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
+ * This software is dual-licensed: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Centaurean BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Sharc
- * www.centaurean.com
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Alternatively, you can license this software under a commercial
+ * license, as set out in licenses/commercial.txt.
+ *
+ * Centaurean SHARC
+ * www.centaurean.com/sharc
  *
  * 01/06/13 17:27
  */
@@ -35,12 +28,15 @@
 
 #include "cipher.h"
 
+#include <stdio.h>
+
 #define HASH_BITS                   16
 #define HASH_OFFSET_BASIS           2166115717	//14695981039346656037//
 #define HASH_PRIME                  16777619	//1099511628211//
 
 #define MAX_BUFFER_REFERENCES       (1 << 24) // 3 bytes, = ENTRY offset size
 #define PREFERRED_BUFFER_SIZE       MAX_BUFFER_REFERENCES >> 2 // Has to be < to MAX_BUFFER_REFERENCES << 2
+#define MAX_BUFFER_SIZE             PREFERRED_BUFFER_SIZE
 
 #pragma pack(push)
 #pragma pack(4)
@@ -50,20 +46,22 @@ typedef struct {
 } ENTRY;
 #pragma pack(pop)
 
-ENTRY dictionary[1 << HASH_BITS];
-uint64_t signature;
-byte state;
-uint32_t chunks[64];
-uint32_t hash;
+ENTRY dictionary[1 << HASH_BITS]/*[MAX_PARALLELISM]*/;
+uint64_t signature/*[MAX_PARALLELISM]*/;
+byte state/*[MAX_PARALLELISM]*/;
+uint32_t chunks[64]/*[MAX_PARALLELISM]*/;
+uint32_t hash/*[MAX_PARALLELISM]*/;
 
-void writeSignature();
-bool flush();
-void reset();
-void resetDictionary();
-bool checkState();
+void writeSignature(const byte);
+bool flush(BYTE_BUFFER*, BYTE_BUFFER*, const byte);
+void reset(const byte);
+void resetDictionary(const byte);
+bool checkState(BYTE_BUFFER*, BYTE_BUFFER*, const byte);
 void computeHash(uint32_t*, const uint32_t, const uint32_t);
-bool updateEntry(ENTRY*, const uint32_t, const uint32_t);
-bool kernel(uint32_t, uint32_t, const uint32_t*, uint32_t);
-bool hashEncode(byte*, uint32_t, byte*, uint32_t, const uint32_t);
+bool updateEntry(BYTE_BUFFER*, BYTE_BUFFER*, ENTRY*, const uint32_t, const uint32_t, const byte);
+bool kernel(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t, const uint32_t, const uint32_t*, const uint32_t, const byte);
+
+bool hashEncode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t, const byte);
+//bool hashDecode(byte*, uint32_t, const uint32_t);
 
 #endif
