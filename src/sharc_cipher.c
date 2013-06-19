@@ -49,7 +49,7 @@ FORCE_INLINE byte sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte mode
 FORCE_INLINE bool sharcDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte mode) {
     switch(mode) {
         case MODE_SINGLE_PASS:
-            return TRUE;//xorHashDecode(inFile, outFile, limit);
+            return xorHashDecode(in, out);
         case MODE_DUAL_PASS:
             return FALSE;
         default:

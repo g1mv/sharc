@@ -25,10 +25,16 @@
 FORCE_INLINE BLOCK_HEADER createBlockHeader(const byte mode, const uint32_t nextBlock) {
     BLOCK_HEADER blockHeader;
     blockHeader.mode = mode;
-    *(uint32_t*)blockHeader.nextBlock = nextBlock;
+    blockHeader.nextBlock = nextBlock;
     return blockHeader;
 }
 
 FORCE_INLINE BLOCK_HEADER readBlockHeader(byte* buffer, const uint32_t position) {
     return *(BLOCK_HEADER*)(buffer + position);
+}
+
+FORCE_INLINE BLOCK_HEADER readBlockHeaderFromFile(FILE* inFile) {
+    BLOCK_HEADER blockHeader;
+    fread(&blockHeader, sizeof(BLOCK_HEADER), 1, inFile);
+    return blockHeader;
 }

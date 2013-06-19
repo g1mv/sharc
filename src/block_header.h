@@ -31,10 +31,11 @@
 
 typedef struct {
     byte mode;
-    byte nextBlock[4];
+    uint32_t nextBlock;
 } BLOCK_HEADER;
 
 BLOCK_HEADER createBlockHeader(const byte, const uint32_t);
 BLOCK_HEADER readBlockHeader(byte*, const uint32_t);
+BLOCK_HEADER readBlockHeaderFromFile(FILE* inFile);
 
 #endif

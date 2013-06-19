@@ -33,12 +33,12 @@ FORCE_INLINE FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat
     fileHeader.version[0] = MAJOR_VERSION;
     fileHeader.version[1] = MINOR_VERSION;
     fileHeader.version[2] = REVISION;
-    *(uint64_t*)fileHeader.originalFileSize = (uint64_t)fileAttributes.st_size;
-    *(uint32_t*)fileHeader.bufferSize = (uint32_t)bufferSize;
-    *(uint16_t*)fileHeader.fileMode = (uint16_t)fileAttributes.st_mode;
-    *(uint64_t*)fileHeader.fileCreated = (uint64_t)gmtime(&(fileAttributes.st_ctime));
-    *(uint64_t*)fileHeader.fileAccessed = (uint64_t)gmtime(&(fileAttributes.st_atime));
-    *(uint64_t*)fileHeader.fileModified = (uint64_t)gmtime(&(fileAttributes.st_mtime));
+    fileHeader.originalFileSize = (uint64_t)fileAttributes.st_size;
+    fileHeader.bufferSize = (uint32_t)bufferSize;
+    fileHeader.fileMode = (uint16_t)fileAttributes.st_mode;
+    fileHeader.fileCreated = (uint64_t)gmtime(&(fileAttributes.st_ctime));
+    fileHeader.fileAccessed = (uint64_t)gmtime(&(fileAttributes.st_atime));
+    fileHeader.fileModified = (uint64_t)gmtime(&(fileAttributes.st_mtime));
     return fileHeader;
 }
 

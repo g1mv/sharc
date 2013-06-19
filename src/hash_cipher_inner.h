@@ -53,6 +53,6 @@ bool updateEntry(BYTE_BUFFER*, BYTE_BUFFER*, ENTRY*, const uint32_t, const uint3
 bool kernel(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t, const uint32_t, const uint32_t*, const uint32_t, ENTRY*, uint32_t*, uint64_t*, byte*, uint32_t*);
 
 bool hashEncode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t);
-//bool hashDecode(byte*, uint32_t, const uint32_t);
+bool hashDecode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t);
 
 #endif

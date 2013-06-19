@@ -124,36 +124,36 @@ FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     return TRUE;
 }
 
-FORCE_INLINE bool hashDecode(byte* a, uint32_t b, const uint32_t c) {
-    /*reset();
-     resetDictionary();
-     
-     uint32_t resultingSize = *(uint32_t*)_inBuffer;
-     //if(resultingSize > outSize)
-     //    routBuffer = realloc;
-     prepareWorkspace(_inBuffer, _inSize, writeBuffer, resultingSize);
-     
-     
-     fread((byte*)finalSize, sizeof(byte), 4, inFile);
-     
-     uint32_t totalWritten = 0;
-     
-     while(totalWritten < finalSize) {
-     fread((byte*)finalSize, sizeof(byte), 4, inFile);
-     uint64_t signature = *(uint64_t*) _inBuffer;
-     }
-     
-     while(ftell(outFile) < limit) {
-     uint64_t signature = *(uint64_t*) _inBuffer;
-     for (uint32_t i = 0; i < 64; i ++) {
-     bool mode = (signature >> i) & 0x1;
-     switch(mode) {
-     case FALSE:
-     fwrite((_inBuffer + inPosition), sizeof(byte), 4, outFile);
-     //inPosition
-     break;
-     }
-     }
-     }*/
+FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t xorMask) {
+    ENTRY dictionary[1 << HASH_BITS];
+    uint32_t hash;
+    
+    resetDictionary(dictionary);
+
+    while(in->position < in->size - 1) {
+        uint64_t signature = *(uint64_t*)(in->pointer + in->position);
+        in->position += 8;
+        for (uint32_t i = 0; i < 64; i ++) {
+            bool mode = (signature >> i) & 0x1;
+            uint32_t chunk;
+            ENTRY* found;
+            switch(mode) {
+                case FALSE:
+                    chunk = *(uint32_t*)(in->pointer + in->position);
+                    computeHash(&hash, chunk, xorMask);
+                    *(uint32_t*)&dictionary[hash] = ((out->position >> 2) & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
+                    *(uint32_t*)(out->pointer + out->position) = chunk;
+                    in->position += 4;
+                    out->position += 4;
+                    break;
+                case TRUE:
+                    found = &dictionary[*(uint16_t*)(in->pointer + in->position)];
+                    *(uint32_t*)(out->pointer + out->position) = *(uint32_t*)(out->pointer + (*(uint32_t*)found & 0xFFFFFF));
+                    in->position += 2;
+                    out->position += 4;
+                    break;
+            }
+        }
+    }
     return TRUE;
 }

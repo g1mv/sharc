@@ -81,24 +81,27 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 }
 
 FORCE_INLINE void decompress(char* inFileName) {
-    char outFileName[strlen(inFileName) - 3];
-    
-    outFileName[0] = '\0';
-    strcat(outFileName, inFileName);
+    char* outFileName = "test.dec";
     
     FILE* inFile = checkOpenFile(inFileName, "rb");
     FILE* outFile = checkOpenFile(outFileName, "wb+");
     
-    uint32_t bytesRead;
-    byte mode;
+    //uint32_t bytesRead;
+    //byte mode;
+    const byte nThread = 0;
     
     time_t chrono = clock();
-    /*uint64_t decompressedSize = processFileHeader(inFile);
+    FILE_HEADER fileHeader = readFileHeader(inFile);
+    BYTE_BUFFER in = createByteBuffer(readBuffer[nThread], 0, 0);
+    BYTE_BUFFER out = createByteBuffer(writeBuffer[nThread], 0, fileHeader.bufferSize);
+    
     while(!feof(inFile)) {
-        mode = processBlockHeader(inFile);
-        if(sharcDecode(inFile, outFile, decompressedSize, mode) ^ 0x1)
-            error();
-    }*/
+        BLOCK_HEADER blockHeader = readBlockHeaderFromFile(inFile);
+        in.size = (uint32_t)fread(readBuffer[nThread], sizeof(byte), blockHeader.nextBlock, inFile);
+        if(sharcDecode(&in, &out, blockHeader.mode) ^ 0x1)
+            error("Unable to decompress !");
+        fwrite(out.pointer, sizeof(byte), out.position, outFile);
+    }
     chrono = (1000 * (clock() - chrono)) / CLOCKS_PER_SEC;
     
     uint64_t totalRead = ftell(inFile);

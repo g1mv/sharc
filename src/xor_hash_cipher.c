@@ -22,9 +22,9 @@
 #include "xor_hash_cipher.h"
 
 FORCE_INLINE bool xorHashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out) {
-    return hashEncode(in, out, XOR_MASK/*, nThread*/);
+    return hashEncode(in, out, XOR_MASK);
 }
 
-FORCE_INLINE bool xorHashDecode(FILE* inFile, FILE* outFile, uint64_t limit) {
-    return TRUE;//hashDecode(inFile, outFile, XOR_MASK, limit);
+FORCE_INLINE bool xorHashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out) {
+    return hashDecode(in, out, XOR_MASK);
 }

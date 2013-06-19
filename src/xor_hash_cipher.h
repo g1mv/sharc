@@ -30,6 +30,6 @@
 #define XOR_MASK    0xFF0000FF
 
 bool xorHashEncode(BYTE_BUFFER*, BYTE_BUFFER*);
-//bool xorHashDecode(FILE*, FILE*, const uint64_t);
+bool xorHashDecode(BYTE_BUFFER*, BYTE_BUFFER*);
 
 #endif

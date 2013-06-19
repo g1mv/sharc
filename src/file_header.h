@@ -32,12 +32,12 @@
 typedef struct {
     byte name[5];
     byte version[3];
-    byte originalFileSize[8];
-    byte bufferSize[4];
-    byte fileMode[2];
-    byte fileCreated[8];
-    byte fileAccessed[8];
-    byte fileModified[8];
+    uint64_t originalFileSize;
+    uint32_t bufferSize;
+    uint16_t fileMode;
+    uint64_t fileCreated;
+    uint64_t fileAccessed;
+    uint64_t fileModified;
 } FILE_HEADER;
 
 FILE_HEADER createFileHeader(const uint32_t, struct stat);
