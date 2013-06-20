@@ -45,7 +45,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     
     BYTE_BUFFER in = createByteBuffer(readBuffer[nThread], 0, blockSize);
     //printf("%i,%i\n", sizeof(FILE_HEADER), sizeof(BLOCK_HEADER));
-    BYTE_BUFFER out = createByteBuffer(writeBuffer[nThread], 0, blockSize - sizeof(BLOCK_HEADER));
+    BYTE_BUFFER out = createByteBuffer(writeBuffer[nThread], 0, blockSize);
     
     while((in.size = (uint32_t)fread(readBuffer[nThread], sizeof(byte), blockSize, inFile)) > 0) {
         reachableMode = sharcEncode(&in, &out, attemptMode);
@@ -59,7 +59,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
         fwrite(&blockHeader, sizeof(BLOCK_HEADER), 1, outFile);
         
         if(reachableMode ^ MODE_COPY)
-            fwrite(writeBuffer, sizeof(byte), sizeof(BLOCK_HEADER) + out.position, outFile);
+            fwrite(writeBuffer, sizeof(byte), out.position, outFile);
         else
             fwrite(readBuffer, sizeof(byte), in.size, outFile);
         
@@ -81,7 +81,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 }
 
 FORCE_INLINE void decompress(char* inFileName) {
-    char* outFileName = "test.dec";
+    char* outFileName = "/Users/guillaume/test.dec";
     
     FILE* inFile = checkOpenFile(inFileName, "rb");
     FILE* outFile = checkOpenFile(outFileName, "wb+");
@@ -95,12 +95,22 @@ FORCE_INLINE void decompress(char* inFileName) {
     BYTE_BUFFER in = createByteBuffer(readBuffer[nThread], 0, 0);
     BYTE_BUFFER out = createByteBuffer(writeBuffer[nThread], 0, fileHeader.bufferSize);
     
-    while(!feof(inFile)) {
-        BLOCK_HEADER blockHeader = readBlockHeaderFromFile(inFile);
+    BLOCK_HEADER blockHeader;
+    while(readBlockHeaderFromFile(&blockHeader, inFile) > 0) {
         in.size = (uint32_t)fread(readBuffer[nThread], sizeof(byte), blockHeader.nextBlock, inFile);
-        if(sharcDecode(&in, &out, blockHeader.mode) ^ 0x1)
-            error("Unable to decompress !");
-        fwrite(out.pointer, sizeof(byte), out.position, outFile);
+        switch(blockHeader.mode) {
+            case MODE_COPY:
+                fwrite(in.pointer, sizeof(byte), in.size, outFile);
+                break;
+            default:
+                if(sharcDecode(&in, &out, blockHeader.mode) ^ 0x1)
+                    error("Unable to decompress !");
+                fwrite(out.pointer, sizeof(byte), out.position, outFile);
+                break;
+        }
+        
+        rewindByteBuffer(&in);
+        rewindByteBuffer(&out);
     }
     chrono = (1000 * (clock() - chrono)) / CLOCKS_PER_SEC;
     

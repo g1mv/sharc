@@ -130,7 +130,7 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     
     resetDictionary(dictionary);
 
-    while(in->position < in->size - 1) {
+    while(in->position < in->size - 128 - 8 - 1) {
         uint64_t signature = *(uint64_t*)(in->pointer + in->position);
         in->position += 8;
         for (uint32_t i = 0; i < 64; i ++) {
@@ -148,7 +148,7 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
                     break;
                 case TRUE:
                     found = &dictionary[*(uint16_t*)(in->pointer + in->position)];
-                    *(uint32_t*)(out->pointer + out->position) = *(uint32_t*)(out->pointer + (*(uint32_t*)found & 0xFFFFFF));
+                    *(uint32_t*)(out->pointer + out->position) = *(uint32_t*)(out->pointer + ((*(uint32_t*)found & 0xFFFFFF) << 2));
                     in->position += 2;
                     out->position += 4;
                     break;

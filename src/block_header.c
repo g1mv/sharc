@@ -33,8 +33,6 @@ FORCE_INLINE BLOCK_HEADER readBlockHeader(byte* buffer, const uint32_t position)
     return *(BLOCK_HEADER*)(buffer + position);
 }
 
-FORCE_INLINE BLOCK_HEADER readBlockHeaderFromFile(FILE* inFile) {
-    BLOCK_HEADER blockHeader;
-    fread(&blockHeader, sizeof(BLOCK_HEADER), 1, inFile);
-    return blockHeader;
+FORCE_INLINE size_t readBlockHeaderFromFile(BLOCK_HEADER* blockHeader, FILE* inFile) {
+    return fread(blockHeader, sizeof(BLOCK_HEADER), 1, inFile);
 }
