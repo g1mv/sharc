@@ -130,7 +130,7 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     
     resetDictionary(dictionary);
 
-    while(in->position < in->size - 128 - 8 - 1) {
+    while(in->position < in->size - /*128 - 8*/ - 1 && out->position < out->size - 1) {
         uint64_t signature = *(uint64_t*)(in->pointer + in->position);
         in->position += 8;
         for (uint32_t i = 0; i < 64; i ++) {
