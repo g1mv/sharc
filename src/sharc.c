@@ -81,7 +81,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 }
 
 FORCE_INLINE void decompress(char* inFileName) {
-    char* outFileName = "/Users/guillaume/test.dec";
+    char* outFileName = "test.dec";
     
     FILE* inFile = checkOpenFile(inFileName, "rb");
     FILE* outFile = checkOpenFile(outFileName, "wb+");

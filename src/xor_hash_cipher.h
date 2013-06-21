@@ -23,7 +23,7 @@
 #ifndef XOR_HASH_CIPHER_H
 #define XOR_HASH_CIPHER_H
 
-#include "hash_cipher_inner.h"
+#include "hash_cipher.h"
 
 #include <stdio.h>
 

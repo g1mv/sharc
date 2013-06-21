@@ -24,49 +24,36 @@
 
 #include "hash_cipher.h"
 
-FORCE_INLINE void writeSignature(const byte nThread) {
-    signature/*[nThread]*/ |= ((uint64_t)1) << state/*[nThread]*/;
+FORCE_INLINE void writeSignature(uint64_t* signature, const byte* state) {
+    *signature |= ((uint64_t)1) << *state;
 }
 
-FORCE_INLINE bool flush(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte nThread) {
-    if((out->position + 8 + 256) > out->size)
-        return FALSE;
-    *(uint64_t*)(out->pointer + out->position) = signature/*[nThread]*/;
+FORCE_INLINE void flush(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint64_t* signature, const byte* state, const uint32_t* signaturePointer) {
+    *(uint64_t*)(out->pointer + *signaturePointer) = *signature;
+    in->position += (*state << 2);
+}
+
+FORCE_INLINE bool reset(BYTE_BUFFER* out, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
+    *signaturePointer = out->position;
     out->position += 8;
-#pragma unroll(64)
-    for(byte b = 0; b < state/*[nThread]*/; b ++) {
-        uint32_t chunk = chunks[b]/*[nThread]*/;
-        switch((signature/*[nThread]*/ >> b) & 0x1) {
-            case 0:
-                *(uint32_t*)(out->pointer + out->position) = chunk;
-                out->position += 4;
-                break;
-            case 1:
-                *(uint16_t*)(out->pointer + out->position) = chunk;
-                out->position += 2;
-                break;
-        }
-    }
-    in->position += (state/*[nThread]*/ << 2);
+    if((out->position + 256) > out->size)
+        return FALSE;
+    *state = 0;
+    *signature = 0;
     return TRUE;
 }
 
-FORCE_INLINE void reset(const byte nThread) {
-    state/*[nThread]*/ = 0;
-    signature/*[nThread]*/ = 0;
+FORCE_INLINE void resetDictionary(ENTRY* dictionary) {
+    for(uint32_t i = 0; i < (1 << HASH_BITS); i ++)
+        *(uint32_t*)&dictionary[i] = 0;
 }
 
-FORCE_INLINE void resetDictionary(const byte nThread) {
-    for(unsigned int i = 0; i < (1 << HASH_BITS); i ++)
-        *(uint32_t*)&dictionary[i]/*[nThread]*/ = 0;
-}
-
-FORCE_INLINE bool checkState(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte nThread) {
-    switch(state/*[nThread]*/) {
+FORCE_INLINE bool checkState(BYTE_BUFFER* in, BYTE_BUFFER* out, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
+    switch(*state) {
         case 64:
-            if(!flush(in, out, nThread))
+            flush(in, out, signature, state, signaturePointer);
+            if(reset(out, signature, state, signaturePointer) ^ 0x1)
                 return FALSE;
-            reset(nThread);
             break;
     }
     return TRUE;
@@ -79,44 +66,54 @@ FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value, const uint32
     *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
 }
 
-FORCE_INLINE bool updateEntry(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* entry, const uint32_t chunk, const uint32_t index, const byte nThread) {
+FORCE_INLINE bool updateEntry(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* entry, const uint32_t chunk, const uint32_t index, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
 	*(uint32_t*)entry = (index & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
-	chunks[state/*[nThread]*/++]/*[nThread]*/ = chunk;
-    return checkState(in, out, nThread);
+    *(uint32_t*)(out->pointer + out->position) = chunk;
+    out->position += 4;
+    *state = *state + 1;
+    return checkState(in, out, signature, state, signaturePointer);
 }
 
-FORCE_INLINE bool kernel(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, const byte nThread) {
-    computeHash(&hash/*[nThread]*/, chunk, xorMask);
-    ENTRY* found = &dictionary[hash/*[nThread]*/]/*[nThread]*/;
+FORCE_INLINE bool kernelEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, ENTRY* dictionary, uint32_t* hash, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
+    computeHash(hash, chunk, xorMask);
+    ENTRY* found = &dictionary[*hash];
     if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
         if(chunk ^ buffer[*(uint32_t*)found & 0xFFFFFF]) {
-            if(updateEntry(in, out, found, chunk, index, nThread) ^ 0x1)
+            if(updateEntry(in, out, found, chunk, index, signature, state, signaturePointer) ^ 0x1)
                 return FALSE;
         } else {
-            writeSignature(nThread);
-            chunks[state/*[nThread]*/++]/*[nThread]*/ = (uint16_t)hash/*[nThread]*/;
-            if(checkState(in, out, nThread) ^ 0x1)
+            writeSignature(signature, state);
+            *(uint16_t*)(out->pointer + out->position) = (uint16_t)*hash;
+            out->position += 2;
+            *state = *state + 1;
+            if(checkState(in, out, signature, state, signaturePointer) ^ 0x1)
                 return FALSE;
         }
     } else {
-        if(updateEntry(in, out, found, chunk, index, nThread) ^ 0x1)
+        if(updateEntry(in, out, found, chunk, index, signature, state, signaturePointer) ^ 0x1)
             return FALSE;
     }
     return TRUE;
 }
 
-FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t xorMask, const byte nThread) {
-    reset(nThread);
-    resetDictionary(nThread);
+FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t xorMask) {
+    ENTRY dictionary[1 << HASH_BITS];
+    uint64_t signature;
+    uint32_t signaturePointer;
+    byte state;
+    uint32_t hash;
+    
+    reset(out, &signature, &state, &signaturePointer);
+    resetDictionary(dictionary);
     
     const uint32_t* intInBuffer = (const uint32_t*)in->pointer;
     const uint32_t intInSize = in->size >> 2;
     
     for(uint32_t i = 0; i < intInSize; i ++)
-        if(kernel(in, out, intInBuffer[i], xorMask, intInBuffer, i, nThread) ^ 0x1)
+        if(kernelEncode(in, out, intInBuffer[i], xorMask, intInBuffer, i, dictionary, &hash, &signature, &state, &signaturePointer) ^ 0x1)
             return FALSE;
     
-    flush(in, out, nThread);
+    flush(in, out, &signature, &state, &signaturePointer);
     
     const uint32_t remaining = in->size - in->position;
     for(uint32_t i = 0; i < remaining; i ++) {
@@ -129,36 +126,44 @@ FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     return TRUE;
 }
 
-FORCE_INLINE bool hashDecode(byte* a, uint32_t b, const uint32_t c) {
-    /*reset();
-    resetDictionary();
-    
-    uint32_t resultingSize = *(uint32_t*)_inBuffer;
-    //if(resultingSize > outSize)
-    //    routBuffer = realloc;
-    prepareWorkspace(_inBuffer, _inSize, writeBuffer, resultingSize);
-    
-    
-    fread((byte*)finalSize, sizeof(byte), 4, inFile);
-    
-    uint32_t totalWritten = 0;
-    
-    while(totalWritten < finalSize) {
-        fread((byte*)finalSize, sizeof(byte), 4, inFile);
-        uint64_t signature = *(uint64_t*) _inBuffer;
+FORCE_INLINE void kernelDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* dictionary, const uint32_t xorMask, const bool mode) {
+    uint32_t hash;
+    uint32_t chunk;
+    ENTRY* found;
+    switch(mode) {
+        case FALSE:
+            chunk = *(uint32_t*)(in->pointer + in->position);
+            computeHash(&hash, chunk, xorMask);
+            *(uint32_t*)&dictionary[hash] = ((out->position >> 2) & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
+            *(uint32_t*)(out->pointer + out->position) = chunk;
+            in->position += 4;
+            out->position += 4;
+            break;
+        case TRUE:
+            found = &dictionary[*(uint16_t*)(in->pointer + in->position)];
+            *(uint32_t*)(out->pointer + out->position) = *(uint32_t*)(out->pointer + ((*(uint32_t*)found & 0xFFFFFF) << 2));
+            in->position += 2;
+            out->position += 4;
+            break;
     }
+}
+
+FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t xorMask) {
+    ENTRY dictionary[1 << HASH_BITS];
     
-    while(ftell(outFile) < limit) {
-        uint64_t signature = *(uint64_t*) _inBuffer;
-        for (uint32_t i = 0; i < 64; i ++) {
-            bool mode = (signature >> i) & 0x1;
-            switch(mode) {
-                case FALSE:
-                    fwrite((_inBuffer + inPosition), sizeof(byte), 4, outFile);
-                    //inPosition
-                    break;
-            }
-        }
-    }*/
+    resetDictionary(dictionary);
+    
+    while(in->position < in->size - 256 - 8/*128 - 8 - 1 && out->position < out->size - 1*/) {
+        uint64_t signature = *(uint64_t*)(in->pointer + in->position);
+        in->position += 8;
+        for (uint32_t i = 0; i < 64/* && in->position < in->size - 1*/; i ++)
+            kernelDecode(in, out, dictionary, xorMask, (signature >> i) & 0x1);
+    }
+    while(in->position < in->size - 1) {
+        uint64_t signature = *(uint64_t*)(in->pointer + in->position);
+        in->position += 8;
+        for (uint32_t i = 0; i < 64 && in->position < in->size - 1; i ++)
+            kernelDecode(in, out, dictionary, xorMask, (signature >> i) & 0x1);
+    }
     return TRUE;
 }

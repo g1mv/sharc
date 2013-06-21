@@ -37,16 +37,6 @@ typedef struct {
     uint32_t size;
 } UINT32_BUFFER;
 
-/*byte* inBuffer;
-uint32_t inSize;
-uint32_t inPosition;
-
-byte* outBuffer;
-uint32_t outSize;
-uint32_t outPosition;
-
-void prepareWorkspace(byte*, uint32_t, byte*, uint32_t);*/
-
 BYTE_BUFFER createByteBuffer(byte*, uint32_t, uint32_t);
 void rewindByteBuffer(BYTE_BUFFER*);
 
