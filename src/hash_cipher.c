@@ -33,10 +33,10 @@ FORCE_INLINE void flush(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint64_t* signa
     in->position += (*state << 2);
 }
 
-FORCE_INLINE bool reset(BYTE_BUFFER* out, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
+FORCE_INLINE bool reset(BYTE_BUFFER* in, BYTE_BUFFER* out, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
     *signaturePointer = out->position;
     out->position += 8;
-    if((out->position + 256) > out->size)
+    if((out->position + 256) > in->size)
         return FALSE;
     *state = 0;
     *signature = 0;
@@ -52,7 +52,7 @@ FORCE_INLINE bool checkState(BYTE_BUFFER* in, BYTE_BUFFER* out, uint64_t* signat
     switch(*state) {
         case 64:
             flush(in, out, signature, state, signaturePointer);
-            if(reset(out, signature, state, signaturePointer) ^ 0x1)
+            if(reset(in, out, signature, state, signaturePointer) ^ 0x1)
                 return FALSE;
             break;
     }
@@ -103,7 +103,7 @@ FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     byte state;
     uint32_t hash;
     
-    reset(out, &signature, &state, &signaturePointer);
+    reset(in, out, &signature, &state, &signaturePointer);
     resetDictionary(dictionary);
     
     const uint32_t* intInBuffer = (const uint32_t*)in->pointer;
@@ -153,7 +153,7 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     
     resetDictionary(dictionary);
     
-    while(in->position < in->size - 256 - 8/*128 - 8 - 1 && out->position < out->size - 1*/) {
+    while(in->position < in->size - 256 - 8 - 1/*128 - 8 - 1 && out->position < out->size - 1*/) {
         uint64_t signature = *(uint64_t*)(in->pointer + in->position);
         in->position += 8;
         for (uint32_t i = 0; i < 64/* && in->position < in->size - 1*/; i ++)
@@ -162,8 +162,20 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     while(in->position < in->size - 1) {
         uint64_t signature = *(uint64_t*)(in->pointer + in->position);
         in->position += 8;
-        for (uint32_t i = 0; i < 64 && in->position < in->size - 1; i ++)
+        byte i;
+        for (i = 0; i < 64 && in->position < in->size - 4 - 1; i ++)
             kernelDecode(in, out, dictionary, xorMask, (signature >> i) & 0x1);
+        
+        if(i < 63) {
+            if((signature >> (++i)) & 0x1) {
+                kernelDecode(in, out, dictionary, xorMask, TRUE);
+                out->pointer[out->position ++] = in->pointer[in->position ++];
+            } else {
+                const uint32_t remaining = in->size - in->position;
+                for(uint32_t i = 0; i < remaining; i ++)
+                    out->pointer[out->position ++] = in->pointer[in->position ++];
+            }
+        }
     }
     return TRUE;
 }

@@ -47,7 +47,7 @@ typedef struct {
 
 void writeSignature(uint64_t*, const byte*);
 void flush(BYTE_BUFFER*, BYTE_BUFFER*, const uint64_t*, const byte*, const uint32_t*);
-bool reset(BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
+bool reset(BYTE_BUFFER*, BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
 void resetDictionary(ENTRY*);
 bool checkState(BYTE_BUFFER*, BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
 void computeHash(uint32_t*, const uint32_t, const uint32_t);
