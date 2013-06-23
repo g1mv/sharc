@@ -150,6 +150,11 @@ FORCE_INLINE void kernelDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* diction
     out->position += 4;
 }
 
+FORCE_INLINE void copy(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t number) {
+    for(byte r = 0; r < number; r++)
+        out->pointer[out->position ++] = in->pointer[in->position ++];
+}
+
 FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t xorMask) {
     ENTRY dictionary[1 << HASH_BITS];
     
@@ -169,7 +174,20 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     while(in->size - in->position > 0)
         kernelDecode(in, out, dictionary, xorMask, (signature >> (i ++)) & 0x1);
     
-    // todo remaining bytes
+    const uint32_t remaining = in->size - in->position;
+    if(i & 0x40)
+        copy(in, out, remaining);
+    else {
+        if((signature >> i) & 0x1) {
+            if(remaining >= 2)
+                kernelDecode(in, out, dictionary, xorMask, (signature >> (i ++)) & 0x1);
+            else
+                error("Corrupted file !");
+            if(remaining == 3)
+                copy(in, out, 1);
+        } else
+            copy(in, out, remaining);
+    }
     
     return TRUE;
 }

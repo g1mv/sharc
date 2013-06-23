@@ -56,6 +56,7 @@ bool kernelEncode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t, const uint32_t, co
 void kernelDecode(BYTE_BUFFER*, BYTE_BUFFER*, ENTRY*, const uint32_t, const bool);
 
 bool hashEncode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t);
+void copy(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t);
 bool hashDecode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t);
 
 #endif
