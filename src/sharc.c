@@ -44,7 +44,6 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     fwrite(&fileHeader, sizeof(FILE_HEADER), 1, outFile);
     
     BYTE_BUFFER in = createByteBuffer(readBuffer[nThread], 0, blockSize);
-    //printf("%i,%i\n", sizeof(FILE_HEADER), sizeof(BLOCK_HEADER));
     BYTE_BUFFER out = createByteBuffer(writeBuffer[nThread], 0, blockSize);
     
     while((in.size = (uint32_t)fread(readBuffer[nThread], sizeof(byte), blockSize, inFile)) > 0) {
@@ -59,9 +58,9 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
         fwrite(&blockHeader, sizeof(BLOCK_HEADER), 1, outFile);
         
         if(reachableMode ^ MODE_COPY)
-            fwrite(writeBuffer, sizeof(byte), out.position, outFile);
+            fwrite(writeBuffer[nThread], sizeof(byte), out.position, outFile);
         else
-            fwrite(readBuffer, sizeof(byte), in.size, outFile);
+            fwrite(readBuffer[nThread], sizeof(byte), in.size, outFile);
         
         rewindByteBuffer(&in);
         rewindByteBuffer(&out);
@@ -78,7 +77,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     double speed = (1000.0 * totalRead) / (chrono * 1024.0 * 1024.0);
     printf("Compressed file %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
     printf("Ratio out / in = %g, Time = %ld ms, Speed = %f MB/s\n", ratio, chrono, speed);
-}
+} 
 
 FORCE_INLINE void decompress(char* inFileName) {
     char* outFileName = "test.dec";

@@ -58,7 +58,7 @@ FORCE_INLINE bool checkFileType(byte* fileHeader) {
 
 FORCE_INLINE FILE_HEADER readFileHeader(FILE* file) {
     FILE_HEADER fileHeader;
-    fread(&fileHeader, sizeof(fileHeader), 1, file);
+    fread(&fileHeader, sizeof(FILE_HEADER), 1, file);
     if(checkFileType((byte*)&fileHeader.name) ^ 0x1)
         error("Invalid file");
     return fileHeader;
