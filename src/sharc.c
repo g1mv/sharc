@@ -129,7 +129,7 @@ FORCE_INLINE void usage() {
     printf("Usage : sharc [OPTIONS]... [FILES]...\n")   ;
     printf("Superfast archiving of files.\n\n");
     printf("Available options :\n");
-    printf("  -c[LEVEL], --compress[=LEVEL]     compress files using LEVEL\n");
+    printf("  -c[LEVEL], --compress[=LEVEL]     compress files using LEVEL if specified (default)\n");
 	printf("                                    LEVEL can have the following values :\n");
 	printf("                                    0 = Fastest compression algorithm (default)\n");
 	printf("                                    1 = Better compression (dual pass), slightly slower\n");

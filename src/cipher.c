@@ -22,16 +22,6 @@
 
 #include "cipher.h"
 
-/*FORCE_INLINE void prepareWorkspace(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
-    inBuffer = _inBuffer;
-    inSize = _inSize;
-    inPosition = 0;
-    
-    outBuffer = _outBuffer;
-    outSize = _outSize;
-    outPosition = 0;
-}*/
-
 FORCE_INLINE BYTE_BUFFER createByteBuffer(byte* pointer, uint32_t position, uint32_t size) {
     BYTE_BUFFER byteBuffer;
     byteBuffer.pointer = pointer;
