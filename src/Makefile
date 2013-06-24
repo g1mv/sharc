@@ -1,103 +1,63 @@
 #
+# Centaurean SHARC
+# http://www.centaurean.com/sharc
+#
 # Copyright (c) 2013, Guillaume Voirin
 # All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#     * Neither the name of Centaurean nor the
-#       names of its contributors may be used to endorse or promote products
-#       derived from this software without specific prior written permission.
+# This software is dual-licensed: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by the Free Software Foundation. For the terms of this
+# license, see http://www.gnu.org/licenses/gpl.html
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL Centaurean BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# You are free to use this software under the terms of the GNU General
+# Public License, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
 #
-# Sharc
-# www.centaurean.com
+# Alternatively, you can license this library under a commercial
+# license, see http://www.centaurean.com/sharc/licensing for more
+# information.
 #
 # 01/06/13 17:27
 #
 
+TARGET = sharc
 
-# Build options
-OUTPUTNAME = sharc
-
-ifndef ARCH
-#make ARCH=32
-#make ARCH=64
-ARCH=64
-endif
-
-ifndef OPTIM
-# gcc -O option
-OPTIM=3
-endif
-
-#windows
+# Windows
 ifdef SystemRoot
-RM = del 
-CP = copy /y
-
-EXT = .exe
-EXEC=
+EXTENSION = .exe
 else
-#linux
-RM = rm -f
-CP = cp -f
-
-EXT=
-EXEC=./
+# Linux, OSX
+EXTENSION = 
 endif
 
-CFLAGS = -O$(OPTIM) -std=gnu99 -m$(ARCH) -Winline
-CC = gcc $(CFLAGS) $^ -o $@
+CC = gcc
+CFLAGS = -O3 -std=gnu99 -w
 
-SRC = sharc.c
+SRC = $(wildcard *.c)
+OBJ = block_header.o cipher.o direct_hash_cipher.o file_header.o globals.o hash_cipher.o sharc_cipher.o sharc.o xor_hash_cipher.o
+.PHONY: header footer
 
-TARGET = $(OUTPUTNAME)_$(ARCH)_$(OPTIM)$(EXT)
+all: header $(TARGET)$(EXTENSION) footer
 
-.DELETE_ON_ERROR:
-
-#Receipes
-
-all :
-
-# main full described name target
-$(TARGET) : $(SRC)
-	$(CC)
-
-# short target name
-$(OUTPUTNAME)$(EXT) : $(TARGET) 
-	$(CP) $< $@
-
-all :  $(OUTPUTNAME)$(EXT) 
-
-clean :
-	-$(RM) $(TARGET) $(OUTPUTNAME)$(EXT)
-
-unittest : $(TARGET) 
-	$(EXEC)$(TARGET) $(TEST)
-
-test:
-	$(MAKE) unittest ARCH=32 OPTIM=1 TEST=$(TEST)
-	$(MAKE) unittest ARCH=32 OPTIM=2 TEST=$(TEST)
-	$(MAKE) unittest ARCH=32 OPTIM=3 TEST=$(TEST)
-	$(MAKE) unittest ARCH=64 OPTIM=1 TEST=$(TEST)
-	$(MAKE) unittest ARCH=64 OPTIM=2 TEST=$(TEST)
-	$(MAKE) unittest ARCH=64 OPTIM=3 TEST=$(TEST)
-
-cleantest :
-	-$(RM) sharc sharc_32_1 sharc_32_2 sharc_32_3 sharc_64_1 sharc_64_2 sharc_64_3
-
+header:
+	@echo Building SHARC ...
+	
+footer:
+	@echo Build completed successfully.
+	
+$(TARGET)$(EXTENSION): $(OBJ)
+	@echo Linking SHARC ...
+	@echo 	$^ ^-^> $(TARGET)$(EXTENSION)
+	@$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
+	
+%.o: %.c
+	@echo 	$^ ^-^> $@
+	@$(CC) -c $(CFLAGS) $< -o $@
+	
+clean:
+	@echo Cleaning build directory...
+	@rm -f $(OBJ)
+#	@rm -f $(TARGET)$(EXTENSION)
+	@echo Done.
