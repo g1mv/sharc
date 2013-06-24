@@ -1,5 +1,5 @@
 #
-# Centaurean SHARC
+# Centaurean Sharc
 # http://www.centaurean.com/sharc
 #
 # Copyright (c) 2013, Guillaume Voirin
@@ -42,13 +42,13 @@ OBJ = block_header.o cipher.o direct_hash_cipher.o file_header.o globals.o hash_
 all: header $(TARGET)$(EXTENSION) footer
 
 header:
-	@echo Building SHARC ...
+	@echo Compiling sharc ...
 	
 footer:
 	@echo Build completed successfully.
 	
 $(TARGET)$(EXTENSION): $(OBJ)
-	@echo Linking SHARC ...
+	@echo Linking sharc ...
 	@echo 	$^ ^-^> $(TARGET)$(EXTENSION)
 	@$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
 	

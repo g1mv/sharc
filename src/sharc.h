@@ -40,6 +40,7 @@ byte writeBuffer[MAX_BUFFER_SIZE][MAX_PARALLELISM];
 
 FILE* checkOpenFile(const char*, const char*);
 void compress(const char*, const byte, const uint32_t);
-//void decompress(char*);
+void decompress(const char*);
+void usage();
 
 #endif

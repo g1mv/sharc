@@ -1,5 +1,5 @@
 /*
- * Centaurean SHARC
+ * Centaurean Sharc
  * http://www.centaurean.com/sharc
  *
  * Copyright (c) 2013, Guillaume Voirin

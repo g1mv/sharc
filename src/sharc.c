@@ -79,7 +79,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     printf("Ratio out / in = %g, Time = %ld ms, Speed = %f MB/s\n", ratio, chrono, speed);
 } 
 
-FORCE_INLINE void decompress(char* inFileName) {
+FORCE_INLINE void decompress(const char* inFileName) {
     char* outFileName = "test.dec";
     
     FILE* inFile = checkOpenFile(inFileName, "rb");
@@ -124,9 +124,22 @@ FORCE_INLINE void decompress(char* inFileName) {
     printf("Time = %ld ms, Speed = %f MB/s\n", chrono, speed);
 }
 
+FORCE_INLINE void usage() {
+    printf("Centaurean Sharc %i.%i.%i - Copyright (C) 2013 Guillaume Voirin\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
+    printf("Usage : sharc [OPTIONS]... [FILES]...\n")   ;
+    printf("Superfast archiving of files.\n\n");
+    printf("Available options :\n");
+    printf("  -c[LEVEL], --compress[=LEVEL]     compress files using LEVEL\n");
+	printf("                                    LEVEL can have the following values :\n");
+	printf("                                    0 = Fastest compression algorithm (default)\n");
+	printf("                                    1 = Better compression (dual pass), slightly slower\n");
+	printf("  -d, --decompress                  decompress files");
+    exit(0);
+}
+
 int main(int argc, char *argv[]) {
     if(argc <= 1)
-		exit(0);
+		usage();
 
     byte action = ACTION_COMPRESS;
 	byte mode = MODE_SINGLE_PASS;
@@ -137,7 +150,7 @@ int main(int argc, char *argv[]) {
             case '-':
                 argLength = strlen(argv[i]);
                 if(argLength < 2)
-                    break;
+                    usage();
                 switch(argv[i][1]) {
                     case 'c':
                         if(argLength == 2) {
@@ -145,12 +158,28 @@ int main(int argc, char *argv[]) {
                             break;
                         }
                         if(argLength != 3)
-                            break;
+                            usage();
                         mode = argv[i][2] - '0';
                         break;
                     case 'd':
                         action = ACTION_DECOMPRESS;
                         break;
+					case '-':
+						if(argLength < 3)
+							usage();
+						switch(argv[i][2]) {
+							case 'c':
+								if(argLength != 12)
+									usage();
+								mode = argv[i][11] - '0';
+								break;
+							case 'd':
+								action = ACTION_DECOMPRESS;
+								break;
+							default:
+								usage();
+						}
+						break;
                 }
                 break;
             default:
