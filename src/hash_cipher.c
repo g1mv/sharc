@@ -150,7 +150,7 @@ FORCE_INLINE void kernelDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* diction
     out->position += 4;
 }
 
-FORCE_INLINE void copy(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t number) {
+FORCE_INLINE void byteCopy(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t number) {
     for(byte r = 0; r < number; r++)
         out->pointer[out->position ++] = in->pointer[in->position ++];
 }
@@ -160,33 +160,37 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     
     resetDictionary(dictionary);
     
-    while(in->position < in->size - 16 - 256) {
-        uint64_t signature = *(uint64_t*)(in->pointer + in->position);
+    uint64_t signature;
+    byte i;
+    
+    while(in->position < in->size - 10 - 8 - 256) {
+        signature = *(uint64_t*)(in->pointer + in->position);
         in->position += 8;
-        for (byte i = 0; i < 64; i ++)
+        for (i = 0; i < 0x40; i ++)
             kernelDecode(in, out, dictionary, xorMask, (signature >> i) & 0x1);
     }
-    
-    uint64_t signature = *(uint64_t*)(in->pointer + in->position);
-    in->position += 8;
-    
-    byte i = 0;
-    while(in->size - in->position > 0)
-        kernelDecode(in, out, dictionary, xorMask, (signature >> (i ++)) & 0x1);
+
+    do {
+        signature = *(uint64_t*)(in->pointer + in->position);
+        in->position += 8;
+        i = 0;
+        while((in->size - in->position) & 0xFFFFFFFC && i < 0x40)
+            kernelDecode(in, out, dictionary, xorMask, (signature >> (i ++)) & 0x1);
+    } while(in->position < in->size - 10);
     
     const uint32_t remaining = in->size - in->position;
     if(i & 0x40)
-        copy(in, out, remaining);
+        byteCopy(in, out, remaining);
     else {
         if((signature >> i) & 0x1) {
-            if(remaining >= 2)
-                kernelDecode(in, out, dictionary, xorMask, (signature >> (i ++)) & 0x1);
+            if(remaining & 0x2)
+                kernelDecode(in, out, dictionary, xorMask, TRUE);
             else
                 error("Corrupted file !");
-            if(remaining == 3)
-                copy(in, out, 1);
+            if(remaining == 0x3)
+                byteCopy(in, out, 1);
         } else
-            copy(in, out, remaining);
+            byteCopy(in, out, remaining);
     }
     
     return TRUE;
