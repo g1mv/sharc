@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 
@@ -58,6 +59,6 @@ typedef uint8_t byte;
 typedef uint8_t bool;
 
 void error(const char*);
-FILE* checkOpenFile(const char*, const char*);
+FILE* checkOpenFile(const char*, const char*, bool);
 
 #endif

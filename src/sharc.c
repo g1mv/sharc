@@ -29,8 +29,8 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     strcat(outFileName, inFileName);
     strcat(outFileName, ".sharc");
     
-    FILE* inFile = checkOpenFile(inFileName, "rb");    
-    FILE* outFile = checkOpenFile(outFileName, "wb+");
+    FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
+    FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
     
     byte reachableMode;
     const byte nThread = 0;
@@ -82,11 +82,9 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 FORCE_INLINE void decompress(const char* inFileName) {
     char* outFileName = "test.dec";
     
-    FILE* inFile = checkOpenFile(inFileName, "rb");
-    FILE* outFile = checkOpenFile(outFileName, "wb+");
+    FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
+    FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
     
-    //uint32_t bytesRead;
-    //byte mode;
     const byte nThread = 0;
     
     time_t chrono = clock();
@@ -124,16 +122,22 @@ FORCE_INLINE void decompress(const char* inFileName) {
     printf("Time = %ld ms, Speed = %f MB/s\n", chrono, speed);
 }
 
+FORCE_INLINE void version() {
+    printf("Centaurean Sharc %i.%i.%i\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
+}
+
 FORCE_INLINE void usage() {
-    printf("Centaurean Sharc %i.%i.%i - Copyright (C) 2013 Guillaume Voirin\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
+    version();
+    printf("Copyright (C) 2013 Guillaume Voirin\n");
     printf("Usage : sharc [OPTIONS]... [FILES]...\n")   ;
     printf("Superfast archiving of files.\n\n");
     printf("Available options :\n");
-    printf("  -c[LEVEL], --compress[=LEVEL]     compress files using LEVEL if specified (default)\n");
+    printf("  -c[LEVEL], --compress[=LEVEL]     Compress files using LEVEL if specified (default)\n");
 	printf("                                    LEVEL can have the following values :\n");
 	printf("                                    0 = Fastest compression algorithm (default)\n");
 	printf("                                    1 = Better compression (dual pass), slightly slower\n");
-	printf("  -d, --decompress                  decompress files");
+	printf("  -d, --decompress                  Decompress files\n");
+    printf("  -v, --version                     Display version information\n");
     exit(0);
 }
 
@@ -164,18 +168,32 @@ int main(int argc, char *argv[]) {
                     case 'd':
                         action = ACTION_DECOMPRESS;
                         break;
+                    case 'v':
+                        version();
+                        exit(0);
+                        break;
 					case '-':
 						if(argLength < 3)
 							usage();
 						switch(argv[i][2]) {
 							case 'c':
+                                if(argLength == 10)
+                                    break;
 								if(argLength != 12)
 									usage();
 								mode = argv[i][11] - '0';
 								break;
 							case 'd':
+                                if(argLength != 12)
+                                    usage();
 								action = ACTION_DECOMPRESS;
 								break;
+                            case 'v':
+                                if(argLength != 9)
+                                    usage();
+                                version();
+                                exit(0);
+                                break;
 							default:
 								usage();
 						}

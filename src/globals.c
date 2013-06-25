@@ -27,7 +27,16 @@ FORCE_INLINE void error(const char* message) {
     exit(0);
 }
 
-FORCE_INLINE FILE* checkOpenFile(const char* fileName, const char* options) {
+FORCE_INLINE FILE* checkOpenFile(const char* fileName, const char* options, bool checkOverwrite) {
+    if(checkOverwrite && access(fileName, F_OK) != -1) {
+        printf("File %s already exists. Do you want to overwrite it (y/N) ? ", fileName);
+        switch(getchar()) {
+            case 'y':
+                break;
+            default:
+                exit(0);
+        }
+    }
     FILE* file = fopen(fileName, options);
     if(file == NULL) {
         printf("Unable to open file : %s\n", fileName);
