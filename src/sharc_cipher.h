@@ -31,7 +31,7 @@
 #define MODE_DUAL_PASS          1
 #define MODE_COPY               255
 
-byte intermediateBuffer[MAX_BUFFER_SIZE][MAX_PARALLELISM];
+byte intermediateBuffer[MAX_BUFFER_SIZE];
 
 byte sharcEncode(BYTE_BUFFER*, BYTE_BUFFER*, const byte);
 bool sharcDecode(BYTE_BUFFER*, BYTE_BUFFER*, const byte);

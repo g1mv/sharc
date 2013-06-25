@@ -22,10 +22,10 @@
 
 #include "direct_hash_cipher.h"
 
-FORCE_INLINE bool directHashEncode(byte* _inBuffer, uint32_t _inSize, byte* _outBuffer, uint32_t _outSize) {
-    return TRUE;//return hashEncode(_inBuffer, _inSize, _outBuffer, _outSize, DIRECT_XOR_MASK);
+FORCE_INLINE bool directHashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out) {
+    return hashEncode(in, out, DIRECT_XOR_MASK);
 }
 
-FORCE_INLINE bool directHashDecode(FILE* inFile, FILE* outFile, const uint64_t limit) {
-    return TRUE;//hashDecode(inFile, outFile, DIRECT_XOR_MASK, limit);
+FORCE_INLINE bool directHashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out) {
+    return hashDecode(in, out, DIRECT_XOR_MASK);
 }

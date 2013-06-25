@@ -29,7 +29,7 @@
 
 #define DIRECT_XOR_MASK 0x00000000
 
-bool directHashEncode(byte*, uint32_t, byte*, uint32_t);
-bool directHashDecode(FILE*, FILE*, const uint64_t);
+bool directHashEncode(BYTE_BUFFER*, BYTE_BUFFER*);
+bool directHashDecode(BYTE_BUFFER*, BYTE_BUFFER*);
 
 #endif

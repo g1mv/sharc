@@ -23,6 +23,7 @@
 #include "sharc_cipher.h"
 
 FORCE_INLINE byte sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte mode) {
+    BYTE_BUFFER inter;
     switch(mode) {
         case MODE_SINGLE_PASS:
             if(xorHashEncode(in, out))
@@ -30,16 +31,20 @@ FORCE_INLINE byte sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte mode
             else
                 return MODE_COPY;
         case MODE_DUAL_PASS:
-            /*if(directHashEncode(_inBuffer, _inSize, intermediateBuffer, _inSize)) {
-                const uint32_t initialOutPosition = outPosition;
-                if(xorHashEncode(intermediateBuffer, initialOutPosition, _outBuffer, initialOutPosition)) {
+            inter = createByteBuffer(intermediateBuffer, 0, in->size);
+            if(directHashEncode(in, &inter)) {
+                const uint32_t firstPassPosition = inter.position;
+                inter.size = inter.position;
+                out->size = inter.position;
+                rewindByteBuffer(&inter);                
+                if(xorHashEncode(&inter, out)) {
                     return mode;
                 } else {
-                    outBuffer = intermediateBuffer;
-                    outPosition = initialOutPosition;
+                    out = &inter;
+                    out->position = firstPassPosition;
                     return MODE_SINGLE_PASS;
                 }
-            }*/
+            }
             return MODE_COPY;
         default:
             return MODE_COPY;
@@ -47,11 +52,16 @@ FORCE_INLINE byte sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte mode
 }
 
 FORCE_INLINE bool sharcDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const byte mode) {
+    BYTE_BUFFER inter;
     switch(mode) {
         case MODE_SINGLE_PASS:
             return xorHashDecode(in, out);
         case MODE_DUAL_PASS:
-            return FALSE;
+            inter = createByteBuffer(intermediateBuffer, 0, PREFERRED_BUFFER_SIZE);
+            xorHashDecode(in, &inter);
+            inter.size = inter.position;
+            rewindByteBuffer(&inter);
+            return directHashDecode(&inter, out);
         default:
             return FALSE;
     }
