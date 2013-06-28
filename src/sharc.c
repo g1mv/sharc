@@ -80,6 +80,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 } 
 
 FORCE_INLINE void decompress(const char* inFileName) {
+    //printf("%lu", sizeof(time_t));
     char* outFileName = "test.dec";
     
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
@@ -116,6 +117,11 @@ FORCE_INLINE void decompress(const char* inFileName) {
     
     fclose(inFile);
     fclose(outFile);
+    
+    if(totalWritten != fileHeader.originalFileSize)
+        error("Input file is corrupt !");
+    
+    restoreFileAttributes(fileHeader, outFileName);
     
     double speed = (1000.0 * totalWritten) / (chrono * 1024.0 * 1024.0);
     printf("Decompressed file %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);

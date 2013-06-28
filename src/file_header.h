@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <time.h>
+#include <utime.h>
 
 #include "globals.h"
 
@@ -35,7 +36,6 @@ typedef struct {
     uint64_t originalFileSize;
     uint32_t bufferSize;
     uint16_t fileMode;
-    uint64_t fileCreated;
     uint64_t fileAccessed;
     uint64_t fileModified;
 } FILE_HEADER;
@@ -43,5 +43,6 @@ typedef struct {
 FILE_HEADER createFileHeader(const uint32_t, struct stat);
 bool checkFileType(byte*);
 FILE_HEADER readFileHeader(FILE*);
+void restoreFileAttributes(FILE_HEADER, const char*);
 
 #endif

@@ -36,9 +36,8 @@ FORCE_INLINE FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat
     fileHeader.originalFileSize = (uint64_t)fileAttributes.st_size;
     fileHeader.bufferSize = (uint32_t)bufferSize;
     fileHeader.fileMode = (uint16_t)fileAttributes.st_mode;
-    fileHeader.fileCreated = (uint64_t)gmtime(&(fileAttributes.st_ctime));
-    fileHeader.fileAccessed = (uint64_t)gmtime(&(fileAttributes.st_atime));
-    fileHeader.fileModified = (uint64_t)gmtime(&(fileAttributes.st_mtime));
+    fileHeader.fileAccessed = fileAttributes.st_atime;
+    fileHeader.fileModified = fileAttributes.st_mtime;
     return fileHeader;
 }
 
@@ -62,4 +61,15 @@ FORCE_INLINE FILE_HEADER readFileHeader(FILE* file) {
     if(checkFileType((byte*)&fileHeader.name) ^ 0x1)
         error("Invalid file");
     return fileHeader;
+}
+
+FORCE_INLINE void restoreFileAttributes(FILE_HEADER fileHeader, const char* fileName) {
+    if(chmod(fileName, fileHeader.fileMode))
+        error("Unable to restore original file rights.");
+    
+    struct utimbuf ubuf;
+    ubuf.actime = fileHeader.fileAccessed;
+    ubuf.modtime = fileHeader.fileModified;
+    if(utime(fileName, &ubuf))
+        error("Unable to restore original file accessed / modified times.");
 }
