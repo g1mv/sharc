@@ -16,7 +16,7 @@
  * See the GNU General Public License for more details.
  *
  * Alternatively, you can license this library under a commercial
- * license, see http://www.centaurean.com/sharc/licensing for more
+ * license, see http://www.centaurean.com/sharc for more
  * information.
  *
  * 01/06/13 17:27
