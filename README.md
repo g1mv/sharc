@@ -17,7 +17,7 @@ To decompress 'test.sharc'
 > sharc -d test.sharc
 
 Options
-========
+--------
 
 It is possible to choose the compression algorithm. The fastest (default) can be specified like this :
 > sharc -c0 test
