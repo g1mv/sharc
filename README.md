@@ -22,5 +22,5 @@ Options
 It is possible to choose the compression algorithm. The fastest (default) can be specified like this :
 > sharc -c0 test
 
-There is also a slightly slower algorithm (20% slower), with a better compression ratio (5 to 25% better) :
+There also is a slightly slower algorithm (20 % slower), with a better compression ratio (5 to 25 % better) :
 > sgarc -c1 test
