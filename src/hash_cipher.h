@@ -25,7 +25,7 @@
 #ifndef HASH_CIPHER_H
 #define HASH_CIPHER_H
 
-#include "cipher.h"
+#include "byte_buffer.h"
 
 #include <stdio.h>
 

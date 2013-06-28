@@ -17,19 +17,21 @@
  * Centaurean SHARC
  * www.centaurean.com/sharc
  *
- * 01/06/13 18:46
+ * 01/06/13 17:39
  */
 
-#include "cipher.h"
+#ifndef BYTE_BUFFER_H
+#define BYTE_BUFFER_H
 
-FORCE_INLINE BYTE_BUFFER createByteBuffer(byte* pointer, uint32_t position, uint32_t size) {
-    BYTE_BUFFER byteBuffer;
-    byteBuffer.pointer = pointer;
-    byteBuffer.position = position;
-    byteBuffer.size = size;
-    return byteBuffer;
-}
+#include "globals.h"
 
-FORCE_INLINE void rewindByteBuffer(BYTE_BUFFER* buffer) {
-    buffer->position = 0;
-}
+typedef struct {
+    byte* pointer;
+    uint32_t position;
+    uint32_t size;
+} BYTE_BUFFER;
+
+BYTE_BUFFER createByteBuffer(byte*, uint32_t, uint32_t);
+void rewindByteBuffer(BYTE_BUFFER*);
+
+#endif
