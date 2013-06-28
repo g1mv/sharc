@@ -28,14 +28,14 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     char outFileName[strlen(inFileName) + 6];
     
     outFileName[0] = '\0';
-    strcat(outFileName, inFileName);
+    strcpy(outFileName, inFileName);
     strcat(outFileName, ".sharc");
     
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
     FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
     
     byte reachableMode;
-    const byte nThread = 0;
+    //const byte nThread = 0;
     
     time_t chrono = clock();
     
@@ -45,11 +45,12 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     FILE_HEADER fileHeader = createFileHeader(blockSize, attributes);
     fwrite(&fileHeader, sizeof(FILE_HEADER), 1, outFile);
     
-    BYTE_BUFFER in = createByteBuffer(readBuffer[nThread], 0, blockSize);
-    BYTE_BUFFER out = createByteBuffer(writeBuffer[nThread], 0, blockSize);
+    BYTE_BUFFER in = createByteBuffer(readBuffer/*[nThread]*/, 0, blockSize);
+    BYTE_BUFFER inter = createByteBuffer(intermediateBuffer, 0, blockSize);
+    BYTE_BUFFER out = createByteBuffer(writeBuffer/*[nThread]*/, 0, blockSize);
     
-    while((in.size = (uint32_t)fread(readBuffer[nThread], sizeof(byte), blockSize, inFile)) > 0) {
-        reachableMode = sharcEncode(&in, &out, attemptMode);
+    while((in.size = (uint32_t)fread(readBuffer/*[nThread]*/, sizeof(byte), blockSize, inFile)) > 0) {
+        reachableMode = sharcEncode(&in, &inter, &out, attemptMode);
         
         BLOCK_HEADER blockHeader;
         if(reachableMode ^ MODE_COPY)
@@ -60,9 +61,9 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
         fwrite(&blockHeader, sizeof(BLOCK_HEADER), 1, outFile);
         
         if(reachableMode ^ MODE_COPY)
-            fwrite(writeBuffer[nThread], sizeof(byte), out.position, outFile);
+            fwrite(writeBuffer/*[nThread]*/, sizeof(byte), out.position, outFile);
         else
-            fwrite(readBuffer[nThread], sizeof(byte), in.size, outFile);
+            fwrite(readBuffer/*[nThread]*/, sizeof(byte), in.size, outFile);
         
         rewindByteBuffer(&in);
         rewindByteBuffer(&out);
@@ -82,28 +83,32 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 } 
 
 FORCE_INLINE void decompress(const char* inFileName) {
-    //printf("%lu", sizeof(time_t));
-    char* outFileName = "test.dec";
+    char outFileName[strlen(inFileName) - 6];
+    
+    outFileName[0] = '\0';
+    strncpy(outFileName, inFileName, strlen(inFileName) - 6);
+    strcat(outFileName, ".dec");
     
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
     FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
     
-    const byte nThread = 0;
+    /*const byte nThread = 0;*/
     
     time_t chrono = clock();
     FILE_HEADER fileHeader = readFileHeader(inFile);
-    BYTE_BUFFER in = createByteBuffer(readBuffer[nThread], 0, 0);
-    BYTE_BUFFER out = createByteBuffer(writeBuffer[nThread], 0, fileHeader.bufferSize);
+    BYTE_BUFFER in = createByteBuffer(readBuffer/*[nThread]*/, 0, 0);
+    BYTE_BUFFER inter = createByteBuffer(intermediateBuffer, 0, 0);
+    BYTE_BUFFER out = createByteBuffer(writeBuffer/*[nThread]*/, 0, fileHeader.bufferSize);
     
     BLOCK_HEADER blockHeader;
     while(readBlockHeaderFromFile(&blockHeader, inFile) > 0) {
-        in.size = (uint32_t)fread(readBuffer[nThread], sizeof(byte), blockHeader.nextBlock, inFile);
+        in.size = (uint32_t)fread(readBuffer/*[nThread]*/, sizeof(byte), blockHeader.nextBlock, inFile);
         switch(blockHeader.mode) {
             case MODE_COPY:
                 fwrite(in.pointer, sizeof(byte), in.size, outFile);
                 break;
             default:
-                if(sharcDecode(&in, &out, blockHeader.mode) ^ 0x1)
+                if(sharcDecode(&in, &inter, &out, blockHeader.mode) ^ 0x1)
                     error("Unable to decompress !");
                 fwrite(out.pointer, sizeof(byte), out.position, outFile);
                 break;

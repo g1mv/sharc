@@ -37,8 +37,9 @@
 #define ACTION_COMPRESS     0
 #define ACTION_DECOMPRESS   1
 
-byte readBuffer[MAX_BUFFER_SIZE][MAX_PARALLELISM];
-byte writeBuffer[MAX_BUFFER_SIZE][MAX_PARALLELISM];
+byte readBuffer[MAX_BUFFER_SIZE];
+byte interBuffer[MAX_BUFFER_SIZE];
+byte writeBuffer[MAX_BUFFER_SIZE];
 
 void compress(const char*, const byte, const uint32_t);
 void decompress(const char*);

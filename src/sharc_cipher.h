@@ -35,7 +35,7 @@
 
 byte intermediateBuffer[MAX_BUFFER_SIZE];
 
-byte sharcEncode(BYTE_BUFFER*, BYTE_BUFFER*, const byte);
-bool sharcDecode(BYTE_BUFFER*, BYTE_BUFFER*, const byte);
+byte sharcEncode(BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte);
+bool sharcDecode(BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte);
 
 #endif
