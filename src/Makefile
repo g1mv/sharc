@@ -36,7 +36,7 @@ CC = gcc
 CFLAGS = -O3 -std=gnu99 -w
 
 SRC = $(wildcard *.c)
-OBJ = block_header.o cipher.o direct_hash_cipher.o file_header.o globals.o hash_cipher.o sharc_cipher.o sharc.o xor_hash_cipher.o
+OBJ = block_header.o byte_buffer.o direct_hash_cipher.o file_header.o globals.o hash_cipher.o sharc_cipher.o sharc.o xor_hash_cipher.o
 .PHONY: header footer
 
 all: header $(TARGET)$(EXTENSION) footer
@@ -49,11 +49,11 @@ footer:
 	
 $(TARGET)$(EXTENSION): $(OBJ)
 	@echo Linking sharc ...
-	@echo 	$^ ^-^> $(TARGET)$(EXTENSION)
+	@echo $^ → $(TARGET)$(EXTENSION)
 	@$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
 	
 %.o: %.c
-	@echo 	$^ ^-^> $@
+	@echo $^ → $@
 	@$(CC) -c $(CFLAGS) $< -o $@
 	
 clean:
