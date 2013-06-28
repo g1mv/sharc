@@ -46,7 +46,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     fwrite(&fileHeader, sizeof(FILE_HEADER), 1, outFile);
     
     BYTE_BUFFER in = createByteBuffer(readBuffer/*[nThread]*/, 0, blockSize);
-    BYTE_BUFFER inter = createByteBuffer(intermediateBuffer, 0, blockSize);
+    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, blockSize);
     BYTE_BUFFER out = createByteBuffer(writeBuffer/*[nThread]*/, 0, blockSize);
     
     while((in.size = (uint32_t)fread(readBuffer/*[nThread]*/, sizeof(byte), blockSize, inFile)) > 0) {
@@ -97,7 +97,7 @@ FORCE_INLINE void decompress(const char* inFileName) {
     time_t chrono = clock();
     FILE_HEADER fileHeader = readFileHeader(inFile);
     BYTE_BUFFER in = createByteBuffer(readBuffer/*[nThread]*/, 0, 0);
-    BYTE_BUFFER inter = createByteBuffer(intermediateBuffer, 0, 0);
+    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
     BYTE_BUFFER out = createByteBuffer(writeBuffer/*[nThread]*/, 0, fileHeader.bufferSize);
     
     BLOCK_HEADER blockHeader;

@@ -32,6 +32,7 @@ FORCE_INLINE byte sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* 
             else
                 return MODE_COPY;
         case MODE_DUAL_PASS:
+            rewindByteBuffer(inter);
             if(directHashEncode(in, inter)) {
                 const uint32_t firstPassPosition = inter->position;
                 inter->size = inter->position;
@@ -56,6 +57,7 @@ FORCE_INLINE bool sharcDecode(BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* 
         case MODE_SINGLE_PASS:
             return xorHashDecode(in, out);
         case MODE_DUAL_PASS:
+            rewindByteBuffer(inter);
             xorHashDecode(in, inter);
             inter->size = inter->position;
             rewindByteBuffer(inter);
