@@ -8,7 +8,7 @@ On an Intel Core I7 it reaches compression speeds of 460 MB/s and decompression 
 Compression ratio is typically at around 50-60 % with the fastest algorithm.
 
 Usage
-======
+------
 
 To compress a file named 'test' :
 > sharc test
