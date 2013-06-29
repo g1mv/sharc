@@ -28,7 +28,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     char outFileName[strlen(inFileName) + 6];
     
     outFileName[0] = '\0';
-    strcpy(outFileName, inFileName);
+    strcat(outFileName, inFileName);
     strcat(outFileName, ".sharc");
     
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
@@ -83,10 +83,11 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 } 
 
 FORCE_INLINE void decompress(const char* inFileName) {
-    char outFileName[strlen(inFileName) - 6];
-    
+    uint32_t originalFileNameLength = strlen(inFileName) - 6;
+    char outFileName[originalFileNameLength + 4];
+
     outFileName[0] = '\0';
-    strncpy(outFileName, inFileName, strlen(inFileName) - 6);
+    strncat(outFileName, inFileName, originalFileNameLength);
     strcat(outFileName, ".dec");
     
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
