@@ -1,7 +1,8 @@
 SHARC
-=======
+======
 
 Simple Highspeed Archiver
+--------------------------
 <a href="http://www.centaurean.com/sharc">www.centaurean.com/sharc</a>
 
 SHARC is a very fast file archiver with one goal in mind : speed.
