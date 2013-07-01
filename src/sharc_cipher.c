@@ -24,13 +24,29 @@
 
 #include "sharc_cipher.h"
 
-FORCE_INLINE byte sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* out, const byte mode) {
+FORCE_INLINE ENCODING_RESULT createEncodingResult(const byte reachableMode, BYTE_BUFFER* out) {
+    ENCODING_RESULT encodingResult;
+    encodingResult.reachableMode = reachableMode;
+    encodingResult.out = out;
+    return encodingResult;
+}
+
+FORCE_INLINE ENCODING_RESULT createEncodingResultWithPosition(const byte reachableMode, BYTE_BUFFER* out, const uint32_t position) {
+    out->position = position;
+    return createEncodingResult(reachableMode, out);
+}
+
+FORCE_INLINE ENCODING_RESULT copyMode(BYTE_BUFFER* in) {
+    return createEncodingResultWithPosition(MODE_COPY, in, in->size);
+}
+
+FORCE_INLINE ENCODING_RESULT sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* out, const byte mode) {
     switch(mode) {
         case MODE_SINGLE_PASS:
             if(xorHashEncode(in, out))
-                return mode;
+                return createEncodingResult(mode, out);
             else
-                return MODE_COPY;
+                return copyMode(in);
         case MODE_DUAL_PASS:
             rewindByteBuffer(inter);
             if(directHashEncode(in, inter)) {
@@ -38,17 +54,14 @@ FORCE_INLINE byte sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* 
                 inter->size = inter->position;
                 out->size = inter->position;
                 rewindByteBuffer(inter);
-                if(xorHashEncode(inter, out)) {
-                    return mode;
-                } else {
-                    out = inter;
-                    out->position = firstPassPosition;
-                    return MODE_SINGLE_PASS;
-                }
+                if(xorHashEncode(inter, out))
+                    return createEncodingResult(mode, out);
+                else
+                    return createEncodingResultWithPosition(MODE_SINGLE_PASS, inter, firstPassPosition);
             }
-            return MODE_COPY;
+            return copyMode(in);
         default:
-            return MODE_COPY;
+            return copyMode(in);
     }
 }
 

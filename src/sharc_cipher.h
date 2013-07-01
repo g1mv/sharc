@@ -33,7 +33,15 @@
 #define MODE_DUAL_PASS          1
 #define MODE_COPY               255
 
-byte sharcEncode(BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte);
+typedef struct {
+    byte reachableMode;
+    BYTE_BUFFER* out;
+} ENCODING_RESULT;
+
+ENCODING_RESULT createEncodingResult(const byte, BYTE_BUFFER*);
+ENCODING_RESULT createEncodingResultWithPosition(const byte, BYTE_BUFFER*, const uint32_t);
+ENCODING_RESULT copyMode(BYTE_BUFFER*);
+ENCODING_RESULT sharcEncode(BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte);
 bool sharcDecode(BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte);
 
 #endif

@@ -34,8 +34,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
     FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
     
-    byte reachableMode;
-    //const byte nThread = 0;
+    ENCODING_RESULT result;
     
     time_t chrono = clock();
     
@@ -50,20 +49,11 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     BYTE_BUFFER out = createByteBuffer(writeBuffer/*[nThread]*/, 0, blockSize);
     
     while((in.size = (uint32_t)fread(readBuffer/*[nThread]*/, sizeof(byte), blockSize, inFile)) > 0) {
-        reachableMode = sharcEncode(&in, &inter, &out, attemptMode);
+        result = sharcEncode(&in, &inter, &out, attemptMode);
         
-        BLOCK_HEADER blockHeader;
-        if(reachableMode ^ MODE_COPY)
-            blockHeader = createBlockHeader(reachableMode, out.position);
-        else
-            blockHeader = createBlockHeader(reachableMode, in.size);
-        
+        BLOCK_HEADER blockHeader = createBlockHeader(result.reachableMode, result.out->position);
         fwrite(&blockHeader, sizeof(BLOCK_HEADER), 1, outFile);
-        
-        if(reachableMode ^ MODE_COPY)
-            fwrite(writeBuffer/*[nThread]*/, sizeof(byte), out.position, outFile);
-        else
-            fwrite(readBuffer/*[nThread]*/, sizeof(byte), in.size, outFile);
+        fwrite(result.out->pointer, sizeof(byte), result.out->position, outFile);
         
         rewindByteBuffer(&in);
         rewindByteBuffer(&out);
@@ -83,12 +73,11 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 } 
 
 FORCE_INLINE void decompress(const char* inFileName) {
-    uint32_t originalFileNameLength = strlen(inFileName) - 6;
-    char outFileName[originalFileNameLength + 4];
+    unsigned long originalFileNameLength = strlen(inFileName) - 6;
+    char outFileName[originalFileNameLength];
 
     outFileName[0] = '\0';
     strncat(outFileName, inFileName, originalFileNameLength);
-    strcat(outFileName, ".dec");
     
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
     FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
