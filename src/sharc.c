@@ -39,8 +39,12 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
 	struct timespec time;
 	double start, end, chrono;
 
-    clock_gettime(CLOCK_REALTIME,&time);
-	start = ((double) time.tv_sec) + (((double) time.tv_nsec)/1000000000.0);
+    //clock_gettime(CLOCK_REALTIME,&time);
+	//start = ((double) time.tv_sec) + (((double) time.tv_nsec)/1000000000.0);
+
+    struct timeval gstart, gend;
+
+      gettimeofday(&gstart, NULL);
 
     struct stat attributes;
     stat(inFileName, &attributes);
@@ -63,9 +67,18 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
         rewindByteBuffer(&out);
     }
 
-    clock_gettime(CLOCK_REALTIME,&time);
+
+      for (unsigned long i = 0; i < 1000000000; i++)
+        {
+        i++;
+        }
+
+      gettimeofday(&gend, NULL);
+      chrono = ((gend.tv_sec * 1000000 + gend.tv_usec) - (gstart.tv_sec * 1000000 + gstart.tv_usec)) / 1000000.0;
+
+    /*clock_gettime(CLOCK_REALTIME,&time);
 	end = ((double) time.tv_sec) + (((double) time.tv_nsec)/1000000000.0);
-	chrono = (end - start);
+	chrono = (end - start); */
 
 	uint64_t totalRead = ftell(inFile);
     uint64_t totalWritten = ftell(outFile);
