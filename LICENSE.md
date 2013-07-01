@@ -1,3 +1,6 @@
+Centaurean SHARC license
+------------------------
+
 This software is dual-licensed: you can redistribute it and/or modify
 it under the terms of the GNU General Public License version 3 as
 published by the Free Software Foundation. For the terms of this
