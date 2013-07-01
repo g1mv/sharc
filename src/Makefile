@@ -27,9 +27,11 @@ TARGET = sharc
 # Windows
 ifdef SystemRoot
 EXTENSION = .exe
+ARROW = ^-^>
 else
 # Linux, OSX
 EXTENSION = 
+ARROW = →
 endif
 
 CC = gcc
@@ -49,15 +51,15 @@ footer:
 	
 $(TARGET)$(EXTENSION): $(OBJ)
 	@echo Linking sharc ...
-	@echo $^ → $(TARGET)$(EXTENSION)
+	@echo $^ $(ARROW) $(TARGET)$(EXTENSION)
 	@$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
 	
 %.o: %.c
-	@echo $^ → $@
+	@echo $^ $(ARROW) $@
 	@$(CC) -c $(CFLAGS) $< -o $@
 	
 clean:
 	@echo Cleaning build directory...
 	@rm -f $(OBJ)
-#	@rm -f $(TARGET)$(EXTENSION)
+	@rm -f $(TARGET)$(EXTENSION)
 	@echo Done.
