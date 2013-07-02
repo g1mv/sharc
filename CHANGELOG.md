@@ -3,7 +3,7 @@
 July 2, 2013
 * Corrected out file name problem
 * Corrected problem with intermediate buffer pointer swap in case of an encoding mode reversion
-* Automatic generation of objects from sources list
+* Automatic generation of objects from sources list in makefile
 * Time is now measured and displayed in seconds
 * Modified timing function to provide better precision on Linux platforms
 
