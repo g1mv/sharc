@@ -35,18 +35,10 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
     
     ENCODING_RESULT result;
+    CHRONO chrono;
+    chronoStart(&chrono);
     
-	struct timespec time;
-	double start, end, chrono;
-
-    //clock_gettime(CLOCK_REALTIME,&time);
-	//start = ((double) time.tv_sec) + (((double) time.tv_nsec)/1000000000.0);
-
-    struct timeval gstart, gend;
-
-      gettimeofday(&gstart, NULL);
-
-    struct stat attributes;
+	struct stat attributes;
     stat(inFileName, &attributes);
     
     FILE_HEADER fileHeader = createFileHeader(blockSize, attributes);
@@ -66,20 +58,9 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
         rewindByteBuffer(&in);
         rewindByteBuffer(&out);
     }
-
-
-      for (unsigned long i = 0; i < 1000000000; i++)
-        {
-        i++;
-        }
-
-      gettimeofday(&gend, NULL);
-      chrono = ((gend.tv_sec * 1000000 + gend.tv_usec) - (gstart.tv_sec * 1000000 + gstart.tv_usec)) / 1000000.0;
-
-    /*clock_gettime(CLOCK_REALTIME,&time);
-	end = ((double) time.tv_sec) + (((double) time.tv_nsec)/1000000000.0);
-	chrono = (end - start); */
-
+    chronoStop(&chrono);
+    double elapsed = chronoElapsed(&chrono);
+    
 	uint64_t totalRead = ftell(inFile);
     uint64_t totalWritten = ftell(outFile);
     
@@ -87,9 +68,9 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     fclose(outFile);
 
     double ratio = (1.0 * totalWritten) / totalRead;
-    double speed = (1.0 * totalRead) / (chrono * 1024.0 * 1024.0);
+    double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
     printf("Compressed file %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
-    printf("Ratio out / in = %g, Time = %.3lf s, Speed = %f MB/s\n", ratio, chrono, speed);
+    printf("Ratio out / in = %g, Time = %.3lf s, Speed = %f MB/s\n", ratio, elapsed, speed);
 } 
 
 FORCE_INLINE void decompress(const char* inFileName) {
@@ -102,9 +83,9 @@ FORCE_INLINE void decompress(const char* inFileName) {
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
     FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
     
-    /*const byte nThread = 0;*/
+    CHRONO chrono;
+    chronoStart(&chrono);
     
-    time_t chrono = clock();
     FILE_HEADER fileHeader = readFileHeader(inFile);
     BYTE_BUFFER in = createByteBuffer(readBuffer/*[nThread]*/, 0, 0);
     BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
@@ -127,7 +108,8 @@ FORCE_INLINE void decompress(const char* inFileName) {
         rewindByteBuffer(&in);
         rewindByteBuffer(&out);
     }
-    chrono = (1000 * (clock() - chrono)) / CLOCKS_PER_SEC;
+    chronoStop(&chrono);
+    double elapsed = chronoElapsed(&chrono);
     
     uint64_t totalRead = ftell(inFile);
     uint64_t totalWritten = ftell(outFile);
@@ -140,9 +122,9 @@ FORCE_INLINE void decompress(const char* inFileName) {
     
     restoreFileAttributes(fileHeader, outFileName);
     
-    double speed = (1000.0 * totalWritten) / (chrono * 1024.0 * 1024.0);
+    double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
     printf("Decompressed file %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
-    printf("Time = %ld ms, Speed = %f MB/s\n", chrono, speed);
+    printf("Time = %.3lf s, Speed = %f MB/s\n", elapsed, speed);
 }
 
 FORCE_INLINE void version() {

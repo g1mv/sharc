@@ -19,31 +19,19 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 17:55
+ * 02/07/13 02:34
  */
 
-#ifndef SHARC_H
-#define SHARC_H
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "chrono.h"
-#include "sharc_cipher.h"
-#include "file_header.h"
-#include "block_header.h"
 
-#define ACTION_COMPRESS     0
-#define ACTION_DECOMPRESS   1
+void chronoStart(CHRONO* chrono) {
+    gettimeofday(&chrono->start, NULL);
+}
 
-byte readBuffer[MAX_BUFFER_SIZE];
-byte interBuffer[MAX_BUFFER_SIZE];
-byte writeBuffer[MAX_BUFFER_SIZE];
+void chronoStop(CHRONO* chrono) {
+    gettimeofday(&chrono->stop, NULL);
+}
 
-void compress(const char*, const byte, const uint32_t);
-void decompress(const char*);
-void version();
-void usage();
-
-#endif
+double chronoElapsed(CHRONO* chrono) {
+    return ((chrono->stop.tv_sec * MICROSECONDS + chrono->stop.tv_usec) - (chrono->start.tv_sec * MICROSECONDS + chrono->start.tv_usec)) / MICROSECONDS;
+}
