@@ -29,7 +29,7 @@ FORCE_INLINE void error(const char* message) {
     exit(0);
 }
 
-FORCE_INLINE FILE* checkOpenFile(const char* fileName, const char* options, bool checkOverwrite) {
+FORCE_INLINE FILE* checkOpenFile(const char* fileName, const char* options, const bool checkOverwrite) {
     if(checkOverwrite && access(fileName, F_OK) != -1) {
         printf("File %s already exists. Do you want to overwrite it (y/N) ? ", fileName);
         switch(getchar()) {

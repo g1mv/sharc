@@ -24,7 +24,7 @@
 
 #include "sharc.h"
 
-FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const uint32_t blockSize) {
+FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const uint32_t blockSize, const bool prompting) {
     char outFileName[strlen(inFileName) + 6];
     
     outFileName[0] = '\0';
@@ -32,7 +32,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     strcat(outFileName, ".sharc");
     
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
-    FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
+    FILE* outFile = checkOpenFile(outFileName, "wb+", prompting);
     
     ENCODING_RESULT result;
     CHRONO chrono;
@@ -44,11 +44,11 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     FILE_HEADER fileHeader = createFileHeader(blockSize, attributes);
     fwrite(&fileHeader, sizeof(FILE_HEADER), 1, outFile);
     
-    BYTE_BUFFER in = createByteBuffer(readBuffer/*[nThread]*/, 0, blockSize);
-    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, blockSize);
-    BYTE_BUFFER out = createByteBuffer(writeBuffer/*[nThread]*/, 0, blockSize);
+    BYTE_BUFFER in = createByteBuffer(readBuffer[1]/*[nThread]*/, 0, blockSize);
+    BYTE_BUFFER inter = createByteBuffer(interBuffer[1], 0, blockSize);
+    BYTE_BUFFER out = createByteBuffer(writeBuffer[1]/*[nThread]*/, 0, blockSize);
     
-    while((in.size = (uint32_t)fread(readBuffer/*[nThread]*/, sizeof(byte), blockSize, inFile)) > 0) {
+    while((in.size = (uint32_t)fread(in.pointer, sizeof(byte), blockSize, inFile)) > 0) {
         result = sharcEncode(&in, &inter, &out, attemptMode);
         
         BLOCK_HEADER blockHeader = createBlockHeader(result.reachableMode, result.out->position);
@@ -59,7 +59,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
         rewindByteBuffer(&out);
     }
     chronoStop(&chrono);
-    double elapsed = chronoElapsed(&chrono);
+    const double elapsed = chronoElapsed(&chrono);
     
 	uint64_t totalRead = ftell(inFile);
     uint64_t totalWritten = ftell(outFile);
@@ -73,7 +73,7 @@ FORCE_INLINE void compress(const char* inFileName, const byte attemptMode, const
     printf("Ratio out / in = %g, Time = %.3lf s, Speed = %f MB/s\n", ratio, elapsed, speed);
 } 
 
-FORCE_INLINE void decompress(const char* inFileName) {
+FORCE_INLINE void decompress(const char* inFileName, const bool prompting) {
     unsigned long originalFileNameLength = strlen(inFileName) - 6;
     char outFileName[originalFileNameLength];
 
@@ -81,19 +81,19 @@ FORCE_INLINE void decompress(const char* inFileName) {
     strncat(outFileName, inFileName, originalFileNameLength);
     
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
-    FILE* outFile = checkOpenFile(outFileName, "wb+", TRUE);
+    FILE* outFile = checkOpenFile(outFileName, "wb+", prompting);
     
     CHRONO chrono;
     chronoStart(&chrono);
     
     FILE_HEADER fileHeader = readFileHeader(inFile);
-    BYTE_BUFFER in = createByteBuffer(readBuffer/*[nThread]*/, 0, 0);
-    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
-    BYTE_BUFFER out = createByteBuffer(writeBuffer/*[nThread]*/, 0, fileHeader.bufferSize);
+    BYTE_BUFFER in = createByteBuffer(readBuffer[1]/*[nThread]*/, 0, 0);
+    BYTE_BUFFER inter = createByteBuffer(interBuffer[1], 0, 0);
+    BYTE_BUFFER out = createByteBuffer(writeBuffer[1]/*[nThread]*/, 0, fileHeader.bufferSize);
     
     BLOCK_HEADER blockHeader;
     while(readBlockHeaderFromFile(&blockHeader, inFile) > 0) {
-        in.size = (uint32_t)fread(readBuffer/*[nThread]*/, sizeof(byte), blockHeader.nextBlock, inFile);
+        in.size = (uint32_t)fread(in.pointer, sizeof(byte), blockHeader.nextBlock, inFile);
         switch(blockHeader.mode) {
             case MODE_COPY:
                 fwrite(in.pointer, sizeof(byte), in.size, outFile);
@@ -109,7 +109,7 @@ FORCE_INLINE void decompress(const char* inFileName) {
         rewindByteBuffer(&out);
     }
     chronoStop(&chrono);
-    double elapsed = chronoElapsed(&chrono);
+    const double elapsed = chronoElapsed(&chrono);
     
     uint64_t totalRead = ftell(inFile);
     uint64_t totalWritten = ftell(outFile);
@@ -142,6 +142,7 @@ FORCE_INLINE void usage() {
 	printf("                                    0 = Fastest compression algorithm (default)\n");
 	printf("                                    1 = Better compression (dual pass), slightly slower\n");
 	printf("  -d, --decompress                  Decompress files\n");
+    printf("  -n, --no-prompt                   Overwrite without prompting\n");
     printf("  -v, --version                     Display version information\n");
     exit(0);
 }
@@ -152,6 +153,7 @@ int main(int argc, char *argv[]) {
 
     byte action = ACTION_COMPRESS;
 	byte mode = MODE_SINGLE_PASS;
+    byte prompting = PROMPTING;
     
     size_t argLength;
     for(int i = 1; i < argc; i ++) {
@@ -173,6 +175,9 @@ int main(int argc, char *argv[]) {
                     case 'd':
                         action = ACTION_DECOMPRESS;
                         break;
+                    case 'n':
+                        prompting = NO_PROMPTING;
+                        break;
                     case 'v':
                         version();
                         exit(0);
@@ -193,6 +198,11 @@ int main(int argc, char *argv[]) {
                                     usage();
 								action = ACTION_DECOMPRESS;
 								break;
+                            case 'n':
+                                if(argLength != 11)
+                                    usage();
+                                prompting = NO_PROMPTING;
+                                break;
                             case 'v':
                                 if(argLength != 9)
                                     usage();
@@ -208,10 +218,10 @@ int main(int argc, char *argv[]) {
             default:
                 switch(action) {
                     case ACTION_DECOMPRESS:
-                        decompress(argv[i]);
+                        decompress(argv[i], prompting);
                         break;
                     default:
-                        compress(argv[i], mode, PREFERRED_BUFFER_SIZE);
+                        compress(argv[i], mode, PREFERRED_BUFFER_SIZE, prompting);
                         break;
                 }
                 break;

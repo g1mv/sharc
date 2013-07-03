@@ -37,12 +37,15 @@
 #define ACTION_COMPRESS     0
 #define ACTION_DECOMPRESS   1
 
-byte readBuffer[MAX_BUFFER_SIZE];
-byte interBuffer[MAX_BUFFER_SIZE];
-byte writeBuffer[MAX_BUFFER_SIZE];
+#define NO_PROMPTING        FALSE
+#define PROMPTING           TRUE
 
-void compress(const char*, const byte, const uint32_t);
-void decompress(const char*);
+byte readBuffer[MAX_PARALLELISM][MAX_BUFFER_SIZE];
+byte interBuffer[MAX_PARALLELISM][MAX_BUFFER_SIZE];
+byte writeBuffer[MAX_PARALLELISM][MAX_BUFFER_SIZE];
+
+void compress(const char*, const byte, const uint32_t, const bool);
+void decompress(const char*, const bool);
 void version();
 void usage();
 
