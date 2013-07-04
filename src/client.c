@@ -59,6 +59,7 @@ FORCE_INLINE void usage() {
 	printf("  -d, --decompress                  Decompress files\n");
     printf("  -n, --no-prompt                   Overwrite without prompting\n");
     printf("  -v, --version                     Display version information\n");
+    printf("  -h, --help                        Display this help\n");
     exit(0);
 }
 
@@ -178,6 +179,9 @@ int main(int argc, char *argv[]) {
                         version();
                         exit(0);
                         break;
+                    case 'h':
+                        usage();
+                        break;
 					case '-':
 						if(argLength < 3)
 							usage();
@@ -205,6 +209,9 @@ int main(int argc, char *argv[]) {
                                 version();
                                 exit(0);
                                 break;
+                            case 'h':
+                                usage();
+                                break;
 							default:
 								usage();
 						}
@@ -225,13 +232,7 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    if(!file) {
-        struct pollfd stdin_pollfd;
-        stdin_pollfd.fd = STDIN_FILENO;
-        stdin_pollfd.events = POLLIN;
-        if(poll(&stdin_pollfd, 1, 1000) == 0)
-            usage();
-        
+    if(!file) {        
         struct stat attributes;
         switch(action) {
             case ACTION_DECOMPRESS:

@@ -26,7 +26,6 @@
 #define CLIENT_H
 
 #include <string.h>
-#include <poll.h>
 
 #include "file_header.h"
 #include "sharc.h"
