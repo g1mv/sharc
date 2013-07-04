@@ -30,14 +30,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if __STDC_VERSION__ != 201112L
-//#error No C11 support
-#endif
-
-#if __STDC_NO_THREADS__
-//#error No multithreading support
-#endif
-
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 
 #elif __BYTE_ORDER == __BIG_ENDIAN
@@ -56,8 +48,6 @@
 #warning Impossible to force functions inlining. Expect performance issues.
 #endif
 
-#define MAX_PARALLELISM             4
-
 #define MAJOR_VERSION               0
 #define MINOR_VERSION               9
 #define REVISION                    4
@@ -69,6 +59,5 @@ typedef uint8_t byte;
 typedef uint8_t bool;
 
 void error(const char*);
-FILE* checkOpenFile(const char*, const char*, const bool);
 
 #endif

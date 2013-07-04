@@ -26,7 +26,6 @@
 #define SHARC_H
 
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
 #include "chrono.h"
@@ -34,19 +33,7 @@
 #include "file_header.h"
 #include "block_header.h"
 
-#define ACTION_COMPRESS     0
-#define ACTION_DECOMPRESS   1
-
-#define NO_PROMPTING        FALSE
-#define PROMPTING           TRUE
-
-byte readBuffer[MAX_PARALLELISM][MAX_BUFFER_SIZE];
-byte interBuffer[MAX_PARALLELISM][MAX_BUFFER_SIZE];
-byte writeBuffer[MAX_PARALLELISM][MAX_BUFFER_SIZE];
-
-void compress(const char*, const byte, const uint32_t, const bool);
-void decompress(const char*, const bool);
-void version();
-void usage();
+void compress(FILE*, FILE*, BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte, const uint32_t, const struct stat);
+FILE_HEADER decompress(FILE*, FILE*, BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*);
 
 #endif
