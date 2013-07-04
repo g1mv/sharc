@@ -62,6 +62,22 @@ FORCE_INLINE void usage() {
     exit(0);
 }
 
+FORCE_INLINE void compressStream(FILE* inStream, FILE* outStream, const byte attemptMode, const uint32_t blockSize, const struct stat attributes) {
+    BYTE_BUFFER in = createByteBuffer(readBuffer, 0, blockSize);
+    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, blockSize);
+    BYTE_BUFFER out = createByteBuffer(writeBuffer, 0, blockSize);
+    
+    compress(inStream, outStream, &in, &inter, &out, attemptMode, blockSize, attributes);
+}
+
+FORCE_INLINE FILE_HEADER decompressStream(FILE* inStream, FILE* outStream) {
+    BYTE_BUFFER in = createByteBuffer(readBuffer, 0, 0);
+    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
+    BYTE_BUFFER out = createByteBuffer(writeBuffer, 0, 0);
+    
+    return decompress(inStream, outStream, &in, &inter, &out);
+}
+
 FORCE_INLINE void compressFile(const char* inFileName, const byte attemptMode, const uint32_t blockSize, const bool prompting) {
     char outFileName[strlen(inFileName) + 6];
     
@@ -75,14 +91,10 @@ FORCE_INLINE void compressFile(const char* inFileName, const byte attemptMode, c
     struct stat attributes;
     stat(inFileName, &attributes);
     
-    BYTE_BUFFER in = createByteBuffer(readBuffer, 0, blockSize);
-    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, blockSize);
-    BYTE_BUFFER out = createByteBuffer(writeBuffer, 0, blockSize);
-    
     CHRONO chrono;
     chronoStart(&chrono);
     
-    compress(inFile, outFile, &in, &inter, &out, attemptMode, blockSize, attributes);
+    compressStream(inFile, outFile, attemptMode, blockSize, attributes);
     
     chronoStop(&chrono);
     const double elapsed = chronoElapsed(&chrono);
@@ -109,14 +121,10 @@ FORCE_INLINE void decompressFile(const char* inFileName, const bool prompting) {
     FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
     FILE* outFile = checkOpenFile(outFileName, "wb+", prompting);
     
-    BYTE_BUFFER in = createByteBuffer(readBuffer, 0, 0);
-    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
-    BYTE_BUFFER out = createByteBuffer(writeBuffer, 0, 0/*fileHeader.bufferSize*/);
-    
     CHRONO chrono;
     chronoStart(&chrono);
 
-    FILE_HEADER fileHeader = decompress(inFile, outFile, &in, &inter, &out);
+    FILE_HEADER fileHeader = decompressStream(inFile, outFile);
     
     chronoStop(&chrono);
     const double elapsed = chronoElapsed(&chrono);
@@ -138,9 +146,7 @@ FORCE_INLINE void decompressFile(const char* inFileName, const bool prompting) {
 }
 
 int main(int argc, char *argv[]) {
-    if(argc <= 1)
-		usage();
-    
+    bool file = FALSE;
     byte action = ACTION_COMPRESS;
 	byte mode = MODE_SINGLE_PASS;
     byte prompting = PROMPTING;
@@ -206,6 +212,7 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             default:
+                file = TRUE;
                 switch(action) {
                     case ACTION_DECOMPRESS:
                         decompressFile(argv[i], prompting);
@@ -214,6 +221,24 @@ int main(int argc, char *argv[]) {
                         compressFile(argv[i], mode, PREFERRED_BUFFER_SIZE, prompting);
                         break;
                 }
+                break;
+        }
+    }
+    
+    if(!file) {
+        struct pollfd stdin_pollfd;
+        stdin_pollfd.fd = STDIN_FILENO;
+        stdin_pollfd.events = POLLIN;
+        if(poll(&stdin_pollfd, 1, 1000) == 0)
+            usage();
+        
+        struct stat attributes;
+        switch(action) {
+            case ACTION_DECOMPRESS:
+                decompressStream(stdin, stdout);
+                break;
+            default:
+                compressStream(stdin, stdout, mode, PREFERRED_BUFFER_SIZE, attributes);
                 break;
         }
     }

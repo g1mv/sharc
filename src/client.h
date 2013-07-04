@@ -26,13 +26,14 @@
 #define CLIENT_H
 
 #include <string.h>
+#include <poll.h>
 
 #include "file_header.h"
 #include "sharc.h"
 #include "chrono.h"
 
-#define ACTION_COMPRESS     0
-#define ACTION_DECOMPRESS   1
+#define ACTION_COMPRESS        0
+#define ACTION_DECOMPRESS      1
 
 #define NO_PROMPTING        FALSE
 #define PROMPTING           TRUE
@@ -44,6 +45,8 @@ byte writeBuffer[MAX_BUFFER_SIZE];
 FILE* checkOpenFile(const char*, const char*, const bool);
 void version();
 void usage();
+void compressStream(FILE*, FILE*, const byte, const uint32_t, const struct stat);
+FILE_HEADER decompressStream(FILE*, FILE*);
 void compressFile(const char*, const byte, const uint32_t, const bool);
 void decompressFile(const char*, const bool);
 int main(int, char **);

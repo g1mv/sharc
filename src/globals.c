@@ -25,6 +25,6 @@
 #include "globals.h"
 
 FORCE_INLINE void error(const char* message) {
-    printf("Sharc error : %s\n", message);
+    sprintf("Sharc error : %s\n", message, stderr);
     exit(0);
 }
