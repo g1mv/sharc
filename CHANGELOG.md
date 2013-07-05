@@ -1,3 +1,11 @@
+0.9.4 beta
+----------
+July 5, 2013
+* Added no prompting for overwrites option
+* Created client interface to differentiate file management and stream compression
+* Added stdin reading / stdout writing support
+* Added help option to display usage
+
 0.9.3 beta
 ----------
 July 2, 2013
