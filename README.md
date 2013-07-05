@@ -4,7 +4,7 @@ SHARC
 Simple Highspeed Archiver<br/>www.centaurean.com/sharc
 
 SHARC is a very fast file archiver with one goal in mind : speed.
-On an Intel Core I7 it reaches compression speeds of <b>460 MB/s</b> and decompression speeds of <b>770 MB/s</b>, and that is <b>PER core</b> !
+On an Intel Core i7 it reaches compression speeds of <b>460 MB/s</b> and decompression speeds of <b>770 MB/s</b>, and that is <b>PER core</b> !
 Compression ratio is typically at around 50-60 % with the fastest algorithm.
 
 Usage
