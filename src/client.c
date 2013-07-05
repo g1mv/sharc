@@ -67,14 +67,12 @@ FORCE_INLINE void usage() {
 
 FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attemptMode, const uint32_t blockSize, const bool prompting) {
     struct stat attributes;
+    char outFileName[strlen(in->name) + 6];
+    
     if(in->type == TYPE_FILE) {
         if(out->type == TYPE_FILE) {
-            char outFileName[strlen(in->name) + 6];
-        
-            outFileName[0] = '\0';
-            strcat(outFileName, in->name);
-            strcat(outFileName, ".sharc");
-        
+            sprintf(outFileName, "%s.sharc", in->name);
+            
             out->name = outFileName;
         }
         
@@ -83,17 +81,17 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
         stat(in->name, &attributes);
     } else {
         if(out->type == TYPE_FILE)
-            out->name = "stdin.sharc";
+            out->name = STDIN_COMPRESSED;
         
         in->stream = stdin;
-        in->name = "stdin";
+        in->name = STDIN;
     }
     
     if(out->type == TYPE_FILE)
         out->stream = checkOpenFile(out->name, "wb+", prompting);
     else {
         out->stream = stdout;
-        out->name = "stdout";
+        out->name = STDOUT;
     }
     
     BYTE_BUFFER read = createByteBuffer(readBuffer, 0, blockSize);
@@ -108,46 +106,48 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
     if(out->type == TYPE_FILE) {
         const double elapsed = chronoElapsed(&chrono);
         
-        uint64_t totalRead = ftell(in->stream);
         uint64_t totalWritten = ftell(out->stream);
-        
         fclose(out->stream);
+        
         if(in->type == TYPE_FILE) {
+            uint64_t totalRead = ftell(in->stream);
             fclose(in->stream);
         
             double ratio = (1.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
-            printf("Compressed %s, %lli bytes in, %lli bytes out, ", in->name, totalRead, totalWritten);
+            printf("Compressed %s to %s, %lli bytes in, %lli bytes out, ", in->name, out->name, totalRead, totalWritten);
             printf("Ratio out / in = %g, Time = %.3lf s, Speed = %f MB/s\n", ratio, elapsed, speed);
-        }
+        } else
+            printf("Compressed %s to %s, %lli bytes written.\n", in->name, out->name, totalWritten);
     }
 }
 
 FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool prompting) {
+    const unsigned long originalFileNameLength = strlen(in->name) - 6;
+    char outFileName[originalFileNameLength];
+    
     if(in->type == TYPE_FILE) {
         if(out->type == TYPE_FILE) {
-            const unsigned long originalFileNameLength = strlen(in->name) - 6;
-            char outFileName[originalFileNameLength];
-    
             outFileName[0] = '\0';
             strncat(outFileName, in->name, originalFileNameLength);
-            out->stream = checkOpenFile(outFileName, "wb+", prompting);
+            
+            out->name = outFileName;
         }
     
         in->stream = checkOpenFile(in->name, "rb", FALSE);
     } else {
         if(out->type == TYPE_FILE)
-            out->name = "stdin";
+            out->name = STDIN;
         
         in->stream = stdin;
-        in->name = "stdin";
+        in->name = STDIN;
     }
     
     if(out->type == TYPE_FILE)
         out->stream = checkOpenFile(out->name, "wb+", prompting);
     else {
         out->stream = stdout;
-        out->name = "stdout";
+        out->name = STDOUT;
     }
     
     BYTE_BUFFER read = createByteBuffer(readBuffer, 0, 0);
@@ -160,24 +160,28 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
     chronoStop(&chrono);
     
     if(out->type == TYPE_FILE) {
+        const bool notFromStdin = strcmp(out->name, STDIN);
         const double elapsed = chronoElapsed(&chrono);
         
-        uint64_t totalRead = ftell(in->stream);
         uint64_t totalWritten = ftell(out->stream);
-        
         fclose(out->stream);
-        restoreFileAttributes(fileHeader, out->name);
+        
+        if(notFromStdin)
+            restoreFileAttributes(fileHeader, out->name);
         
         if(in->type == TYPE_FILE) {
+            uint64_t totalRead = ftell(in->stream);
             fclose(in->stream);
         
-            if(totalWritten != fileHeader.originalFileSize)
-                error("Input file is corrupt !");
+            if(notFromStdin)
+                if(totalWritten != fileHeader.originalFileSize)
+                    error("Input file is corrupt !");
         
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
-            printf("Decompressed %s, %lli bytes in, %lli bytes out, ", in->name, totalRead, totalWritten);
+            printf("Decompressed %s to %s, %lli bytes in, %lli bytes out, ", in->name, out->name, totalRead, totalWritten);
             printf("Time = %.3lf s, Speed = %f MB/s\n", elapsed, speed);
-        }
+        } else
+            printf("Decompressed %s to %s, %lli bytes written.\n", in->name, out->name, totalWritten);
     }
 }
 

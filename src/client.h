@@ -40,6 +40,10 @@
 #define TYPE_FILE               0
 #define TYPE_STREAM             1
 
+#define STDIN                   "stdin"
+#define STDOUT                  "stdout"
+#define STDIN_COMPRESSED        "stdin.sharc"
+
 typedef struct {
     const char* name;
     FILE* stream;
