@@ -58,99 +58,140 @@ FORCE_INLINE void usage() {
 	printf("                                    1 = Better compression (dual pass), slightly slower\n");
 	printf("  -d, --decompress                  Decompress files\n");
     printf("  -n, --no-prompt                   Overwrite without prompting\n");
+    printf("  -i, --stdin                       Read from stdin\n");
+    printf("  -o, --stdout                      Write to stdout\n");
     printf("  -v, --version                     Display version information\n");
     printf("  -h, --help                        Display this help\n");
     exit(0);
 }
 
-FORCE_INLINE void compressStream(FILE* inStream, FILE* outStream, const byte attemptMode, const uint32_t blockSize, const struct stat attributes) {
-    BYTE_BUFFER in = createByteBuffer(readBuffer, 0, blockSize);
-    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, blockSize);
-    BYTE_BUFFER out = createByteBuffer(writeBuffer, 0, blockSize);
-    
-    compress(inStream, outStream, &in, &inter, &out, attemptMode, blockSize, attributes);
-}
-
-FORCE_INLINE FILE_HEADER decompressStream(FILE* inStream, FILE* outStream) {
-    BYTE_BUFFER in = createByteBuffer(readBuffer, 0, 0);
-    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
-    BYTE_BUFFER out = createByteBuffer(writeBuffer, 0, 0);
-    
-    return decompress(inStream, outStream, &in, &inter, &out);
-}
-
-FORCE_INLINE void compressFile(const char* inFileName, const byte attemptMode, const uint32_t blockSize, const bool prompting) {
-    char outFileName[strlen(inFileName) + 6];
-    
-    outFileName[0] = '\0';
-    strcat(outFileName, inFileName);
-    strcat(outFileName, ".sharc");
-    
-    FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
-    FILE* outFile = checkOpenFile(outFileName, "wb+", prompting);
-    
+FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attemptMode, const uint32_t blockSize, const bool prompting) {
     struct stat attributes;
-    stat(inFileName, &attributes);
+    if(in->type == TYPE_FILE) {
+        if(out->type == TYPE_FILE) {
+            char outFileName[strlen(in->name) + 6];
+        
+            outFileName[0] = '\0';
+            strcat(outFileName, in->name);
+            strcat(outFileName, ".sharc");
+        
+            out->name = outFileName;
+        }
+        
+        in->stream = checkOpenFile(in->name, "rb", FALSE);
+        
+        stat(in->name, &attributes);
+    } else {
+        if(out->type == TYPE_FILE)
+            out->name = "stdin.sharc";
+        
+        in->stream = stdin;
+        in->name = "stdin";
+    }
+    
+    if(out->type == TYPE_FILE)
+        out->stream = checkOpenFile(out->name, "wb+", prompting);
+    else {
+        out->stream = stdout;
+        out->name = "stdout";
+    }
+    
+    BYTE_BUFFER read = createByteBuffer(readBuffer, 0, blockSize);
+    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, blockSize);
+    BYTE_BUFFER write = createByteBuffer(writeBuffer, 0, blockSize);
     
     CHRONO chrono;
     chronoStart(&chrono);
-    
-    compressStream(inFile, outFile, attemptMode, blockSize, attributes);
-    
+    compress(in->stream, out->stream, &read, &inter, &write, attemptMode, blockSize, attributes);
     chronoStop(&chrono);
-    const double elapsed = chronoElapsed(&chrono);
     
-	uint64_t totalRead = ftell(inFile);
-    uint64_t totalWritten = ftell(outFile);
-    
-    fclose(inFile);
-    fclose(outFile);
-    
-    double ratio = (1.0 * totalWritten) / totalRead;
-    double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
-    printf("Compressed file %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
-    printf("Ratio out / in = %g, Time = %.3lf s, Speed = %f MB/s\n", ratio, elapsed, speed);
+    if(out->type == TYPE_FILE) {
+        const double elapsed = chronoElapsed(&chrono);
+        
+        uint64_t totalRead = ftell(in->stream);
+        uint64_t totalWritten = ftell(out->stream);
+        
+        fclose(out->stream);
+        if(in->type == TYPE_FILE) {
+            fclose(in->stream);
+        
+            double ratio = (1.0 * totalWritten) / totalRead;
+            double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
+            printf("Compressed %s, %lli bytes in, %lli bytes out, ", in->name, totalRead, totalWritten);
+            printf("Ratio out / in = %g, Time = %.3lf s, Speed = %f MB/s\n", ratio, elapsed, speed);
+        }
+    }
 }
 
-FORCE_INLINE void decompressFile(const char* inFileName, const bool prompting) {
-    const unsigned long originalFileNameLength = strlen(inFileName) - 6;
-    char outFileName[originalFileNameLength];
+FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool prompting) {
+    if(in->type == TYPE_FILE) {
+        if(out->type == TYPE_FILE) {
+            const unsigned long originalFileNameLength = strlen(in->name) - 6;
+            char outFileName[originalFileNameLength];
     
-    outFileName[0] = '\0';
-    strncat(outFileName, inFileName, originalFileNameLength);
+            outFileName[0] = '\0';
+            strncat(outFileName, in->name, originalFileNameLength);
+            out->stream = checkOpenFile(outFileName, "wb+", prompting);
+        }
     
-    FILE* inFile = checkOpenFile(inFileName, "rb", FALSE);
-    FILE* outFile = checkOpenFile(outFileName, "wb+", prompting);
+        in->stream = checkOpenFile(in->name, "rb", FALSE);
+    } else {
+        if(out->type == TYPE_FILE)
+            out->name = "stdin";
+        
+        in->stream = stdin;
+        in->name = "stdin";
+    }
+    
+    if(out->type == TYPE_FILE)
+        out->stream = checkOpenFile(out->name, "wb+", prompting);
+    else {
+        out->stream = stdout;
+        out->name = "stdout";
+    }
+    
+    BYTE_BUFFER read = createByteBuffer(readBuffer, 0, 0);
+    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
+    BYTE_BUFFER write = createByteBuffer(writeBuffer, 0, 0);
     
     CHRONO chrono;
     chronoStart(&chrono);
-
-    FILE_HEADER fileHeader = decompressStream(inFile, outFile);
-    
+    FILE_HEADER fileHeader = decompress(in->stream, out->stream, &read, &inter, &write);
     chronoStop(&chrono);
-    const double elapsed = chronoElapsed(&chrono);
     
-    uint64_t totalRead = ftell(inFile);
-    uint64_t totalWritten = ftell(outFile);
-    
-    fclose(inFile);
-    fclose(outFile);
-    
-    if(totalWritten != fileHeader.originalFileSize)
-        error("Input file is corrupt !");
-    
-    restoreFileAttributes(fileHeader, outFileName);
-    
-    double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
-    printf("Decompressed file %s, %lli bytes in, %lli bytes out, ", inFileName, totalRead, totalWritten);
-    printf("Time = %.3lf s, Speed = %f MB/s\n", elapsed, speed);
+    if(out->type == TYPE_FILE) {
+        const double elapsed = chronoElapsed(&chrono);
+        
+        uint64_t totalRead = ftell(in->stream);
+        uint64_t totalWritten = ftell(out->stream);
+        
+        fclose(out->stream);
+        restoreFileAttributes(fileHeader, out->name);
+        
+        if(in->type == TYPE_FILE) {
+            fclose(in->stream);
+        
+            if(totalWritten != fileHeader.originalFileSize)
+                error("Input file is corrupt !");
+        
+            double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
+            printf("Decompressed %s, %lli bytes in, %lli bytes out, ", in->name, totalRead, totalWritten);
+            printf("Time = %.3lf s, Speed = %f MB/s\n", elapsed, speed);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
-    bool file = FALSE;
+    if(argc <= 1)
+        usage();
+    
     byte action = ACTION_COMPRESS;
 	byte mode = MODE_SINGLE_PASS;
     byte prompting = PROMPTING;
+    CLIENT_IO in;
+    in.type = TYPE_FILE;
+    CLIENT_IO out;
+    out.type = TYPE_FILE;
     
     size_t argLength;
     for(int i = 1; i < argc; i ++) {
@@ -174,6 +215,12 @@ int main(int argc, char *argv[]) {
                         break;
                     case 'n':
                         prompting = NO_PROMPTING;
+                        break;
+                    case 'i':
+                        in.type = TYPE_STREAM;
+                        break;
+                    case 'o':
+                        out.type = TYPE_STREAM;
                         break;
                     case 'v':
                         version();
@@ -203,6 +250,14 @@ int main(int argc, char *argv[]) {
                                     usage();
                                 prompting = NO_PROMPTING;
                                 break;
+                            case 's':
+                                if(argLength == 7)
+                                    in.type = TYPE_STREAM;
+                                else if(argLength == 8)
+                                    out.type = TYPE_STREAM;
+                                else
+                                    usage();
+                                break;
                             case 'v':
                                 if(argLength != 9)
                                     usage();
@@ -219,27 +274,26 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             default:
-                file = TRUE;
+                in.name = argv[i];
                 switch(action) {
                     case ACTION_DECOMPRESS:
-                        decompressFile(argv[i], prompting);
+                        clientDecompress(&in, &out, prompting);
                         break;
                     default:
-                        compressFile(argv[i], mode, PREFERRED_BUFFER_SIZE, prompting);
+                        clientCompress(&in, &out, mode, PREFERRED_BUFFER_SIZE, prompting);
                         break;
                 }
                 break;
         }
     }
     
-    if(!file) {        
-        struct stat attributes;
+    if(in.type == TYPE_STREAM) {
         switch(action) {
             case ACTION_DECOMPRESS:
-                decompressStream(stdin, stdout);
+                clientDecompress(&in, &out, prompting);
                 break;
             default:
-                compressStream(stdin, stdout, mode, PREFERRED_BUFFER_SIZE, attributes);
+                clientCompress(&in, &out, mode, PREFERRED_BUFFER_SIZE, prompting);
                 break;
         }
     }

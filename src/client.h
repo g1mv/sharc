@@ -31,11 +31,20 @@
 #include "sharc.h"
 #include "chrono.h"
 
-#define ACTION_COMPRESS        0
-#define ACTION_DECOMPRESS      1
+#define ACTION_COMPRESS         0
+#define ACTION_DECOMPRESS       1
 
-#define NO_PROMPTING        FALSE
-#define PROMPTING           TRUE
+#define NO_PROMPTING            FALSE
+#define PROMPTING               TRUE
+
+#define TYPE_FILE               0
+#define TYPE_STREAM             1
+
+typedef struct {
+    const char* name;
+    FILE* stream;
+    byte type;
+} CLIENT_IO;
 
 byte readBuffer[MAX_BUFFER_SIZE];
 byte interBuffer[MAX_BUFFER_SIZE];
@@ -44,10 +53,8 @@ byte writeBuffer[MAX_BUFFER_SIZE];
 FILE* checkOpenFile(const char*, const char*, const bool);
 void version();
 void usage();
-void compressStream(FILE*, FILE*, const byte, const uint32_t, const struct stat);
-FILE_HEADER decompressStream(FILE*, FILE*);
-void compressFile(const char*, const byte, const uint32_t, const bool);
-void decompressFile(const char*, const bool);
+void clientCompress(CLIENT_IO*, CLIENT_IO*, const byte, const uint32_t, const bool);
+void clientDecompress(CLIENT_IO*, CLIENT_IO*, const bool);
 int main(int, char **);
 
 #endif
