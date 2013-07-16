@@ -28,6 +28,8 @@
 #include <sys/time.h>
 #include <stddef.h>
 
+#include "globals.h"
+
 #define MICROSECONDS    1000000.0
 
 typedef struct {
