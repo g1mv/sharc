@@ -22,7 +22,6 @@
  * 02/07/13 02:34
  */
 
-#include "stddef.h"
 #include "chrono.h"
 
 FORCE_INLINE void chronoStart(CHRONO* chrono) {
