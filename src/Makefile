@@ -29,24 +29,20 @@ ifdef SystemRoot
 EXTENSION = .exe
 ARROW = ^-^>
 PLATFORM = MS Windows
+DATECMD = date /T
 else
 # Linux, OSX
 EXTENSION = 
 ARROW = →
 PLATFORM = GNU/Linux
+DATECMD = date
 endif
 
-ifndef ARCH
-#make ARCH=32
-#make ARCH=64
-ARCH=64
-endif
+DATE=$(shell $(DATECMD))
+client.o : CFLAGS+=-DPLATFORM="\"$(PLATFORM)\"" -DDATE="\"$(DATE)\""
 
-DATE=$(shell date)
-client.o : CFLAGS+= -DARCH="$(ARCH)" -DPLATFORM="\"$(PLATFORM)\"" -DDATE="\"$(DATE)\""
-
-CC = $(CROSS-PREFIX)gcc
-CFLAGS = -O3 -std=gnu99 -w -m$(ARCH)
+CC = @$(CROSS-PREFIX)gcc
+CFLAGS = -O3 -std=gnu99 -w
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
