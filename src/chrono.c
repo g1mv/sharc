@@ -25,14 +25,14 @@
 #include "stddef.h"
 #include "chrono.h"
 
-void chronoStart(CHRONO* chrono) {
+FORCE_INLINE void chronoStart(CHRONO* chrono) {
     gettimeofday(&chrono->start, NULL);
 }
 
-void chronoStop(CHRONO* chrono) {
+FORCE_INLINE void chronoStop(CHRONO* chrono) {
     gettimeofday(&chrono->stop, NULL);
 }
 
-double chronoElapsed(CHRONO* chrono) {
+FORCE_INLINE double chronoElapsed(CHRONO* chrono) {
     return ((chrono->stop.tv_sec * MICROSECONDS + chrono->stop.tv_usec) - (chrono->start.tv_sec * MICROSECONDS + chrono->start.tv_usec)) / MICROSECONDS;
 }

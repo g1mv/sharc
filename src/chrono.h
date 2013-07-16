@@ -26,6 +26,7 @@
 #define CHRONO_H
 
 #include <sys/time.h>
+#include <stddef.h>
 
 #define MICROSECONDS    1000000.0
 
