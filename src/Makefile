@@ -28,14 +28,25 @@ TARGET = sharc
 ifdef SystemRoot
 EXTENSION = .exe
 ARROW = ^-^>
+PLATFORM = MS Windows
 else
 # Linux, OSX
 EXTENSION = 
 ARROW = →
+PLATFORM = GNU/Linux
 endif
 
-CC = gcc
-CFLAGS = -O3 -std=gnu99 -w
+ifndef ARCH
+#make ARCH=32
+#make ARCH=64
+ARCH=64
+endif
+
+DATE=$(shell date)
+client.o : CFLAGS+= -DARCH="$(ARCH)" -DPLATFORM="\"$(PLATFORM)\"" -DDATE="\"$(DATE)\""
+
+CC = $(CROSS-PREFIX)gcc
+CFLAGS = -O3 -std=gnu99 -w -m$(ARCH)
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
@@ -52,11 +63,11 @@ footer:
 $(TARGET)$(EXTENSION): $(OBJ)
 	@echo Linking sharc ...
 	@echo $^ $(ARROW) $(TARGET)$(EXTENSION)
-	@$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
+	$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
 	
 %.o: %.c
 	@echo $^ $(ARROW) $@
-	@$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 	
 clean:
 	@echo Cleaning build directory...
