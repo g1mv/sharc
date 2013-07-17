@@ -26,7 +26,6 @@
 #define CHRONO_H
 
 #include <sys/time.h>
-#include <stddef.h>
 
 #include "globals.h"
 

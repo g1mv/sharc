@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stddef.h>
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 
