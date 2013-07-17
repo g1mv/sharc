@@ -24,25 +24,30 @@
 
 TARGET = sharc
 
-# Windows
-ifdef SystemRoot
-EXTENSION = .exe
-ARROW = ^-^>
-PLATFORM = MS Windows
-DATECMD = date /T
+CFLAGS = -O3 -std=c99 -w
+
+ifeq ($(OS),Windows_NT)
+    EXTENSION = .exe
+    ARROW = ^-^>
+    PLATFORM = MS Windows
+    DATECMD = date /T
 else
-# Linux, OSX
-EXTENSION = 
-ARROW = →
-PLATFORM = GNU/Linux
-DATECMD = date
+    EXTENSION =
+    ARROW = →
+    DATECMD = date
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        PLATFORM = GNU/Linux
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        PLATFORM = Mac OS/X
+    endif
 endif
 
 DATE=$(shell $(DATECMD))
-client.o : CFLAGS+=-DPLATFORM="\"$(PLATFORM)\"" -DDATE="\"$(DATE)\""
+client.o : CFLAGS += -DPLATFORM="\"$(PLATFORM)\"" -DDATE="\"$(DATE)\""
 
 CC = @$(CROSS-PREFIX)gcc
-CFLAGS = -O3 -std=gnu99 -w
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
