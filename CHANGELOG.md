@@ -1,3 +1,9 @@
+0.9.5 beta
+----------
+July 20, 2013
+* Improved makefile and added build information on version display
+* Added stddef.h to globals.h for standard macro definitions
+
 0.9.4 beta
 ----------
 July 5, 2013
