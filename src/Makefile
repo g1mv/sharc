@@ -45,7 +45,7 @@ else
 endif
 
 ifdef ARCH
-    CFLAGS+=-m$(ARCH)
+    CFLAGS += -m$(ARCH)
 endif
 
 DATE=$(shell $(DATECMD))
