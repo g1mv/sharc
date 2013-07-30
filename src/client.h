@@ -25,6 +25,10 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#define __USE_LARGEFILE64
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #include <string.h>
 
 #include "file_header.h"
