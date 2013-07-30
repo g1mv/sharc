@@ -29,6 +29,10 @@
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
+#ifdef __FreeBSD__
+#define stat64 stat
+#endif
+
 #include <sys/stat.h>
 #include <stdio.h>
 #include <time.h>
