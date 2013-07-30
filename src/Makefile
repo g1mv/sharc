@@ -44,6 +44,10 @@ else
     endif
 endif
 
+ifdef ARCH
+    CFLAGS+=-m$(ARCH)
+endif
+
 DATE=$(shell $(DATECMD))
 client.o : CFLAGS += -DPLATFORM="\"$(PLATFORM)\"" -DDATE="\"$(DATE)\""
 
