@@ -123,7 +123,7 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
             double ratio = (100.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
             printf("Compressed %s to %s, %llu bytes in, %llu bytes out, ", in->name, out->name, totalRead, totalWritten);
-            printf("Ratio out / in = %.1lf %, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
+            printf("Ratio out / in = %.1lf%%, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
         } else
             printf("Compressed %s to %s, %llu bytes written.\n", in->name, out->name, totalWritten);
     }
