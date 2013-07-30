@@ -42,7 +42,7 @@ typedef struct {
     uint64_t fileModified;
 } FILE_HEADER;
 
-FILE_HEADER createFileHeader(const uint32_t, struct stat);
+FILE_HEADER createFileHeader(const uint32_t, struct stat64);
 bool checkFileType(byte*);
 FILE_HEADER readFileHeader(FILE*);
 void restoreFileAttributes(FILE_HEADER, const char*);

@@ -33,7 +33,7 @@
 #include "file_header.h"
 #include "block_header.h"
 
-void compress(FILE*, FILE*, BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte, const uint32_t, const struct stat);
+void compress(FILE*, FILE*, BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte, const uint32_t, const struct stat64);
 FILE_HEADER decompress(FILE*, FILE*, BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*);
 
 #endif

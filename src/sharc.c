@@ -24,7 +24,7 @@
 
 #include "sharc.h"
 
-FORCE_INLINE void compress(FILE* inStream, FILE* outStream, BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* out, const byte attemptMode, const uint32_t blockSize, const struct stat attributes) {
+FORCE_INLINE void compress(FILE* inStream, FILE* outStream, BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* out, const byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
     ENCODING_RESULT result;
     
     FILE_HEADER fileHeader = createFileHeader(blockSize, attributes);

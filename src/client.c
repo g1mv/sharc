@@ -67,7 +67,7 @@ FORCE_INLINE void usage() {
 }
 
 FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attemptMode, const uint32_t blockSize, const bool prompting) {
-    struct stat attributes;
+    struct stat64 attributes;
     char outFileName[strlen(in->name) + 6];
     
     if(in->type == TYPE_FILE) {
@@ -79,7 +79,7 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
         
         in->stream = checkOpenFile(in->name, "rb", FALSE);
         
-        stat(in->name, &attributes);
+        stat64(in->name, &attributes);
     } else {
 #ifdef _WIN32
         freopen(NULL, "rb", stdin);

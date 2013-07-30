@@ -25,7 +25,7 @@
 
 #include "file_header.h"
 
-FORCE_INLINE FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat fileAttributes) {
+FORCE_INLINE FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat64 fileAttributes) {
     FILE_HEADER fileHeader;
     fileHeader.name[0] = 'S';
     fileHeader.name[1] = 'H';
