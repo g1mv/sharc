@@ -25,6 +25,10 @@
 #ifndef FILE_HEADER_H
 #define FILE_HEADER_H
 
+#define __USE_LARGEFILE64
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #include <sys/stat.h>
 #include <stdio.h>
 #include <time.h>
