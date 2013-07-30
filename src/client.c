@@ -113,19 +113,19 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
     if(out->type == TYPE_FILE) {
         const double elapsed = chronoElapsed(&chrono);
         
-        off64_t totalWritten = ftello64(out->stream);
+        uint64_t totalWritten = ftello64(out->stream);
         fclose(out->stream);
         
         if(in->type == TYPE_FILE) {
-            off64_t totalRead = ftello64(in->stream);
+            uint64_t totalRead = ftello64(in->stream);
             fclose(in->stream);
         
             double ratio = (1.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
-            printf("Compressed %s to %s, %lli bytes in, %lli bytes out, ", in->name, out->name, totalRead, totalWritten);
+            printf("Compressed %s to %s, %llu bytes in, %llu bytes out, ", in->name, out->name, totalRead, totalWritten);
             printf("Ratio out / in = %g, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
         } else
-            printf("Compressed %s to %s, %lli bytes written.\n", in->name, out->name, totalWritten);
+            printf("Compressed %s to %s, %llu bytes written.\n", in->name, out->name, totalWritten);
     }
 }
 
@@ -176,14 +176,14 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
         const bool notFromStdin = strcmp(out->name, STDIN);
         const double elapsed = chronoElapsed(&chrono);
         
-        off64_t totalWritten = ftello64(out->stream);
+        uint64_t totalWritten = ftello64(out->stream);
         fclose(out->stream);
         
         if(notFromStdin)
             restoreFileAttributes(fileHeader, out->name);
         
         if(in->type == TYPE_FILE) {
-            off64_t totalRead = ftello64(in->stream);
+            uint64_t totalRead = ftello64(in->stream);
             fclose(in->stream);
         
             if(notFromStdin)
@@ -191,10 +191,10 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
                     error("Input file is corrupt !");
         
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
-            printf("Decompressed %s to %s, %lli bytes in, %lli bytes out, ", in->name, out->name, totalRead, totalWritten);
+            printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", in->name, out->name, totalRead, totalWritten);
             printf("Time = %.3lf s, Speed = %.0lf MB/s\n", elapsed, speed);
         } else
-            printf("Decompressed %s to %s, %lli bytes written.\n", in->name, out->name, totalWritten);
+            printf("Decompressed %s to %s, %llu bytes written.\n", in->name, out->name, totalWritten);
     }
 }
 
