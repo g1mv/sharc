@@ -89,7 +89,7 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
     }
     
     if(out->type == TYPE_FILE)
-        out->stream = checkOpenFile(out->name, "wb+", prompting);
+        out->stream = checkOpenFile(out->name, "wb", prompting);
     else {
         out->stream = stdout;
         out->name = STDOUT;
@@ -145,7 +145,7 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
     }
     
     if(out->type == TYPE_FILE)
-        out->stream = checkOpenFile(out->name, "wb+", prompting);
+        out->stream = checkOpenFile(out->name, "wb", prompting);
     else {
         out->stream = stdout;
         out->name = STDOUT;
