@@ -137,6 +137,9 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
     
         in->stream = checkOpenFile(in->name, "rb", FALSE);
     } else {
+#ifdef _WIN32
+        freopen(NULL, "rb", stdin);
+#endif
         if(out->type == TYPE_FILE)
             out->name = STDIN;
         
@@ -147,6 +150,9 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
     if(out->type == TYPE_FILE)
         out->stream = checkOpenFile(out->name, "wb", prompting);
     else {
+#ifdef _WIN32
+        freopen(NULL, "wb", stdout);
+#endif
         out->stream = stdout;
         out->name = STDOUT;
     }
