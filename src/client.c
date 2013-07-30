@@ -113,11 +113,11 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
     if(out->type == TYPE_FILE) {
         const double elapsed = chronoElapsed(&chrono);
         
-        uint64_t totalWritten = ftello64(out->stream);
+        uint64_t totalWritten = ftello(out->stream);
         fclose(out->stream);
         
         if(in->type == TYPE_FILE) {
-            uint64_t totalRead = ftello64(in->stream);
+            uint64_t totalRead = ftello(in->stream);
             fclose(in->stream);
         
             double ratio = (1.0 * totalWritten) / totalRead;
@@ -176,14 +176,14 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
         const bool notFromStdin = strcmp(out->name, STDIN);
         const double elapsed = chronoElapsed(&chrono);
         
-        uint64_t totalWritten = ftello64(out->stream);
+        uint64_t totalWritten = ftello(out->stream);
         fclose(out->stream);
         
         if(notFromStdin)
             restoreFileAttributes(fileHeader, out->name);
         
         if(in->type == TYPE_FILE) {
-            uint64_t totalRead = ftello64(in->stream);
+            uint64_t totalRead = ftello(in->stream);
             fclose(in->stream);
         
             if(notFromStdin)
