@@ -33,7 +33,7 @@ ifeq ($(OS),Windows_NT)
     DATECMD = date /T
 else
     EXTENSION =
-    ARROW = →
+    ARROW = \-\>
     DATECMD = date
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
