@@ -29,19 +29,11 @@ CFLAGS = -O3 -std=c99 -w -D_FILE_OFFSET_BITS=64
 ifeq ($(OS),Windows_NT)
     EXTENSION = .exe
     ARROW = ^-^>
-    PLATFORM = MS Windows
     DATECMD = date /T
 else
     EXTENSION =
     ARROW = \-\>
     DATECMD = date
-    UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Linux)
-        PLATFORM = GNU/Linux
-    endif
-    ifeq ($(UNAME_S),Darwin)
-        PLATFORM = Mac OS/X
-    endif
 endif
 
 ifdef ARCH
@@ -49,7 +41,7 @@ ifdef ARCH
 endif
 
 DATE=$(shell $(DATECMD))
-client.o : CFLAGS += -DPLATFORM="\"$(PLATFORM)\"" -DDATE="\"$(DATE)\""
+client.o : CFLAGS += -DDATE="\"$(DATE)\""
 
 CC = @$(CROSS-PREFIX)gcc
 

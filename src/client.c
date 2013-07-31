@@ -44,7 +44,7 @@ FORCE_INLINE FILE* checkOpenFile(const char* fileName, const char* options, cons
 
 FORCE_INLINE void version() {
     printf("Centaurean Sharc %i.%i.%i\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
-    printf("Built for %s (%i bits) using GCC %d.%d.%d, %s\n", PLATFORM, 8 * sizeof(void*), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, DATE);
+    printf("Built for %s (%i bits) using GCC %d.%d.%d, %s\n", PLATFORM_STRING, 8 * sizeof(void*), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, DATE);
 }
 
 FORCE_INLINE void usage() {

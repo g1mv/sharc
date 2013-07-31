@@ -44,6 +44,31 @@
 #define STDOUT                  "stdout"
 #define STDIN_COMPRESSED        "stdin.sharc"
 
+#if defined(_WIN64) || defined(_WIN32)
+#define PLATFORM_STRING         "Microsoft Windows"
+#elif __APPLE__
+#include "TargetConditionals.h"
+#if TARGET_IPHONE_SIMULATOR
+#define PLATFORM_STRING         "iOS Simulator"
+#elif TARGET_OS_IPHONE
+#define PLATFORM_STRING         "iOS"
+#elif TARGET_OS_MAC
+#define PLATFORM_STRING         "Mac OS/X"
+#else
+#define PLATFORM_STRING         "an unknown platform"
+#endif
+#elif __FreeBSD__
+#define PLATFORM_STRING         "FreeBSD"
+#elif __linux
+#define PLATFORM_STRING         "GNU/Linux"
+#elif __unix
+#define PLATFORM_STRING         "Unix"
+#elif __posix
+#define PLATFORM_STRING         "Posix"
+#else
+#define PLATFORM_STRING         "an unknown platform"
+#endif
+
 typedef struct {
     const char* name;
     FILE* stream;
