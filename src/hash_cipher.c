@@ -163,7 +163,7 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     uint64_t signature;
     byte i;
     
-    while(in->position < in->size - 10 - 8 - 256) {
+    while(in->position <= in->size - 10 - 8 - 256) {
         signature = *(uint64_t*)(in->pointer + in->position);
         in->position += 8;
         for (i = 0; i < 0x40; i ++)
@@ -176,7 +176,7 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
         i = 0;
         while((in->size - in->position) & 0xFFFFFFFC && i < 0x40)
             kernelDecode(in, out, dictionary, xorMask, (signature >> (i ++)) & 0x1);
-    } while(in->position < in->size - 10);
+    } while(in->position <= in->size - 10);
     
     const uint32_t remaining = in->size - in->position;
     if(i & 0x40)

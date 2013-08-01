@@ -48,11 +48,12 @@ FORCE_INLINE ENCODING_RESULT sharcEncode(BYTE_BUFFER* in, BYTE_BUFFER* inter, BY
             else
                 return copyMode(in);
         case MODE_DUAL_PASS:
+            inter->size = in->size;
             rewindByteBuffer(inter);
             if(directHashEncode(in, inter)) {
                 const uint32_t firstPassPosition = inter->position;
-                inter->size = inter->position;
-                out->size = inter->position;
+                out->size = firstPassPosition;
+                inter->size = firstPassPosition;
                 rewindByteBuffer(inter);
                 if(xorHashEncode(inter, out))
                     return createEncodingResult(mode, out);
