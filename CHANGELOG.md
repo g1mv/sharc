@@ -7,7 +7,7 @@
 * Added support for very large files (> 4GB)
 * Platform detection now using gcc preprocessor macros
 * Fixed problem with -c1 compression not properly working with certain files
-* Now supports FreeBSD compilation
+* Now supports FreeBSD building with gmake
 
 0.9.5 beta
 ----------
