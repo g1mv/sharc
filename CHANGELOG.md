@@ -1,3 +1,13 @@
+0.9.6 beta
+----------
+August 1, 2013
+* Target architecture definition option re-added in makefile
+* Cosmetics in makefile
+* Now properly using stdin/stdout as binary streams on Windows
+* Added support for very large files (> 4GB)
+* Platform detection now using gcc preprocessor macros
+* Fixed problem with -c1 compression not properly working with certain files
+
 0.9.5 beta
 ----------
 July 20, 2013
