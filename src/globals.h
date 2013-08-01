@@ -51,7 +51,7 @@
 
 #define MAJOR_VERSION               0
 #define MINOR_VERSION               9
-#define REVISION                    6
+#define REVISION                    7
 
 #define FALSE                       0
 #define TRUE                        1
