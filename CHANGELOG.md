@@ -2,7 +2,7 @@
 ----------
 August 1, 2013
 * Target architecture definition option re-added in makefile
-* Cosmetics in makefile
+* Cosmetics in makefile and program displays
 * Now properly using stdin/stdout as binary streams on Windows
 * Added support for very large files (> 4GB)
 * Platform detection now using gcc preprocessor macros
