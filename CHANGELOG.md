@@ -1,6 +1,6 @@
 0.9.6 beta
 ----------
-August 1, 2013
+<i>August 1, 2013</i>
 * Target architecture definition option re-added in makefile
 * Improved makefile and program displays
 * Now properly using stdin/stdout as binary streams on Windows
