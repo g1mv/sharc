@@ -136,13 +136,13 @@ FORCE_INLINE void kernelDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* diction
     switch(mode) {
         case FALSE:
             chunk = /*SHARC_LITTLE_ENDIAN_32(*/ *(uint32_t*)(in->pointer + in->position)/*)*/;
-            computeHash(&hash, chunk, xorMask);
+            computeHash(&hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
             *(uint32_t*)&dictionary[hash] = ((out->position >> 2) & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
             *(uint32_t*)(out->pointer + out->position) = chunk;
             in->position += 4;
             break;
         case TRUE:
-            found = &dictionary[/*SHARC_LITTLE_ENDIAN_16(*/ *(uint16_t*)(in->pointer + in->position)/*)*/];
+            found = &dictionary[SHARC_LITTLE_ENDIAN_16(*(uint16_t*)(in->pointer + in->position))];
             *(uint32_t*)(out->pointer + out->position) = /*SHARC_LITTLE_ENDIAN_32(*/ *(uint32_t*)(out->pointer + ((*(uint32_t*)found & 0xFFFFFF) << 2))/*)*/;
             in->position += 2;
             break;

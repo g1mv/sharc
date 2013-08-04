@@ -26,15 +26,14 @@
 
 FORCE_INLINE BLOCK_HEADER createBlockHeader(const byte mode, const uint32_t nextBlock) {
     BLOCK_HEADER blockHeader;
-    blockHeader.mode = SHARC_LITTLE_ENDIAN_32((uint32_t)mode);
+    blockHeader.mode = SHARC_LITTLE_ENDIAN_32((const uint32_t)mode);
     blockHeader.nextBlock = SHARC_LITTLE_ENDIAN_32(nextBlock);
     return blockHeader;
 }
 
-FORCE_INLINE BLOCK_HEADER readBlockHeader(byte* buffer, const uint32_t position) {
-    return *(BLOCK_HEADER*)(buffer + position);
-}
-
-FORCE_INLINE size_t readBlockHeaderFromFile(BLOCK_HEADER* blockHeader, FILE* inFile) {
-    return fread(blockHeader, sizeof(BLOCK_HEADER), 1, inFile);
+FORCE_INLINE const size_t readBlockHeaderFromFile(BLOCK_HEADER* blockHeader, FILE* inFile) {
+    const size_t sizeRead = fread(blockHeader, sizeof(BLOCK_HEADER), 1, inFile);
+    blockHeader->mode = SHARC_LITTLE_ENDIAN_32(blockHeader->mode);
+    blockHeader->nextBlock = SHARC_LITTLE_ENDIAN_32(blockHeader->nextBlock);
+    return sizeRead;
 }

@@ -53,7 +53,7 @@ FORCE_INLINE FILE_HEADER decompress(FILE* inStream, FILE* outStream, BYTE_BUFFER
                 fwrite(in->pointer, sizeof(byte), in->size, outStream);
                 break;
             default:
-                if(sharcDecode(in, inter, out, blockHeader.mode) ^ 0x1)
+                if(sharcDecode(in, inter, out, (const byte)blockHeader.mode) ^ 0x1)
                     error("Unable to decompress !");
                 fwrite(out->pointer, sizeof(byte), out->position, outStream);
                 break;

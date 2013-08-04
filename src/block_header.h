@@ -37,7 +37,6 @@ typedef struct {
 } BLOCK_HEADER;
 
 BLOCK_HEADER createBlockHeader(const byte, const uint32_t);
-BLOCK_HEADER readBlockHeader(byte*, const uint32_t);
-size_t readBlockHeaderFromFile(BLOCK_HEADER*, FILE*);
+const size_t readBlockHeaderFromFile(BLOCK_HEADER*, FILE*);
 
 #endif
