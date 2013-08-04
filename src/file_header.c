@@ -37,7 +37,7 @@ FORCE_INLINE FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat
     fileHeader.version[2] = REVISION;
     fileHeader.originalFileSize = (uint64_t)SHARC_LITTLE_ENDIAN_64(fileAttributes.st_size);
     fileHeader.bufferSize = (uint32_t)SHARC_LITTLE_ENDIAN_32(bufferSize);
-    fileHeader.fileMode = (uint16_t)SHARC_LITTLE_ENDIAN_16(fileAttributes.st_mode);
+    fileHeader.fileMode = (uint32_t)SHARC_LITTLE_ENDIAN_32(fileAttributes.st_mode);
     fileHeader.fileAccessed = (uint64_t)SHARC_LITTLE_ENDIAN_64(fileAttributes.st_atime);
     fileHeader.fileModified = (uint64_t)SHARC_LITTLE_ENDIAN_64(fileAttributes.st_mtime);
     return fileHeader;

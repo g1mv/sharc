@@ -32,7 +32,7 @@
 #include "globals.h"
 
 typedef struct {
-    byte mode;
+    uint32_t mode;
     uint32_t nextBlock;
 } BLOCK_HEADER;
 

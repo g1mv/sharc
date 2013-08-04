@@ -26,7 +26,7 @@
 
 FORCE_INLINE BLOCK_HEADER createBlockHeader(const byte mode, const uint32_t nextBlock) {
     BLOCK_HEADER blockHeader;
-    blockHeader.mode = mode;
+    blockHeader.mode = SHARC_LITTLE_ENDIAN_32((uint32_t)mode);
     blockHeader.nextBlock = SHARC_LITTLE_ENDIAN_32(nextBlock);
     return blockHeader;
 }

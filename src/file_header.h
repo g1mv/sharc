@@ -45,7 +45,7 @@ typedef struct {
     byte version[3];
     uint64_t originalFileSize;
     uint32_t bufferSize;
-    uint16_t fileMode;
+    uint32_t fileMode;
     uint64_t fileAccessed;
     uint64_t fileModified;
 } FILE_HEADER;
