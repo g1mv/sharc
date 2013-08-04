@@ -24,14 +24,14 @@
 
 #include "block_header.h"
 
-SHARC_FORCE_INLINE SHARC_BLOCK_HEADER createBlockHeader(const byte mode, const uint32_t nextBlock) {
+SHARC_FORCE_INLINE SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte mode, const uint32_t nextBlock) {
     SHARC_BLOCK_HEADER blockHeader;
     blockHeader.mode = SHARC_LITTLE_ENDIAN_32((const uint32_t)mode);
     blockHeader.nextBlock = SHARC_LITTLE_ENDIAN_32(nextBlock);
     return blockHeader;
 }
 
-SHARC_FORCE_INLINE const size_t readBlockHeaderFromFile(SHARC_BLOCK_HEADER* blockHeader, FILE* inFile) {
+SHARC_FORCE_INLINE const size_t sharc_readBlockHeaderFromFile(SHARC_BLOCK_HEADER* blockHeader, FILE* inFile) {
     const size_t sizeRead = fread(blockHeader, sizeof(SHARC_BLOCK_HEADER), 1, inFile);
     blockHeader->mode = SHARC_LITTLE_ENDIAN_32(blockHeader->mode);
     blockHeader->nextBlock = SHARC_LITTLE_ENDIAN_32(blockHeader->nextBlock);

@@ -28,12 +28,12 @@
 #include "globals.h"
 
 typedef struct {
-    byte* pointer;
+    sharc_byte* pointer;
     uint32_t position;
     uint32_t size;
 } SHARC_BYTE_BUFFER;
 
-SHARC_BYTE_BUFFER createByteBuffer(byte*, uint32_t, uint32_t);
-void rewindByteBuffer(SHARC_BYTE_BUFFER*);
+SHARC_BYTE_BUFFER sharc_createByteBuffer(sharc_byte*, uint32_t, uint32_t);
+void sharc_rewindByteBuffer(SHARC_BYTE_BUFFER*);
 
 #endif

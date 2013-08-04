@@ -25,7 +25,7 @@
 
 #include "file_header.h"
 
-SHARC_FORCE_INLINE SHARC_FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat64 fileAttributes) {
+SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_createFileHeader(const uint32_t bufferSize, struct stat64 fileAttributes) {
     SHARC_FILE_HEADER fileHeader;
     fileHeader.name[0] = 'S';
     fileHeader.name[1] = 'H';
@@ -43,7 +43,7 @@ SHARC_FORCE_INLINE SHARC_FILE_HEADER createFileHeader(const uint32_t bufferSize,
     return fileHeader;
 }
 
-SHARC_FORCE_INLINE bool checkFileType(byte* fileHeader) {
+SHARC_FORCE_INLINE sharc_bool sharc_checkFileType(sharc_byte* fileHeader) {
     if(fileHeader[0] != 'S')
         return SHARC_FALSE;
     if(fileHeader[1] != 'H')
@@ -57,7 +57,7 @@ SHARC_FORCE_INLINE bool checkFileType(byte* fileHeader) {
     return SHARC_TRUE;
 }
 
-SHARC_FORCE_INLINE SHARC_FILE_HEADER readFileHeader(FILE* file) {
+SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_readFileHeader(FILE* file) {
     SHARC_FILE_HEADER fileHeader;
     fread(&fileHeader, sizeof(SHARC_FILE_HEADER), 1, file);
     fileHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileHeader.originalFileSize);
@@ -65,18 +65,18 @@ SHARC_FORCE_INLINE SHARC_FILE_HEADER readFileHeader(FILE* file) {
     fileHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileHeader.fileMode);
     fileHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileHeader.fileAccessed);
     fileHeader.fileModified = SHARC_LITTLE_ENDIAN_64(fileHeader.fileModified);
-    if(checkFileType((byte*)&fileHeader.name) ^ 0x1)
-        error("Invalid file");
+    if(sharc_checkFileType((sharc_byte*)&fileHeader.name) ^ 0x1)
+        sharc_error("Invalid file");
     return fileHeader;
 }
 
-SHARC_FORCE_INLINE void restoreFileAttributes(SHARC_FILE_HEADER fileHeader, const char* fileName) {
+SHARC_FORCE_INLINE void sharc_restoreFileAttributes(SHARC_FILE_HEADER fileHeader, const char* fileName) {
     if(chmod(fileName, fileHeader.fileMode))
-        error("Unable to restore original file rights.");
+        sharc_error("Unable to restore original file rights.");
     
     struct utimbuf ubuf;
     ubuf.actime = fileHeader.fileAccessed;
     ubuf.modtime = fileHeader.fileModified;
     if(utime(fileName, &ubuf))
-        error("Unable to restore original file accessed / modified times.");
+        sharc_error("Unable to restore original file accessed / modified times.");
 }

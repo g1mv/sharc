@@ -76,18 +76,18 @@
 typedef struct {
     const char* name;
     FILE* stream;
-    byte type;
+    sharc_byte type;
 } SHARC_CLIENT_IO;
 
-byte readBuffer[SHARC_MAX_BUFFER_SIZE];
-byte interBuffer[SHARC_MAX_BUFFER_SIZE];
-byte writeBuffer[SHARC_MAX_BUFFER_SIZE];
+sharc_byte sharc_readBuffer[SHARC_MAX_BUFFER_SIZE];
+sharc_byte sharc_interBuffer[SHARC_MAX_BUFFER_SIZE];
+sharc_byte sharc_writeBuffer[SHARC_MAX_BUFFER_SIZE];
 
-FILE* checkOpenFile(const char*, const char*, const bool);
-void version();
-void usage();
-void clientCompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const byte, const uint32_t, const bool);
-void clientDecompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const bool);
+FILE* sharc_checkOpenFile(const char*, const char*, const sharc_bool);
+void sharc_version();
+void sharc_usage();
+void sharc_clientCompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const sharc_byte, const uint32_t, const sharc_bool);
+void sharc_clientDecompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const sharc_bool);
 int main(int, char **);
 
 #endif

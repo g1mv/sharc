@@ -40,23 +40,23 @@
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
-	byte offset[3];
-    byte exists;
+	sharc_byte offset[3];
+    sharc_byte exists;
 } SHARC_ENTRY;
 #pragma pack(pop)
 
-void writeSignature(uint64_t*, const byte*);
-void flush(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint64_t*, const byte*, const uint32_t*);
-bool reset(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
-void resetDictionary(SHARC_ENTRY*);
-bool checkState(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
-void computeHash(uint32_t*, const uint32_t, const uint32_t);
-bool updateEntry(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*, const uint32_t, const uint32_t, uint64_t*, byte*, uint32_t*);
-bool kernelEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t, const uint32_t, const uint32_t*, const uint32_t, SHARC_ENTRY*, uint32_t*, uint64_t*, byte*, uint32_t*);
-void kernelDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*, const uint32_t, const bool);
+void sharc_writeSignature(uint64_t*, const sharc_byte*);
+void sharc_flush(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint64_t*, const sharc_byte*, const uint32_t*);
+sharc_bool sharc_reset(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, sharc_byte*, uint32_t*);
+void sharc_resetDictionary(SHARC_ENTRY*);
+sharc_bool sharc_checkState(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, sharc_byte*, uint32_t*);
+void sharc_computeHash(uint32_t*, const uint32_t, const uint32_t);
+sharc_bool sharc_updateEntry(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*, const uint32_t, const uint32_t, uint64_t*, sharc_byte*, uint32_t*);
+sharc_bool sharc_kernelEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t, const uint32_t, const uint32_t*, const uint32_t, SHARC_ENTRY*, uint32_t*, uint64_t*, sharc_byte*, uint32_t*);
+void sharc_kernelDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*, const uint32_t, const sharc_bool);
 
-bool hashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
-void byteCopy(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
-bool hashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
+sharc_bool sharc_hashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
+void sharc_byteCopy(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
+sharc_bool sharc_hashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
 
 #endif

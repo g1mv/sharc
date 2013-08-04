@@ -24,58 +24,58 @@
 
 #include "sharc_cipher.h"
 
-SHARC_FORCE_INLINE SHARC_ENCODING_RESULT createEncodingResult(const byte reachableMode, SHARC_BYTE_BUFFER* out) {
+SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharc_createEncodingResult(const sharc_byte reachableMode, SHARC_BYTE_BUFFER* out) {
     SHARC_ENCODING_RESULT encodingResult;
     encodingResult.reachableMode = reachableMode;
     encodingResult.out = out;
     return encodingResult;
 }
 
-SHARC_FORCE_INLINE SHARC_ENCODING_RESULT createEncodingResultWithPosition(const byte reachableMode, SHARC_BYTE_BUFFER* out, const uint32_t position) {
+SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharc_createEncodingResultWithPosition(const sharc_byte reachableMode, SHARC_BYTE_BUFFER* out, const uint32_t position) {
     out->position = position;
-    return createEncodingResult(reachableMode, out);
+    return sharc_createEncodingResult(reachableMode, out);
 }
 
-SHARC_FORCE_INLINE SHARC_ENCODING_RESULT copyMode(SHARC_BYTE_BUFFER* in) {
-    return createEncodingResultWithPosition(SHARC_MODE_COPY, in, in->size);
+SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharc_copyMode(SHARC_BYTE_BUFFER* in) {
+    return sharc_createEncodingResultWithPosition(SHARC_MODE_COPY, in, in->size);
 }
 
-SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharcEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const byte mode) {
+SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharc_sharcEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte mode) {
     switch(mode) {
         case SHARC_MODE_SINGLE_PASS:
-            if(xorHashEncode(in, out))
-                return createEncodingResult(mode, out);
+            if(sharc_xorHashEncode(in, out))
+                return sharc_createEncodingResult(mode, out);
             else
-                return copyMode(in);
+                return sharc_copyMode(in);
         case SHARC_MODE_DUAL_PASS:
             inter->size = in->size;
-            rewindByteBuffer(inter);
-            if(directHashEncode(in, inter)) {
+            sharc_rewindByteBuffer(inter);
+            if(sharc_directHashEncode(in, inter)) {
                 const uint32_t firstPassPosition = inter->position;
                 out->size = firstPassPosition;
                 inter->size = firstPassPosition;
-                rewindByteBuffer(inter);
-                if(xorHashEncode(inter, out))
-                    return createEncodingResult(mode, out);
+                sharc_rewindByteBuffer(inter);
+                if(sharc_xorHashEncode(inter, out))
+                    return sharc_createEncodingResult(mode, out);
                 else
-                    return createEncodingResultWithPosition(SHARC_MODE_SINGLE_PASS, inter, firstPassPosition);
+                    return sharc_createEncodingResultWithPosition(SHARC_MODE_SINGLE_PASS, inter, firstPassPosition);
             }
-            return copyMode(in);
+            return sharc_copyMode(in);
         default:
-            return copyMode(in);
+            return sharc_copyMode(in);
     }
 }
 
-SHARC_FORCE_INLINE bool sharcDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const byte mode) {
+SHARC_FORCE_INLINE sharc_bool sharc_sharcDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte mode) {
     switch(mode) {
         case SHARC_MODE_SINGLE_PASS:
-            return xorHashDecode(in, out);
+            return sharc_xorHashDecode(in, out);
         case SHARC_MODE_DUAL_PASS:
-            rewindByteBuffer(inter);
-            xorHashDecode(in, inter);
+            sharc_rewindByteBuffer(inter);
+            sharc_xorHashDecode(in, inter);
             inter->size = inter->position;
-            rewindByteBuffer(inter);
-            return directHashDecode(inter, out);
+            sharc_rewindByteBuffer(inter);
+            return sharc_directHashDecode(inter, out);
         default:
             return SHARC_FALSE;
     }

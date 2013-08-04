@@ -24,7 +24,7 @@
 
 #include "byte_buffer.h"
 
-SHARC_FORCE_INLINE SHARC_BYTE_BUFFER createByteBuffer(byte* pointer, uint32_t position, uint32_t size) {
+SHARC_FORCE_INLINE SHARC_BYTE_BUFFER sharc_createByteBuffer(sharc_byte* pointer, uint32_t position, uint32_t size) {
     SHARC_BYTE_BUFFER byteBuffer;
     byteBuffer.pointer = pointer;
     byteBuffer.position = position;
@@ -32,6 +32,6 @@ SHARC_FORCE_INLINE SHARC_BYTE_BUFFER createByteBuffer(byte* pointer, uint32_t po
     return byteBuffer;
 }
 
-SHARC_FORCE_INLINE void rewindByteBuffer(SHARC_BYTE_BUFFER* buffer) {
+SHARC_FORCE_INLINE void sharc_rewindByteBuffer(SHARC_BYTE_BUFFER* buffer) {
     buffer->position = 0;
 }

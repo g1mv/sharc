@@ -24,10 +24,10 @@
 
 #include "direct_hash_cipher.h"
 
-SHARC_FORCE_INLINE bool directHashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out) {
-    return hashEncode(in, out, SHARC_DIRECT_XOR_MASK);
+SHARC_FORCE_INLINE sharc_bool sharc_directHashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out) {
+    return sharc_hashEncode(in, out, SHARC_DIRECT_XOR_MASK);
 }
 
-SHARC_FORCE_INLINE bool directHashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out) {
-    return hashDecode(in, out, SHARC_DIRECT_XOR_MASK);
+SHARC_FORCE_INLINE sharc_bool sharc_directHashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out) {
+    return sharc_hashDecode(in, out, SHARC_DIRECT_XOR_MASK);
 }

@@ -24,43 +24,43 @@
 
 #include "sharc.h"
 
-SHARC_FORCE_INLINE void compress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
+SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
     SHARC_ENCODING_RESULT result;
     
-    SHARC_FILE_HEADER fileHeader = createFileHeader(blockSize, attributes);
+    SHARC_FILE_HEADER fileHeader = sharc_createFileHeader(blockSize, attributes);
     fwrite(&fileHeader, sizeof(SHARC_FILE_HEADER), 1, outStream);
     
-    while((in->size = (uint32_t)fread(in->pointer, sizeof(byte), blockSize, inStream)) > 0) {
-        result = sharcEncode(in, inter, out, attemptMode);
+    while((in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockSize, inStream)) > 0) {
+        result = sharc_sharcEncode(in, inter, out, attemptMode);
         
-        SHARC_BLOCK_HEADER blockHeader = createBlockHeader(result.reachableMode, result.out->position);
+        SHARC_BLOCK_HEADER blockHeader = sharc_createBlockHeader(result.reachableMode, result.out->position);
         fwrite(&blockHeader, sizeof(SHARC_BLOCK_HEADER), 1, outStream);
-        fwrite(result.out->pointer, sizeof(byte), result.out->position, outStream);
+        fwrite(result.out->pointer, sizeof(sharc_byte), result.out->position, outStream);
         
-        rewindByteBuffer(in);
-        rewindByteBuffer(out);
+        sharc_rewindByteBuffer(in);
+        sharc_rewindByteBuffer(out);
     }
 } 
 
-SHARC_FORCE_INLINE SHARC_FILE_HEADER decompress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out) {
-    SHARC_FILE_HEADER fileHeader = readFileHeader(inStream);
+SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_decompress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out) {
+    SHARC_FILE_HEADER fileHeader = sharc_readFileHeader(inStream);
     SHARC_BLOCK_HEADER blockHeader;
     
-    while(readBlockHeaderFromFile(&blockHeader, inStream) > 0) {
-        in->size = (uint32_t)fread(in->pointer, sizeof(byte), blockHeader.nextBlock, inStream);
+    while(sharc_readBlockHeaderFromFile(&blockHeader, inStream) > 0) {
+        in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockHeader.nextBlock, inStream);
         switch(blockHeader.mode) {
             case SHARC_MODE_COPY:
-                fwrite(in->pointer, sizeof(byte), in->size, outStream);
+                fwrite(in->pointer, sizeof(sharc_byte), in->size, outStream);
                 break;
             default:
-                if(sharcDecode(in, inter, out, (const byte)blockHeader.mode) ^ 0x1)
-                    error("Unable to decompress !");
-                fwrite(out->pointer, sizeof(byte), out->position, outStream);
+                if(sharc_sharcDecode(in, inter, out, (const sharc_byte)blockHeader.mode) ^ 0x1)
+                    sharc_error("Unable to decompress !");
+                fwrite(out->pointer, sizeof(sharc_byte), out->position, outStream);
                 break;
         }
         
-        rewindByteBuffer(in);
-        rewindByteBuffer(out);
+        sharc_rewindByteBuffer(in);
+        sharc_rewindByteBuffer(out);
     }
     
     return fileHeader;

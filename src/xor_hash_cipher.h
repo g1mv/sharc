@@ -31,7 +31,7 @@
 
 #define SHARC_XOR_MASK    0xFF0000FF
 
-bool xorHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
-bool xorHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
+sharc_bool sharc_xorHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
+sharc_bool sharc_xorHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
 
 #endif

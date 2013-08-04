@@ -67,9 +67,9 @@
 #define SHARC_FALSE                       0
 #define SHARC_TRUE                        1
 
-typedef uint8_t byte;
-typedef uint8_t bool;
+typedef uint8_t sharc_byte;
+typedef uint8_t sharc_bool;
 
-void error(const char*);
+void sharc_error(const char*);
 
 #endif

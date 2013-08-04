@@ -36,8 +36,8 @@ typedef struct {
     struct timeval stop;
 } SHARC_CHRONO;
 
-void chronoStart(SHARC_CHRONO*);
-void chronoStop(SHARC_CHRONO*);
-double chronoElapsed(SHARC_CHRONO*);
+void sharc_chronoStart(SHARC_CHRONO*);
+void sharc_chronoStop(SHARC_CHRONO*);
+double sharc_chronoElapsed(SHARC_CHRONO*);
 
 #endif

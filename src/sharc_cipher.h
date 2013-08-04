@@ -34,14 +34,14 @@
 #define SHARC_MODE_COPY               255
 
 typedef struct {
-    byte reachableMode;
+    sharc_byte reachableMode;
     SHARC_BYTE_BUFFER* out;
 } SHARC_ENCODING_RESULT;
 
-SHARC_ENCODING_RESULT createEncodingResult(const byte, SHARC_BYTE_BUFFER*);
-SHARC_ENCODING_RESULT createEncodingResultWithPosition(const byte, SHARC_BYTE_BUFFER*, const uint32_t);
-SHARC_ENCODING_RESULT copyMode(SHARC_BYTE_BUFFER*);
-SHARC_ENCODING_RESULT sharcEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const byte);
-bool sharcDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const byte);
+SHARC_ENCODING_RESULT sharc_createEncodingResult(const sharc_byte, SHARC_BYTE_BUFFER*);
+SHARC_ENCODING_RESULT sharc_createEncodingResultWithPosition(const sharc_byte, SHARC_BYTE_BUFFER*, const uint32_t);
+SHARC_ENCODING_RESULT sharc_copyMode(SHARC_BYTE_BUFFER*);
+SHARC_ENCODING_RESULT sharc_sharcEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte);
+sharc_bool sharc_sharcDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte);
 
 #endif

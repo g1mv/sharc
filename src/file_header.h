@@ -43,8 +43,8 @@
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
-    byte name[5];
-    byte version[3];
+    sharc_byte name[5];
+    sharc_byte version[3];
     uint64_t originalFileSize;
     uint32_t bufferSize;
     uint32_t fileMode;
@@ -53,9 +53,9 @@ typedef struct {
 } SHARC_FILE_HEADER;
 #pragma pack(pop)
 
-SHARC_FILE_HEADER createFileHeader(const uint32_t, struct stat64);
-bool checkFileType(byte*);
-SHARC_FILE_HEADER readFileHeader(FILE*);
-void restoreFileAttributes(SHARC_FILE_HEADER, const char*);
+SHARC_FILE_HEADER sharc_createFileHeader(const uint32_t, struct stat64);
+sharc_bool sharc_checkFileType(sharc_byte*);
+SHARC_FILE_HEADER sharc_readFileHeader(FILE*);
+void sharc_restoreFileAttributes(SHARC_FILE_HEADER, const char*);
 
 #endif

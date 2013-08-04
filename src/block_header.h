@@ -39,7 +39,7 @@ typedef struct {
 } SHARC_BLOCK_HEADER;
 #pragma pack(pop)
 
-SHARC_BLOCK_HEADER createBlockHeader(const byte, const uint32_t);
-const size_t readBlockHeaderFromFile(SHARC_BLOCK_HEADER*, FILE*);
+SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte, const uint32_t);
+const size_t sharc_readBlockHeaderFromFile(SHARC_BLOCK_HEADER*, FILE*);
 
 #endif
