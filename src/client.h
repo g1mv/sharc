@@ -50,7 +50,7 @@
 
 #if defined(_WIN64) || defined(_WIN32)
 #define SHARC_PLATFORM_STRING         "Microsoft Windows"
-#elif __APPLE__
+#elif defined(__APPLE__)
 #include "TargetConditionals.h"
 #if TARGET_IPHONE_SIMULATOR
 #define SHARC_PLATFORM_STRING         "iOS Simulator"
@@ -61,13 +61,13 @@
 #else
 #define SHARC_PLATFORM_STRING         "an unknown Apple platform"
 #endif
-#elif __FreeBSD__
+#elif defined(__FreeBSD__)
 #define SHARC_PLATFORM_STRING         "FreeBSD"
-#elif __linux
+#elif defined(__linux__)
 #define SHARC_PLATFORM_STRING         "GNU/Linux"
-#elif __unix
+#elif defined(__unix__)
 #define SHARC_PLATFORM_STRING         "Unix"
-#elif __posix
+#elif defined(__posix__)
 #define SHARC_PLATFORM_STRING         "Posix"
 #else
 #define SHARC_PLATFORM_STRING         "an unknown platform"
