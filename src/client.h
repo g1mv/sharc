@@ -55,7 +55,7 @@
 #elif TARGET_OS_MAC
 #define PLATFORM_STRING         "Mac OS/X"
 #else
-#define PLATFORM_STRING         "an unknown platform"
+#define PLATFORM_STRING         "an unknown Apple platform"
 #endif
 #elif __FreeBSD__
 #define PLATFORM_STRING         "FreeBSD"
