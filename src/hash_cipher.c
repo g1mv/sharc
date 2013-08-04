@@ -29,7 +29,7 @@ FORCE_INLINE void writeSignature(uint64_t* signature, const byte* state) {
 }
 
 FORCE_INLINE void flush(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint64_t* signature, const byte* state, const uint32_t* signaturePointer) {
-    *(uint64_t*)(out->pointer + *signaturePointer) = *signature;
+    *(uint64_t*)(out->pointer + *signaturePointer) = SHARC_LITTLE_ENDIAN_64(*signature);
     in->position += (*state << 2);
 }
 
@@ -67,15 +67,15 @@ FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value, const uint32
 }
 
 FORCE_INLINE bool updateEntry(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* entry, const uint32_t chunk, const uint32_t index, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
-	*(uint32_t*)entry = (index & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
-    *(uint32_t*)(out->pointer + out->position) = SHARC_LITTLE_ENDIAN_32(chunk);
+    *(uint32_t*)entry = (index & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
+    *(uint32_t*)(out->pointer + out->position) = chunk;
     out->position += 4;
     *state = *state + 1;
     return checkState(in, out, signature, state, signaturePointer);
 }
 
 FORCE_INLINE bool kernelEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, ENTRY* dictionary, uint32_t* hash, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
-    computeHash(hash, chunk, xorMask);
+    computeHash(hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
     ENTRY* found = &dictionary[*hash];
     if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
         if(chunk ^ buffer[*(uint32_t*)found & 0xFFFFFF]) {
@@ -83,7 +83,7 @@ FORCE_INLINE bool kernelEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t
                 return FALSE;
         } else {
             writeSignature(signature, state);
-            *(uint16_t*)(out->pointer + out->position) = SHARC_LITTLE_ENDIAN_16((uint16_t)*hash);
+            *(uint16_t*)(out->pointer + out->position) = SHARC_LITTLE_ENDIAN_16(*hash);
             out->position += 2;
             *state = *state + 1;
             if(checkState(in, out, signature, state, signaturePointer) ^ 0x1)
@@ -135,15 +135,15 @@ FORCE_INLINE void kernelDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* diction
     ENTRY* found;
     switch(mode) {
         case FALSE:
-            chunk = SHARC_LITTLE_ENDIAN_32(*(uint32_t*)(in->pointer + in->position));
+            chunk = /*SHARC_LITTLE_ENDIAN_32(*/ *(uint32_t*)(in->pointer + in->position)/*)*/;
             computeHash(&hash, chunk, xorMask);
             *(uint32_t*)&dictionary[hash] = ((out->position >> 2) & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
             *(uint32_t*)(out->pointer + out->position) = chunk;
             in->position += 4;
             break;
         case TRUE:
-            found = &dictionary[SHARC_LITTLE_ENDIAN_16(*(uint16_t*)(in->pointer + in->position))];
-            *(uint32_t*)(out->pointer + out->position) = *(uint32_t*)(out->pointer + ((*(uint32_t*)found & 0xFFFFFF) << 2));
+            found = &dictionary[/*SHARC_LITTLE_ENDIAN_16(*/ *(uint16_t*)(in->pointer + in->position)/*)*/];
+            *(uint32_t*)(out->pointer + out->position) = /*SHARC_LITTLE_ENDIAN_32(*/ *(uint32_t*)(out->pointer + ((*(uint32_t*)found & 0xFFFFFF) << 2))/*)*/;
             in->position += 2;
             break;
     }
@@ -164,14 +164,14 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     byte i;
     
     while(in->position <= in->size - 10 - 8 - 256) {
-        signature = *(uint64_t*)(in->pointer + in->position);
+        signature = SHARC_LITTLE_ENDIAN_64(*(uint64_t*)(in->pointer + in->position));
         in->position += 8;
         for (i = 0; i < 0x40; i ++)
             kernelDecode(in, out, dictionary, xorMask, (signature >> i) & 0x1);
     }
 
     do {
-        signature = *(uint64_t*)(in->pointer + in->position);
+        signature = SHARC_LITTLE_ENDIAN_64(*(uint64_t*)(in->pointer + in->position));
         in->position += 8;
         i = 0;
         while((in->size - in->position) & 0xFFFFFFFC && i < 0x40)

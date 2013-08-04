@@ -40,13 +40,21 @@
 #else
 #warning Impossible to force functions inlining. Expect performance issues.
 #endif
-
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+ 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define SHARC_LITTLE_ENDIAN_64(b)   (b)
 #define SHARC_LITTLE_ENDIAN_32(b)   (b)
 #define SHARC_LITTLE_ENDIAN_16(b)   (b)
-#elif __BYTE_ORDER == __BIG_ENDIAN
-#define SHARC_LITTLE_ENDIAN_32(b)   (((b << 24) & 0xFF000000) | ((b << 8) & 0x00FF0000) | ((b >> 8) & 0x0000FF00) | ((b >> 24) & 0x000000FF)))
-#define SHARC_LITTLE_ENDIAN_16(b)   (((b << 8) & 0x0000FF00) | ((b >> 8) & 0x000000FF))
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#if __GNUC__ * 100 + __GNUC_MINOR__ sup= 403
+#define SHARC_LITTLE_ENDIAN_64(b)   __builtin_bswap64(b)
+#define SHARC_LITTLE_ENDIAN_32(b)   __builtin_bswap32(b)//(((b << 24) & 0xFF000000) | ((b << 8) & 0x00FF0000) | ((b >> 8) & 0x0000FF00) | ((b >> 24) & 0x000000FF))
+#define SHARC_LITTLE_ENDIAN_16(b)   __builtin_bswap16(b)//(((b << 8) & 0x0000FF00) | ((b >> 8) & 0x000000FF))
+#else
+#define SHARC_LITTLE_ENDIAN_64(b)
+#define SHARC_LITTLE_ENDIAN_32(b)
+#define SHARC_LITTLE_ENDIAN_16(b) 
+#endif
 #else
 #error Unknow endianness
 #endif
