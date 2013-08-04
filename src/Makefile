@@ -29,19 +29,14 @@ CFLAGS = -O3 -std=c99 -w -D_FILE_OFFSET_BITS=64
 ifeq ($(OS),Windows_NT)
     EXTENSION = .exe
     ARROW = ^-^>
-    DATECMD = date /T
 else
     EXTENSION =
     ARROW = \-\>
-    DATECMD = date
 endif
 
 ifdef ARCH
     CFLAGS += -m$(ARCH)
 endif
-
-DATE=$(shell $(DATECMD))
-client.o : CFLAGS += -DDATE="\"$(DATE)\""
 
 CC = @$(CROSS-PREFIX)gcc
 
