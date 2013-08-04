@@ -40,22 +40,22 @@
 #define stat64 stat
 #endif
 
-#define SHARC_TYPE_STREAM             0
-#define SHARC_TYPE_FILE               1
+#define SHARC_MAGIC_NUMBER      1908011803
+
+#define SHARC_TYPE_STREAM       0
+#define SHARC_TYPE_FILE         1
 
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
-    sharc_byte name[5];
+    uint32_t magicNumber;
     sharc_byte version[3];
     sharc_byte type;
-    sharc_byte reserved[3];
 } SHARC_GENERIC_HEADER;
 
 typedef struct {
     uint64_t originalFileSize;
-    sharc_byte reserved[2];
-    uint16_t fileMode;
+    uint32_t fileMode;
     uint64_t fileAccessed;
     uint64_t fileModified;
 } SHARC_FILE_INFORMATION_HEADER;
@@ -67,7 +67,7 @@ typedef struct {
 #pragma pack(pop)
 
 SHARC_HEADER sharc_createHeader(const uint32_t, const sharc_byte, struct stat64);
-sharc_bool sharc_checkSourceType(sharc_byte*);
+sharc_bool sharc_checkSourceType(const uint32_t);
 SHARC_HEADER sharc_readHeader(FILE*);
 void sharc_restoreFileAttributes(SHARC_FILE_INFORMATION_HEADER, const char*);
 

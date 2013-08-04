@@ -23,26 +23,22 @@
  */
 
 
-#include "file_header.h"
+#include "header.h"
 
 SHARC_FORCE_INLINE SHARC_HEADER sharc_createHeader(const uint32_t bufferSize, const sharc_byte type, struct stat64 fileAttributes) {
     SHARC_HEADER header;
     SHARC_GENERIC_HEADER genericHeader;
     SHARC_FILE_INFORMATION_HEADER fileInformationHeader;
 
-    genericHeader.name[0] = 'S';
-    genericHeader.name[1] = 'H';
-    genericHeader.name[2] = 'A';
-    genericHeader.name[3] = 'R';
-    genericHeader.name[4] = 'C';
+    genericHeader.magicNumber = SHARC_LITTLE_ENDIAN_32(SHARC_MAGIC_NUMBER);
     genericHeader.version[0] = SHARC_MAJOR_VERSION;
     genericHeader.version[1] = SHARC_MINOR_VERSION;
     genericHeader.version[2] = SHARC_REVISION;
     genericHeader.type = type;
     switch(type) {
         case SHARC_TYPE_FILE:
-            fileInformationHeader.fileMode = SHARC_LITTLE_ENDIAN_16(fileAttributes.st_mode);
             fileInformationHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_size);
+            fileInformationHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileAttributes.st_mode);
             fileInformationHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_atime);
             fileInformationHeader.fileModified = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_mtime);
             header.fileInformationHeader = fileInformationHeader;
@@ -53,18 +49,11 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_createHeader(const uint32_t bufferSize, co
     return header;
 }
 
-SHARC_FORCE_INLINE sharc_bool sharc_checkSourceType(sharc_byte* fileHeader) {
-    if(fileHeader[0] != 'S')
-        return SHARC_FALSE;
-    if(fileHeader[1] != 'H')
-        return SHARC_FALSE;
-    if(fileHeader[2] != 'A')
-        return SHARC_FALSE;
-    if(fileHeader[3] != 'R')
-        return SHARC_FALSE;
-    if(fileHeader[4] != 'C')
-        return SHARC_FALSE;
-    return SHARC_TRUE;
+SHARC_FORCE_INLINE sharc_bool sharc_checkSourceType(const uint32_t magic) {
+    if(magic == SHARC_MAGIC_NUMBER)
+        return SHARC_TRUE;
+    else
+        return SHARC_TRUE;
 }
 
 SHARC_FORCE_INLINE SHARC_HEADER sharc_readHeader(FILE* inStream) {
@@ -73,15 +62,15 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_readHeader(FILE* inStream) {
     SHARC_FILE_INFORMATION_HEADER fileInformationHeader;
 
     fread(&genericHeader, sizeof(SHARC_GENERIC_HEADER), 1, inStream);
-    if(sharc_checkSourceType((sharc_byte*)&genericHeader.name) ^ 0x1)
+    if(sharc_checkSourceType(SHARC_LITTLE_ENDIAN_32(genericHeader.magicNumber)) ^ 0x1)
             sharc_error("Invalid file");
     header.genericHeader = genericHeader;
 
     switch(genericHeader.type) {
         case SHARC_TYPE_FILE:
             fread(&fileInformationHeader, sizeof(SHARC_FILE_INFORMATION_HEADER), 1, inStream);
-        fileInformationHeader.fileMode = SHARC_LITTLE_ENDIAN_16(fileInformationHeader.fileMode);
         fileInformationHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileInformationHeader.originalFileSize);
+        fileInformationHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileInformationHeader.fileMode);
         fileInformationHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileInformationHeader.fileAccessed);
         fileInformationHeader.fileModified = SHARC_LITTLE_ENDIAN_64(fileInformationHeader.fileModified);
         header.fileInformationHeader = fileInformationHeader;

@@ -34,7 +34,7 @@
 
 #include "chrono.h"
 #include "sharc_cipher.h"
-#include "file_header.h"
+#include "header.h"
 #include "block_header.h"
 
 void sharc_compress(FILE*, FILE*, const sharc_byte, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte, const uint32_t, const struct stat64);
