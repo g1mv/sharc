@@ -44,7 +44,7 @@ SHARC_FORCE_INLINE FILE* sharc_checkOpenFile(const char* fileName, const char* o
 
 SHARC_FORCE_INLINE void sharc_version() {
     printf("Centaurean Sharc %i.%i.%i\n", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
-    printf("Built for %s (%li bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, 8 * sizeof(void*), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
+    printf("Built for %s (%s endian system, %li bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, 8 * sizeof(void*), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
 }
 
 SHARC_FORCE_INLINE void sharc_usage() {
@@ -54,10 +54,10 @@ SHARC_FORCE_INLINE void sharc_usage() {
     printf("Superfast archiving of files.\n\n");
     printf("Available options :\n");
     printf("  -c[LEVEL], --compress[=LEVEL]     Compress files using LEVEL if specified (default)\n");
-	printf("                                    LEVEL can have the following values :\n");
-	printf("                                    0 = Fastest compression algorithm (default)\n");
-	printf("                                    1 = Better compression (dual pass), slightly slower\n");
-	printf("  -d, --decompress                  Decompress files\n");
+    printf("                                    LEVEL can have the following values :\n");
+    printf("                                    0 = Fastest compression algorithm (default)\n");
+    printf("                                    1 = Better compression (dual pass), slightly slower\n");
+    printf("  -d, --decompress                  Decompress files\n");
     printf("  -n, --no-prompt                   Overwrite without prompting\n");
     printf("  -i, --stdin                       Read from stdin\n");
     printf("  -o, --stdout                      Write to stdout\n");

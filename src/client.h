@@ -48,6 +48,12 @@
 #define SHARC_STDOUT                  "stdout"
 #define SHARC_STDIN_COMPRESSED        "stdin.sharc"
 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define SHARC_ENDIAN_STRING           "Little"
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define SHARC_ENDIAN_STRING           "Big"
+#endif
+
 #if defined(_WIN64) || defined(_WIN32)
 #define SHARC_PLATFORM_STRING         "Microsoft Windows"
 #elif defined(__APPLE__)
