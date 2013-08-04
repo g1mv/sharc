@@ -157,25 +157,25 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
     
     SHARC_CHRONO chrono;
     sharc_chronoStart(&chrono);
-    SHARC_FILE_HEADER fileHeader = sharc_decompress(in->stream, out->stream, &read, &inter, &write);
+    SHARC_HEADER header = sharc_decompress(in->stream, out->stream, &read, &inter, &write);
     sharc_chronoStop(&chrono);
     
     if(out->type == SHARC_TYPE_FILE) {
-        const sharc_byte originType = fileHeader.type;
+        const sharc_byte originType = header.genericHeader.type;
         const double elapsed = sharc_chronoElapsed(&chrono);
         
         uint64_t totalWritten = ftello(out->stream);
         fclose(out->stream);
         
         if(originType == SHARC_TYPE_FILE)
-            sharc_restoreFileAttributes(fileHeader, out->name);
+            sharc_restoreFileAttributes(header.fileInformationHeader, out->name);
         
         if(in->type == SHARC_TYPE_FILE) {
             uint64_t totalRead = ftello(in->stream);
             fclose(in->stream);
         
             if(originType == SHARC_TYPE_FILE)
-                if(totalWritten != fileHeader.originalFileSize)
+                if(totalWritten != header.fileInformationHeader.originalFileSize)
                     sharc_error("Input file is corrupt !");
         
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);

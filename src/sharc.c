@@ -27,8 +27,8 @@
 SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sharc_byte inType, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
     SHARC_ENCODING_RESULT result;
     
-    SHARC_FILE_HEADER fileHeader = sharc_createFileHeader(blockSize, inType, attributes);
-    fwrite(&fileHeader, sizeof(SHARC_FILE_HEADER), 1, outStream);
+    SHARC_HEADER header = sharc_createHeader(blockSize, inType, attributes);
+    sharc_writeHeader(header, outStream);
     
     while((in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockSize, inStream)) > 0) {
         result = sharc_sharcEncode(in, inter, out, attemptMode);
@@ -42,8 +42,8 @@ SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sh
     }
 } 
 
-SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_decompress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out) {
-    SHARC_FILE_HEADER fileHeader = sharc_readFileHeader(inStream);
+SHARC_FORCE_INLINE SHARC_HEADER sharc_decompress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out) {
+    SHARC_HEADER header = sharc_readHeader(inStream);
     SHARC_BLOCK_HEADER blockHeader;
     
     while(sharc_readBlockHeaderFromFile(&blockHeader, inStream) > 0) {
@@ -63,5 +63,5 @@ SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_decompress(FILE* inStream, FILE* outS
         sharc_rewindByteBuffer(out);
     }
     
-    return fileHeader;
+    return header;
 }

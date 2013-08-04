@@ -48,17 +48,27 @@
 typedef struct {
     sharc_byte name[5];
     sharc_byte version[3];
-    uint16_t type;
-    uint16_t fileMode;
+    sharc_byte type;
+    sharc_byte reserved[3];
+} SHARC_GENERIC_HEADER;
+
+typedef struct {
     uint64_t originalFileSize;
+    sharc_byte reserved[2];
+    uint16_t fileMode;
     uint64_t fileAccessed;
     uint64_t fileModified;
-} SHARC_FILE_HEADER;
+} SHARC_FILE_INFORMATION_HEADER;
+
+typedef struct {
+    SHARC_GENERIC_HEADER genericHeader;
+    SHARC_FILE_INFORMATION_HEADER fileInformationHeader;
+} SHARC_HEADER;
 #pragma pack(pop)
 
-SHARC_FILE_HEADER sharc_createFileHeader(const uint32_t, const sharc_byte, struct stat64);
-sharc_bool sharc_checkFileType(sharc_byte*);
-SHARC_FILE_HEADER sharc_readFileHeader(FILE*);
-void sharc_restoreFileAttributes(SHARC_FILE_HEADER, const char*);
+SHARC_HEADER sharc_createHeader(const uint32_t, const sharc_byte, struct stat64);
+sharc_bool sharc_checkSourceType(sharc_byte*);
+SHARC_HEADER sharc_readHeader(FILE*);
+void sharc_restoreFileAttributes(SHARC_FILE_INFORMATION_HEADER, const char*);
 
 #endif
