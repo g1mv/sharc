@@ -46,14 +46,14 @@
 #define SHARC_LITTLE_ENDIAN_32(b)   (b)
 #define SHARC_LITTLE_ENDIAN_16(b)   (b)
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#if __GNUC__ * 100 + __GNUC_MINOR__ sup= 403
+#if __GNUC__ * 100 + __GNUC_MINOR__ >= 403
 #define SHARC_LITTLE_ENDIAN_64(b)   __builtin_bswap64(b)
-#define SHARC_LITTLE_ENDIAN_32(b)   __builtin_bswap32(b)//(((b << 24) & 0xFF000000) | ((b << 8) & 0x00FF0000) | ((b >> 8) & 0x0000FF00) | ((b >> 24) & 0x000000FF))
-#define SHARC_LITTLE_ENDIAN_16(b)   __builtin_bswap16(b)//(((b << 8) & 0x0000FF00) | ((b >> 8) & 0x000000FF))
+#define SHARC_LITTLE_ENDIAN_32(b)   __builtin_bswap32(b)
+#define SHARC_LITTLE_ENDIAN_16(b)   __builtin_bswap16(b)
 #else
-#define SHARC_LITTLE_ENDIAN_64(b)
-#define SHARC_LITTLE_ENDIAN_32(b)
-#define SHARC_LITTLE_ENDIAN_16(b) 
+#define SHARC_LITTLE_ENDIAN_64(b)   ((((b) & 0xFF00000000000000) >> 56) | (((b) & 0x00FF000000000000) >> 40) | (((b) & 0x0000FF0000000000) >> 24) | (((b) & 0x000000FF00000000) >> 8) | (((b) & 0x00000000FF000000) << 8) | (((b) & 0x0000000000FF0000) << 24) | (((b) & 0x000000000000FF00) << 40) | (((b) & 0x00000000000000FF) << 56))
+#define SHARC_LITTLE_ENDIAN_32(b)   ((((b) & 0xFF000000) >> 24) | (((b) & 0x00FF0000) >> 8) | (((b) & 0x0000FF00) << 8) | (((b) & 0x000000FF) << 24)))
+#define SHARC_LITTLE_ENDIAN_16(b)   ((((b) & 0xFF00) >> 8) | (((b) & 0x00FF) << 8))
 #endif
 #else
 #error Unknow endianness
