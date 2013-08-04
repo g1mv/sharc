@@ -24,14 +24,14 @@
 
 #include "byte_buffer.h"
 
-FORCE_INLINE BYTE_BUFFER createByteBuffer(byte* pointer, uint32_t position, uint32_t size) {
-    BYTE_BUFFER byteBuffer;
+SHARC_FORCE_INLINE SHARC_BYTE_BUFFER createByteBuffer(byte* pointer, uint32_t position, uint32_t size) {
+    SHARC_BYTE_BUFFER byteBuffer;
     byteBuffer.pointer = pointer;
     byteBuffer.position = position;
     byteBuffer.size = size;
     return byteBuffer;
 }
 
-FORCE_INLINE void rewindByteBuffer(BYTE_BUFFER* buffer) {
+SHARC_FORCE_INLINE void rewindByteBuffer(SHARC_BYTE_BUFFER* buffer) {
     buffer->position = 0;
 }

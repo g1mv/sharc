@@ -22,8 +22,8 @@
  * 17/06/13 18:16
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#ifndef SHARC_GLOBALS_H
+#define SHARC_GLOBALS_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -32,11 +32,11 @@
 #include <stddef.h>
 
 #if defined(__INTEL_COMPILER)
-#define FORCE_INLINE __forceinline
+#define SHARC_FORCE_INLINE __forceinline
 #elif defined(__GNUC__)
-#define FORCE_INLINE __attribute__((always_inline))
+#define SHARC_FORCE_INLINE __attribute__((always_inline))
 #elif defined(_MSC_VER)
-#define FORCE_INLINE __forceinline
+#define SHARC_FORCE_INLINE __forceinline
 #else
 #warning Impossible to force functions inlining. Expect performance issues.
 #endif
@@ -60,12 +60,12 @@
 #error Unknow endianness
 #endif
 
-#define MAJOR_VERSION               0
-#define MINOR_VERSION               9
-#define REVISION                    7
+#define SHARC_MAJOR_VERSION               0
+#define SHARC_MINOR_VERSION               9
+#define SHARC_REVISION                    7
 
-#define FALSE                       0
-#define TRUE                        1
+#define SHARC_FALSE                       0
+#define SHARC_TRUE                        1
 
 typedef uint8_t byte;
 typedef uint8_t bool;

@@ -24,10 +24,10 @@
 
 #include "xor_hash_cipher.h"
 
-FORCE_INLINE bool xorHashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out) {
-    return hashEncode(in, out, XOR_MASK);
+SHARC_FORCE_INLINE bool xorHashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out) {
+    return hashEncode(in, out, SHARC_XOR_MASK);
 }
 
-FORCE_INLINE bool xorHashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out) {
-    return hashDecode(in, out, XOR_MASK);
+SHARC_FORCE_INLINE bool xorHashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out) {
+    return hashDecode(in, out, SHARC_XOR_MASK);
 }

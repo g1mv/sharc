@@ -24,80 +24,80 @@
 
 #include "hash_cipher.h"
 
-FORCE_INLINE void writeSignature(uint64_t* signature, const byte* state) {
+SHARC_FORCE_INLINE void writeSignature(uint64_t* signature, const byte* state) {
     *signature |= ((uint64_t)1) << *state;
 }
 
-FORCE_INLINE void flush(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint64_t* signature, const byte* state, const uint32_t* signaturePointer) {
+SHARC_FORCE_INLINE void flush(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint64_t* signature, const byte* state, const uint32_t* signaturePointer) {
     *(uint64_t*)(out->pointer + *signaturePointer) = SHARC_LITTLE_ENDIAN_64(*signature);
     in->position += (*state << 2);
 }
 
-FORCE_INLINE bool reset(BYTE_BUFFER* in, BYTE_BUFFER* out, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
+SHARC_FORCE_INLINE bool reset(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
     *signaturePointer = out->position;
     out->position += 8;
     if((out->position + 256) > in->size)
-        return FALSE;
+        return SHARC_FALSE;
     *state = 0;
     *signature = 0;
-    return TRUE;
+    return SHARC_TRUE;
 }
 
-FORCE_INLINE void resetDictionary(ENTRY* dictionary) {
-    for(uint32_t i = 0; i < (1 << HASH_BITS); i ++)
+SHARC_FORCE_INLINE void resetDictionary(SHARC_ENTRY* dictionary) {
+    for(uint32_t i = 0; i < (1 << SHARC_HASH_BITS); i ++)
         *(uint32_t*)&dictionary[i] = 0;
 }
 
-FORCE_INLINE bool checkState(BYTE_BUFFER* in, BYTE_BUFFER* out, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
+SHARC_FORCE_INLINE bool checkState(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
     switch(*state) {
         case 64:
             flush(in, out, signature, state, signaturePointer);
             if(reset(in, out, signature, state, signaturePointer) ^ 0x1)
-                return FALSE;
+                return SHARC_FALSE;
             break;
     }
-    return TRUE;
+    return SHARC_TRUE;
 }
 
-FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value, const uint32_t xorMask) {
-    *hash = HASH_OFFSET_BASIS;
+SHARC_FORCE_INLINE void computeHash(uint32_t* hash, const uint32_t value, const uint32_t xorMask) {
+    *hash = SHARC_HASH_OFFSET_BASIS;
     *hash ^= (value ^ xorMask);
-    *hash *= HASH_PRIME;
-    *hash = (*hash >> (32 - HASH_BITS)) ^ (*hash & 0xFFFF);
+    *hash *= SHARC_HASH_PRIME;
+    *hash = (*hash >> (32 - SHARC_HASH_BITS)) ^ (*hash & 0xFFFF);
 }
 
-FORCE_INLINE bool updateEntry(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* entry, const uint32_t chunk, const uint32_t index, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
-    *(uint32_t*)entry = (index & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
+SHARC_FORCE_INLINE bool updateEntry(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* entry, const uint32_t chunk, const uint32_t index, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
+    *(uint32_t*)entry = (index & 0xFFFFFF) | SHARC_MAX_BUFFER_REFERENCES;
     *(uint32_t*)(out->pointer + out->position) = chunk;
     out->position += 4;
     *state = *state + 1;
     return checkState(in, out, signature, state, signaturePointer);
 }
 
-FORCE_INLINE bool kernelEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, ENTRY* dictionary, uint32_t* hash, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
+SHARC_FORCE_INLINE bool kernelEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, SHARC_ENTRY* dictionary, uint32_t* hash, uint64_t* signature, byte* state, uint32_t* signaturePointer) {
     computeHash(hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
-    ENTRY* found = &dictionary[*hash];
-    if((*(uint32_t*)found) & MAX_BUFFER_REFERENCES) {
+    SHARC_ENTRY* found = &dictionary[*hash];
+    if((*(uint32_t*)found) & SHARC_MAX_BUFFER_REFERENCES) {
         if(chunk ^ buffer[*(uint32_t*)found & 0xFFFFFF]) {
             if(updateEntry(in, out, found, chunk, index, signature, state, signaturePointer) ^ 0x1)
-                return FALSE;
+                return SHARC_FALSE;
         } else {
             writeSignature(signature, state);
             *(uint16_t*)(out->pointer + out->position) = SHARC_LITTLE_ENDIAN_16(*hash);
             out->position += 2;
             *state = *state + 1;
             if(checkState(in, out, signature, state, signaturePointer) ^ 0x1)
-                return FALSE;
+                return SHARC_FALSE;
         }
     } else {
         if(updateEntry(in, out, found, chunk, index, signature, state, signaturePointer) ^ 0x1)
-            return FALSE;
+            return SHARC_FALSE;
     }
-    return TRUE;
+    return SHARC_TRUE;
 }
 
-FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t xorMask) {
-    ENTRY dictionary[1 << HASH_BITS];
+SHARC_FORCE_INLINE bool hashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t xorMask) {
+    SHARC_ENTRY dictionary[1 << SHARC_HASH_BITS];
     uint64_t signature;
     uint32_t signaturePointer;
     byte state;
@@ -111,7 +111,7 @@ FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     
     for(uint32_t i = 0; i < intInSize; i ++)
         if(kernelEncode(in, out, intInBuffer[i], xorMask, intInBuffer, i, dictionary, &hash, &signature, &state, &signaturePointer) ^ 0x1)
-            return FALSE;
+            return SHARC_FALSE;
     
     if(state > 0)
         flush(in, out, &signature, &state, &signaturePointer);
@@ -123,25 +123,25 @@ FORCE_INLINE bool hashEncode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
         if(out->position < out->size)
             out->pointer[out->position ++] = in->pointer[in->position ++];
         else
-            return FALSE;
+            return SHARC_FALSE;
     }
     
-    return TRUE;
+    return SHARC_TRUE;
 }
 
-FORCE_INLINE void kernelDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* dictionary, const uint32_t xorMask, const bool mode) {
+SHARC_FORCE_INLINE void kernelDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary, const uint32_t xorMask, const bool mode) {
     uint32_t hash;
     uint32_t chunk;
-    ENTRY* found;
+    SHARC_ENTRY* found;
     switch(mode) {
-        case FALSE:
+        case SHARC_FALSE:
             chunk = /*SHARC_LITTLE_ENDIAN_32(*/ *(uint32_t*)(in->pointer + in->position)/*)*/;
             computeHash(&hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
-            *(uint32_t*)&dictionary[hash] = ((out->position >> 2) & 0xFFFFFF) | MAX_BUFFER_REFERENCES;
+            *(uint32_t*)&dictionary[hash] = ((out->position >> 2) & 0xFFFFFF) | SHARC_MAX_BUFFER_REFERENCES;
             *(uint32_t*)(out->pointer + out->position) = chunk;
             in->position += 4;
             break;
-        case TRUE:
+        case SHARC_TRUE:
             found = &dictionary[SHARC_LITTLE_ENDIAN_16(*(uint16_t*)(in->pointer + in->position))];
             *(uint32_t*)(out->pointer + out->position) = /*SHARC_LITTLE_ENDIAN_32(*/ *(uint32_t*)(out->pointer + ((*(uint32_t*)found & 0xFFFFFF) << 2))/*)*/;
             in->position += 2;
@@ -150,13 +150,13 @@ FORCE_INLINE void kernelDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, ENTRY* diction
     out->position += 4;
 }
 
-FORCE_INLINE void byteCopy(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t number) {
+SHARC_FORCE_INLINE void byteCopy(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t number) {
     for(byte r = 0; r < number; r++)
         out->pointer[out->position ++] = in->pointer[in->position ++];
 }
 
-FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t xorMask) {
-    ENTRY dictionary[1 << HASH_BITS];
+SHARC_FORCE_INLINE bool hashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t xorMask) {
+    SHARC_ENTRY dictionary[1 << SHARC_HASH_BITS];
     
     resetDictionary(dictionary);
     
@@ -184,7 +184,7 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
     else {
         if((signature >> i) & 0x1) {
             if(remaining & 0x2)
-                kernelDecode(in, out, dictionary, xorMask, TRUE);
+                kernelDecode(in, out, dictionary, xorMask, SHARC_TRUE);
             else
                 error("Corrupted file !");
             if(remaining == 0x3)
@@ -193,5 +193,5 @@ FORCE_INLINE bool hashDecode(BYTE_BUFFER* in, BYTE_BUFFER* out, const uint32_t x
             byteCopy(in, out, remaining);
     }
     
-    return TRUE;
+    return SHARC_TRUE;
 }

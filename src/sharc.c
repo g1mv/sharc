@@ -24,17 +24,17 @@
 
 #include "sharc.h"
 
-FORCE_INLINE void compress(FILE* inStream, FILE* outStream, BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* out, const byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
-    ENCODING_RESULT result;
+SHARC_FORCE_INLINE void compress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
+    SHARC_ENCODING_RESULT result;
     
-    FILE_HEADER fileHeader = createFileHeader(blockSize, attributes);
-    fwrite(&fileHeader, sizeof(FILE_HEADER), 1, outStream);
+    SHARC_FILE_HEADER fileHeader = createFileHeader(blockSize, attributes);
+    fwrite(&fileHeader, sizeof(SHARC_FILE_HEADER), 1, outStream);
     
     while((in->size = (uint32_t)fread(in->pointer, sizeof(byte), blockSize, inStream)) > 0) {
         result = sharcEncode(in, inter, out, attemptMode);
         
-        BLOCK_HEADER blockHeader = createBlockHeader(result.reachableMode, result.out->position);
-        fwrite(&blockHeader, sizeof(BLOCK_HEADER), 1, outStream);
+        SHARC_BLOCK_HEADER blockHeader = createBlockHeader(result.reachableMode, result.out->position);
+        fwrite(&blockHeader, sizeof(SHARC_BLOCK_HEADER), 1, outStream);
         fwrite(result.out->pointer, sizeof(byte), result.out->position, outStream);
         
         rewindByteBuffer(in);
@@ -42,14 +42,14 @@ FORCE_INLINE void compress(FILE* inStream, FILE* outStream, BYTE_BUFFER* in, BYT
     }
 } 
 
-FORCE_INLINE FILE_HEADER decompress(FILE* inStream, FILE* outStream, BYTE_BUFFER* in, BYTE_BUFFER* inter, BYTE_BUFFER* out) {
-    FILE_HEADER fileHeader = readFileHeader(inStream);
-    BLOCK_HEADER blockHeader;
+SHARC_FORCE_INLINE SHARC_FILE_HEADER decompress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out) {
+    SHARC_FILE_HEADER fileHeader = readFileHeader(inStream);
+    SHARC_BLOCK_HEADER blockHeader;
     
     while(readBlockHeaderFromFile(&blockHeader, inStream) > 0) {
         in->size = (uint32_t)fread(in->pointer, sizeof(byte), blockHeader.nextBlock, inStream);
         switch(blockHeader.mode) {
-            case MODE_COPY:
+            case SHARC_MODE_COPY:
                 fwrite(in->pointer, sizeof(byte), in->size, outStream);
                 break;
             default:

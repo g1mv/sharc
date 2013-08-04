@@ -22,8 +22,8 @@
  * 17/06/13 18:14
  */
 
-#ifndef FILE_HEADER_H
-#define FILE_HEADER_H
+#ifndef SHARC_FILE_HEADER_H
+#define SHARC_FILE_HEADER_H
 
 #define __USE_LARGEFILE64
 #define _LARGEFILE_SOURCE
@@ -40,6 +40,8 @@
 
 #include "globals.h"
 
+#pragma pack(push)
+#pragma pack(4)
 typedef struct {
     byte name[5];
     byte version[3];
@@ -48,11 +50,12 @@ typedef struct {
     uint32_t fileMode;
     uint64_t fileAccessed;
     uint64_t fileModified;
-} FILE_HEADER;
+} SHARC_FILE_HEADER;
+#pragma pack(pop)
 
-FILE_HEADER createFileHeader(const uint32_t, struct stat64);
+SHARC_FILE_HEADER createFileHeader(const uint32_t, struct stat64);
 bool checkFileType(byte*);
-FILE_HEADER readFileHeader(FILE*);
-void restoreFileAttributes(FILE_HEADER, const char*);
+SHARC_FILE_HEADER readFileHeader(FILE*);
+void restoreFileAttributes(SHARC_FILE_HEADER, const char*);
 
 #endif

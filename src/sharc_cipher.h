@@ -22,26 +22,26 @@
  * 01/06/13 20:51
  */
 
-#ifndef SHARC_CIPHER_H
-#define SHARC_CIPHER_H
+#ifndef SHARC_SHARC_CIPHER_H
+#define SHARC_SHARC_CIPHER_H
 
 #include "direct_hash_cipher.h"
 #include "xor_hash_cipher.h"
 #include "block_header.h"
 
-#define MODE_SINGLE_PASS        0
-#define MODE_DUAL_PASS          1
-#define MODE_COPY               255
+#define SHARC_MODE_SINGLE_PASS        0
+#define SHARC_MODE_DUAL_PASS          1
+#define SHARC_MODE_COPY               255
 
 typedef struct {
     byte reachableMode;
-    BYTE_BUFFER* out;
-} ENCODING_RESULT;
+    SHARC_BYTE_BUFFER* out;
+} SHARC_ENCODING_RESULT;
 
-ENCODING_RESULT createEncodingResult(const byte, BYTE_BUFFER*);
-ENCODING_RESULT createEncodingResultWithPosition(const byte, BYTE_BUFFER*, const uint32_t);
-ENCODING_RESULT copyMode(BYTE_BUFFER*);
-ENCODING_RESULT sharcEncode(BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte);
-bool sharcDecode(BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte);
+SHARC_ENCODING_RESULT createEncodingResult(const byte, SHARC_BYTE_BUFFER*);
+SHARC_ENCODING_RESULT createEncodingResultWithPosition(const byte, SHARC_BYTE_BUFFER*, const uint32_t);
+SHARC_ENCODING_RESULT copyMode(SHARC_BYTE_BUFFER*);
+SHARC_ENCODING_RESULT sharcEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const byte);
+bool sharcDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const byte);
 
 #endif

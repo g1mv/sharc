@@ -22,16 +22,16 @@
  * 01/06/13 20:03
  */
 
-#ifndef XOR_HASH_CIPHER_H
-#define XOR_HASH_CIPHER_H
+#ifndef SHARC_XOR_HASH_CIPHER_H
+#define SHARC_XOR_HASH_CIPHER_H
 
 #include "hash_cipher.h"
 
 #include <stdio.h>
 
-#define XOR_MASK    0xFF0000FF
+#define SHARC_XOR_MASK    0xFF0000FF
 
-bool xorHashEncode(BYTE_BUFFER*, BYTE_BUFFER*);
-bool xorHashDecode(BYTE_BUFFER*, BYTE_BUFFER*);
+bool xorHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
+bool xorHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
 
 #endif

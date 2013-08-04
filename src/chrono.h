@@ -22,22 +22,22 @@
  * 02/07/13 02:33
  */
 
-#ifndef CHRONO_H
-#define CHRONO_H
+#ifndef SHARC_CHRONO_H
+#define SHARC_CHRONO_H
 
 #include <sys/time.h>
 
 #include "globals.h"
 
-#define MICROSECONDS    1000000.0
+#define SHARC_MICROSECONDS    1000000.0
 
 typedef struct {
     struct timeval start;
     struct timeval stop;
-} CHRONO;
+} SHARC_CHRONO;
 
-void chronoStart(CHRONO*);
-void chronoStop(CHRONO*);
-double chronoElapsed(CHRONO*);
+void chronoStart(SHARC_CHRONO*);
+void chronoStop(SHARC_CHRONO*);
+double chronoElapsed(SHARC_CHRONO*);
 
 #endif

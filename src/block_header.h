@@ -22,8 +22,8 @@
  * 17/06/13 19:16
  */
 
-#ifndef BLOCK_HEADER_H
-#define BLOCK_HEADER_H
+#ifndef SHARC_BLOCK_HEADER_H
+#define SHARC_BLOCK_HEADER_H
 
 #include <sys/stat.h>
 #include <stdio.h>
@@ -31,12 +31,15 @@
 
 #include "globals.h"
 
+#pragma pack(push)
+#pragma pack(4)
 typedef struct {
     uint32_t mode;
     uint32_t nextBlock;
-} BLOCK_HEADER;
+} SHARC_BLOCK_HEADER;
+#pragma pack(pop)
 
-BLOCK_HEADER createBlockHeader(const byte, const uint32_t);
-const size_t readBlockHeaderFromFile(BLOCK_HEADER*, FILE*);
+SHARC_BLOCK_HEADER createBlockHeader(const byte, const uint32_t);
+const size_t readBlockHeaderFromFile(SHARC_BLOCK_HEADER*, FILE*);
 
 #endif

@@ -22,41 +22,41 @@
  * 01/06/13 17:27
  */
 
-#ifndef HASH_CIPHER_H
-#define HASH_CIPHER_H
+#ifndef SHARC_HASH_CIPHER_H
+#define SHARC_HASH_CIPHER_H
 
 #include "byte_buffer.h"
 
 #include <stdio.h>
 
-#define HASH_BITS                   16
-#define HASH_OFFSET_BASIS           2166115717	//14695981039346656037//
-#define HASH_PRIME                  16777619	//1099511628211//
+#define SHARC_HASH_BITS                   16
+#define SHARC_HASH_OFFSET_BASIS           2166115717	//14695981039346656037//
+#define SHARC_HASH_PRIME                  16777619	//1099511628211//
 
-#define MAX_BUFFER_REFERENCES       (1 << 24) // 3 bytes, = ENTRY offset size
-#define PREFERRED_BUFFER_SIZE       MAX_BUFFER_REFERENCES >> 2 // Has to be < to MAX_BUFFER_REFERENCES << 2
-#define MAX_BUFFER_SIZE             PREFERRED_BUFFER_SIZE
+#define SHARC_MAX_BUFFER_REFERENCES       (1 << 24) // 3 bytes, = ENTRY offset size
+#define SHARC_PREFERRED_BUFFER_SIZE       SHARC_MAX_BUFFER_REFERENCES >> 2 // Has to be < to MAX_BUFFER_REFERENCES << 2
+#define SHARC_MAX_BUFFER_SIZE             SHARC_PREFERRED_BUFFER_SIZE
 
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
 	byte offset[3];
     byte exists;
-} ENTRY;
+} SHARC_ENTRY;
 #pragma pack(pop)
 
 void writeSignature(uint64_t*, const byte*);
-void flush(BYTE_BUFFER*, BYTE_BUFFER*, const uint64_t*, const byte*, const uint32_t*);
-bool reset(BYTE_BUFFER*, BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
-void resetDictionary(ENTRY*);
-bool checkState(BYTE_BUFFER*, BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
+void flush(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint64_t*, const byte*, const uint32_t*);
+bool reset(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
+void resetDictionary(SHARC_ENTRY*);
+bool checkState(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, byte*, uint32_t*);
 void computeHash(uint32_t*, const uint32_t, const uint32_t);
-bool updateEntry(BYTE_BUFFER*, BYTE_BUFFER*, ENTRY*, const uint32_t, const uint32_t, uint64_t*, byte*, uint32_t*);
-bool kernelEncode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t, const uint32_t, const uint32_t*, const uint32_t, ENTRY*, uint32_t*, uint64_t*, byte*, uint32_t*);
-void kernelDecode(BYTE_BUFFER*, BYTE_BUFFER*, ENTRY*, const uint32_t, const bool);
+bool updateEntry(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*, const uint32_t, const uint32_t, uint64_t*, byte*, uint32_t*);
+bool kernelEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t, const uint32_t, const uint32_t*, const uint32_t, SHARC_ENTRY*, uint32_t*, uint64_t*, byte*, uint32_t*);
+void kernelDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*, const uint32_t, const bool);
 
-bool hashEncode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t);
-void byteCopy(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t);
-bool hashDecode(BYTE_BUFFER*, BYTE_BUFFER*, const uint32_t);
+bool hashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
+void byteCopy(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
+bool hashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint32_t);
 
 #endif

@@ -22,8 +22,8 @@
  * 03/07/13 14:54
  */
 
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef SHARC_CLIENT_H
+#define SHARC_CLIENT_H
 
 #ifdef _WIN32
 #include <fcntl.h>
@@ -35,59 +35,59 @@
 #include "sharc.h"
 #include "chrono.h"
 
-#define ACTION_COMPRESS         0
-#define ACTION_DECOMPRESS       1
+#define SHARC_ACTION_COMPRESS         0
+#define SHARC_ACTION_DECOMPRESS       1
 
-#define NO_PROMPTING            FALSE
-#define PROMPTING               TRUE
+#define SHARC_NO_PROMPTING            SHARC_FALSE
+#define SHARC_PROMPTING               SHARC_TRUE
 
-#define TYPE_FILE               0
-#define TYPE_STREAM             1
+#define SHARC_TYPE_FILE               0
+#define SHARC_TYPE_STREAM             1
 
-#define STDIN                   "stdin"
-#define STDOUT                  "stdout"
-#define STDIN_COMPRESSED        "stdin.sharc"
+#define SHARC_STDIN                   "stdin"
+#define SHARC_STDOUT                  "stdout"
+#define SHARC_STDIN_COMPRESSED        "stdin.sharc"
 
 #if defined(_WIN64) || defined(_WIN32)
-#define PLATFORM_STRING         "Microsoft Windows"
+#define SHARC_PLATFORM_STRING         "Microsoft Windows"
 #elif __APPLE__
 #include "TargetConditionals.h"
 #if TARGET_IPHONE_SIMULATOR
-#define PLATFORM_STRING         "iOS Simulator"
+#define SHARC_PLATFORM_STRING         "iOS Simulator"
 #elif TARGET_OS_IPHONE
-#define PLATFORM_STRING         "iOS"
+#define SHARC_PLATFORM_STRING         "iOS"
 #elif TARGET_OS_MAC
-#define PLATFORM_STRING         "Mac OS/X"
+#define SHARC_PLATFORM_STRING         "Mac OS/X"
 #else
-#define PLATFORM_STRING         "an unknown Apple platform"
+#define SHARC_PLATFORM_STRING         "an unknown Apple platform"
 #endif
 #elif __FreeBSD__
-#define PLATFORM_STRING         "FreeBSD"
+#define SHARC_PLATFORM_STRING         "FreeBSD"
 #elif __linux
-#define PLATFORM_STRING         "GNU/Linux"
+#define SHARC_PLATFORM_STRING         "GNU/Linux"
 #elif __unix
-#define PLATFORM_STRING         "Unix"
+#define SHARC_PLATFORM_STRING         "Unix"
 #elif __posix
-#define PLATFORM_STRING         "Posix"
+#define SHARC_PLATFORM_STRING         "Posix"
 #else
-#define PLATFORM_STRING         "an unknown platform"
+#define SHARC_PLATFORM_STRING         "an unknown platform"
 #endif
 
 typedef struct {
     const char* name;
     FILE* stream;
     byte type;
-} CLIENT_IO;
+} SHARC_CLIENT_IO;
 
-byte readBuffer[MAX_BUFFER_SIZE];
-byte interBuffer[MAX_BUFFER_SIZE];
-byte writeBuffer[MAX_BUFFER_SIZE];
+byte readBuffer[SHARC_MAX_BUFFER_SIZE];
+byte interBuffer[SHARC_MAX_BUFFER_SIZE];
+byte writeBuffer[SHARC_MAX_BUFFER_SIZE];
 
 FILE* checkOpenFile(const char*, const char*, const bool);
 void version();
 void usage();
-void clientCompress(CLIENT_IO*, CLIENT_IO*, const byte, const uint32_t, const bool);
-void clientDecompress(CLIENT_IO*, CLIENT_IO*, const bool);
+void clientCompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const byte, const uint32_t, const bool);
+void clientDecompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const bool);
 int main(int, char **);
 
 #endif

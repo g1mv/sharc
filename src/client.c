@@ -24,7 +24,7 @@
 
 #include "client.h"
 
-FORCE_INLINE FILE* checkOpenFile(const char* fileName, const char* options, const bool checkOverwrite) {
+SHARC_FORCE_INLINE FILE* checkOpenFile(const char* fileName, const char* options, const bool checkOverwrite) {
     if(checkOverwrite && access(fileName, F_OK) != -1) {
         printf("File %s already exists. Do you want to overwrite it (y/N) ? ", fileName);
         switch(getchar()) {
@@ -42,12 +42,12 @@ FORCE_INLINE FILE* checkOpenFile(const char* fileName, const char* options, cons
     return file;
 }
 
-FORCE_INLINE void version() {
-    printf("Centaurean Sharc %i.%i.%i\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
-    printf("Built for %s (%li bits) using GCC %d.%d.%d, %s %s\n", PLATFORM_STRING, 8 * sizeof(void*), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
+SHARC_FORCE_INLINE void version() {
+    printf("Centaurean Sharc %i.%i.%i\n", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
+    printf("Built for %s (%li bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, 8 * sizeof(void*), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
 }
 
-FORCE_INLINE void usage() {
+SHARC_FORCE_INLINE void usage() {
     version();
     printf("Copyright (C) 2013 Guillaume Voirin\n");
     printf("Usage : sharc [OPTIONS]... [FILES]...\n")   ;
@@ -66,51 +66,51 @@ FORCE_INLINE void usage() {
     exit(0);
 }
 
-FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attemptMode, const uint32_t blockSize, const bool prompting) {
+SHARC_FORCE_INLINE void clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_IO* out, const byte attemptMode, const uint32_t blockSize, const bool prompting) {
     struct stat64 attributes;
     char outFileName[strlen(in->name) + 6];
     
-    if(in->type == TYPE_FILE) {
-        if(out->type == TYPE_FILE) {
+    if(in->type == SHARC_TYPE_FILE) {
+        if(out->type == SHARC_TYPE_FILE) {
             sprintf(outFileName, "%s.sharc", in->name);
             
             out->name = outFileName;
         }
         
-        in->stream = checkOpenFile(in->name, "rb", FALSE);
+        in->stream = checkOpenFile(in->name, "rb", SHARC_FALSE);
         
         stat64(in->name, &attributes);
     } else {
-        if(out->type == TYPE_FILE)
-            out->name = STDIN_COMPRESSED;
+        if(out->type == SHARC_TYPE_FILE)
+            out->name = SHARC_STDIN_COMPRESSED;
         
         in->stream = stdin;
-        in->name = STDIN;
+        in->name = SHARC_STDIN;
     }
     
-    if(out->type == TYPE_FILE)
+    if(out->type == SHARC_TYPE_FILE)
         out->stream = checkOpenFile(out->name, "wb", prompting);
     else {
         out->stream = stdout;
-        out->name = STDOUT;
+        out->name = SHARC_STDOUT;
     }
     
-    BYTE_BUFFER read = createByteBuffer(readBuffer, 0, blockSize);
-    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, blockSize);
-    BYTE_BUFFER write = createByteBuffer(writeBuffer, 0, blockSize);
+    SHARC_BYTE_BUFFER read = createByteBuffer(readBuffer, 0, blockSize);
+    SHARC_BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, blockSize);
+    SHARC_BYTE_BUFFER write = createByteBuffer(writeBuffer, 0, blockSize);
     
-    CHRONO chrono;
+    SHARC_CHRONO chrono;
     chronoStart(&chrono);
     compress(in->stream, out->stream, &read, &inter, &write, attemptMode, blockSize, attributes);
     chronoStop(&chrono);
     
-    if(out->type == TYPE_FILE) {
+    if(out->type == SHARC_TYPE_FILE) {
         const double elapsed = chronoElapsed(&chrono);
         
         uint64_t totalWritten = ftello(out->stream);
         fclose(out->stream);
         
-        if(in->type == TYPE_FILE) {
+        if(in->type == SHARC_TYPE_FILE) {
             uint64_t totalRead = ftello(in->stream);
             fclose(in->stream);
         
@@ -123,45 +123,45 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
     }
 }
 
-FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool prompting) {
+SHARC_FORCE_INLINE void clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_IO* out, const bool prompting) {
     const unsigned long originalFileNameLength = strlen(in->name) - 6;
     char outFileName[originalFileNameLength];
     
-    if(in->type == TYPE_FILE) {
-        if(out->type == TYPE_FILE) {
+    if(in->type == SHARC_TYPE_FILE) {
+        if(out->type == SHARC_TYPE_FILE) {
             outFileName[0] = '\0';
             strncat(outFileName, in->name, originalFileNameLength);
             
             out->name = outFileName;
         }
     
-        in->stream = checkOpenFile(in->name, "rb", FALSE);
+        in->stream = checkOpenFile(in->name, "rb", SHARC_FALSE);
     } else {
-        if(out->type == TYPE_FILE)
-            out->name = STDIN;
+        if(out->type == SHARC_TYPE_FILE)
+            out->name = SHARC_STDIN;
         
         in->stream = stdin;
-        in->name = STDIN;
+        in->name = SHARC_STDIN;
     }
     
-    if(out->type == TYPE_FILE)
+    if(out->type == SHARC_TYPE_FILE)
         out->stream = checkOpenFile(out->name, "wb", prompting);
     else {
         out->stream = stdout;
-        out->name = STDOUT;
+        out->name = SHARC_STDOUT;
     }
     
-    BYTE_BUFFER read = createByteBuffer(readBuffer, 0, 0);
-    BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
-    BYTE_BUFFER write = createByteBuffer(writeBuffer, 0, 0);
+    SHARC_BYTE_BUFFER read = createByteBuffer(readBuffer, 0, 0);
+    SHARC_BYTE_BUFFER inter = createByteBuffer(interBuffer, 0, 0);
+    SHARC_BYTE_BUFFER write = createByteBuffer(writeBuffer, 0, 0);
     
-    CHRONO chrono;
+    SHARC_CHRONO chrono;
     chronoStart(&chrono);
-    FILE_HEADER fileHeader = decompress(in->stream, out->stream, &read, &inter, &write);
+    SHARC_FILE_HEADER fileHeader = decompress(in->stream, out->stream, &read, &inter, &write);
     chronoStop(&chrono);
     
-    if(out->type == TYPE_FILE) {
-        const bool notFromStdin = strcmp(out->name, STDIN);
+    if(out->type == SHARC_TYPE_FILE) {
+        const bool notFromStdin = strcmp(out->name, SHARC_STDIN);
         const double elapsed = chronoElapsed(&chrono);
         
         uint64_t totalWritten = ftello(out->stream);
@@ -170,7 +170,7 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
         if(notFromStdin)
             restoreFileAttributes(fileHeader, out->name);
         
-        if(in->type == TYPE_FILE) {
+        if(in->type == SHARC_TYPE_FILE) {
             uint64_t totalRead = ftello(in->stream);
             fclose(in->stream);
         
@@ -196,13 +196,13 @@ int main(int argc, char *argv[]) {
     if(argc <= 1)
         usage();
     
-    byte action = ACTION_COMPRESS;
-	byte mode = MODE_SINGLE_PASS;
-    byte prompting = PROMPTING;
-    CLIENT_IO in;
-    in.type = TYPE_FILE;
-    CLIENT_IO out;
-    out.type = TYPE_FILE;
+    byte action = SHARC_ACTION_COMPRESS;
+	byte mode = SHARC_MODE_SINGLE_PASS;
+    byte prompting = SHARC_PROMPTING;
+    SHARC_CLIENT_IO in;
+    in.type = SHARC_TYPE_FILE;
+    SHARC_CLIENT_IO out;
+    out.type = SHARC_TYPE_FILE;
     
     size_t argLength;
     for(int i = 1; i < argc; i ++) {
@@ -214,7 +214,7 @@ int main(int argc, char *argv[]) {
                 switch(argv[i][1]) {
                     case 'c':
                         if(argLength == 2) {
-                            mode = MODE_SINGLE_PASS;
+                            mode = SHARC_MODE_SINGLE_PASS;
                             break;
                         }
                         if(argLength != 3)
@@ -222,16 +222,16 @@ int main(int argc, char *argv[]) {
                         mode = argv[i][2] - '0';
                         break;
                     case 'd':
-                        action = ACTION_DECOMPRESS;
+                        action = SHARC_ACTION_DECOMPRESS;
                         break;
                     case 'n':
-                        prompting = NO_PROMPTING;
+                        prompting = SHARC_NO_PROMPTING;
                         break;
                     case 'i':
-                        in.type = TYPE_STREAM;
+                        in.type = SHARC_TYPE_STREAM;
                         break;
                     case 'o':
-                        out.type = TYPE_STREAM;
+                        out.type = SHARC_TYPE_STREAM;
                         break;
                     case 'v':
                         version();
@@ -254,18 +254,18 @@ int main(int argc, char *argv[]) {
 							case 'd':
                                 if(argLength != 12)
                                     usage();
-								action = ACTION_DECOMPRESS;
+								action = SHARC_ACTION_DECOMPRESS;
 								break;
                             case 'n':
                                 if(argLength != 11)
                                     usage();
-                                prompting = NO_PROMPTING;
+                                prompting = SHARC_NO_PROMPTING;
                                 break;
                             case 's':
                                 if(argLength == 7)
-                                    in.type = TYPE_STREAM;
+                                    in.type = SHARC_TYPE_STREAM;
                                 else if(argLength == 8)
-                                    out.type = TYPE_STREAM;
+                                    out.type = SHARC_TYPE_STREAM;
                                 else
                                     usage();
                                 break;
@@ -287,24 +287,24 @@ int main(int argc, char *argv[]) {
             default:
                 in.name = argv[i];
                 switch(action) {
-                    case ACTION_DECOMPRESS:
+                    case SHARC_ACTION_DECOMPRESS:
                         clientDecompress(&in, &out, prompting);
                         break;
                     default:
-                        clientCompress(&in, &out, mode, PREFERRED_BUFFER_SIZE, prompting);
+                        clientCompress(&in, &out, mode, SHARC_PREFERRED_BUFFER_SIZE, prompting);
                         break;
                 }
                 break;
         }
     }
     
-    if(in.type == TYPE_STREAM) {
+    if(in.type == SHARC_TYPE_STREAM) {
         switch(action) {
-            case ACTION_DECOMPRESS:
+            case SHARC_ACTION_DECOMPRESS:
                 clientDecompress(&in, &out, prompting);
                 break;
             default:
-                clientCompress(&in, &out, mode, PREFERRED_BUFFER_SIZE, prompting);
+                clientCompress(&in, &out, mode, SHARC_PREFERRED_BUFFER_SIZE, prompting);
                 break;
         }
     }

@@ -25,16 +25,16 @@
 
 #include "file_header.h"
 
-FORCE_INLINE FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat64 fileAttributes) {
-    FILE_HEADER fileHeader;
+SHARC_FORCE_INLINE SHARC_FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat64 fileAttributes) {
+    SHARC_FILE_HEADER fileHeader;
     fileHeader.name[0] = 'S';
     fileHeader.name[1] = 'H';
     fileHeader.name[2] = 'A';
     fileHeader.name[3] = 'R';
     fileHeader.name[4] = 'C';
-    fileHeader.version[0] = MAJOR_VERSION;
-    fileHeader.version[1] = MINOR_VERSION;
-    fileHeader.version[2] = REVISION;
+    fileHeader.version[0] = SHARC_MAJOR_VERSION;
+    fileHeader.version[1] = SHARC_MINOR_VERSION;
+    fileHeader.version[2] = SHARC_REVISION;
     fileHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_size);
     fileHeader.bufferSize = SHARC_LITTLE_ENDIAN_32(bufferSize);
     fileHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileAttributes.st_mode);
@@ -43,23 +43,23 @@ FORCE_INLINE FILE_HEADER createFileHeader(const uint32_t bufferSize, struct stat
     return fileHeader;
 }
 
-FORCE_INLINE bool checkFileType(byte* fileHeader) {
+SHARC_FORCE_INLINE bool checkFileType(byte* fileHeader) {
     if(fileHeader[0] != 'S')
-        return FALSE;
+        return SHARC_FALSE;
     if(fileHeader[1] != 'H')
-        return FALSE;
+        return SHARC_FALSE;
     if(fileHeader[2] != 'A')
-        return FALSE;
+        return SHARC_FALSE;
     if(fileHeader[3] != 'R')
-        return FALSE;
+        return SHARC_FALSE;
     if(fileHeader[4] != 'C')
-        return FALSE;
-    return TRUE;
+        return SHARC_FALSE;
+    return SHARC_TRUE;
 }
 
-FORCE_INLINE FILE_HEADER readFileHeader(FILE* file) {
-    FILE_HEADER fileHeader;
-    fread(&fileHeader, sizeof(FILE_HEADER), 1, file);
+SHARC_FORCE_INLINE SHARC_FILE_HEADER readFileHeader(FILE* file) {
+    SHARC_FILE_HEADER fileHeader;
+    fread(&fileHeader, sizeof(SHARC_FILE_HEADER), 1, file);
     fileHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileHeader.originalFileSize);
     fileHeader.bufferSize = SHARC_LITTLE_ENDIAN_32(fileHeader.bufferSize);
     fileHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileHeader.fileMode);
@@ -70,7 +70,7 @@ FORCE_INLINE FILE_HEADER readFileHeader(FILE* file) {
     return fileHeader;
 }
 
-FORCE_INLINE void restoreFileAttributes(FILE_HEADER fileHeader, const char* fileName) {
+SHARC_FORCE_INLINE void restoreFileAttributes(SHARC_FILE_HEADER fileHeader, const char* fileName) {
     if(chmod(fileName, fileHeader.fileMode))
         error("Unable to restore original file rights.");
     

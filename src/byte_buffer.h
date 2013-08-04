@@ -22,8 +22,8 @@
  * 01/06/13 17:39
  */
 
-#ifndef BYTE_BUFFER_H
-#define BYTE_BUFFER_H
+#ifndef SHARC_BYTE_BUFFER_H
+#define SHARC_BYTE_BUFFER_H
 
 #include "globals.h"
 
@@ -31,9 +31,9 @@ typedef struct {
     byte* pointer;
     uint32_t position;
     uint32_t size;
-} BYTE_BUFFER;
+} SHARC_BYTE_BUFFER;
 
-BYTE_BUFFER createByteBuffer(byte*, uint32_t, uint32_t);
-void rewindByteBuffer(BYTE_BUFFER*);
+SHARC_BYTE_BUFFER createByteBuffer(byte*, uint32_t, uint32_t);
+void rewindByteBuffer(SHARC_BYTE_BUFFER*);
 
 #endif

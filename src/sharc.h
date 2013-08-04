@@ -22,8 +22,8 @@
  * 01/06/13 17:55
  */
 
-#ifndef SHARC_H
-#define SHARC_H
+#ifndef SHARC_SHARC_H
+#define SHARC_SHARC_H
 
 #define __USE_LARGEFILE64
 #define _LARGEFILE_SOURCE
@@ -37,7 +37,7 @@
 #include "file_header.h"
 #include "block_header.h"
 
-void compress(FILE*, FILE*, BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*, const byte, const uint32_t, const struct stat64);
-FILE_HEADER decompress(FILE*, FILE*, BYTE_BUFFER*, BYTE_BUFFER*, BYTE_BUFFER*);
+void compress(FILE*, FILE*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const byte, const uint32_t, const struct stat64);
+SHARC_FILE_HEADER decompress(FILE*, FILE*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
 
 #endif
