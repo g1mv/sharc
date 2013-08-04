@@ -31,14 +31,6 @@
 #include <unistd.h>
 #include <stddef.h>
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-
-#elif __BYTE_ORDER == __BIG_ENDIAN
-#error Big endian systems not yet supported
-#else
-#error Unknow endianness
-#endif
-
 #if defined(__INTEL_COMPILER)
 #define FORCE_INLINE __forceinline
 #elif defined(__GNUC__)
@@ -47,6 +39,16 @@
 #define FORCE_INLINE __forceinline
 #else
 #warning Impossible to force functions inlining. Expect performance issues.
+#endif
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define SHARC_LITTLE_ENDIAN_32(b)   (b)
+#define SHARC_LITTLE_ENDIAN_16(b)   (b)
+#elif __BYTE_ORDER == __BIG_ENDIAN
+#define SHARC_LITTLE_ENDIAN_32(b)   (((b << 24) & 0xFF000000) | ((b << 8) & 0x00FF0000) | ((b >> 8) & 0x0000FF00) | ((b >> 24) & 0x000000FF)))
+#define SHARC_LITTLE_ENDIAN_16(b)   (((b << 8) & 0x0000FF00) | ((b >> 8) & 0x000000FF))
+#else
+#error Unknow endianness
 #endif
 
 #define MAJOR_VERSION               0
