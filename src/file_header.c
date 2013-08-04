@@ -25,7 +25,7 @@
 
 #include "file_header.h"
 
-SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_createFileHeader(const uint32_t bufferSize, struct stat64 fileAttributes) {
+SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_createFileHeader(const uint32_t bufferSize, const sharc_byte type, struct stat64 fileAttributes) {
     SHARC_FILE_HEADER fileHeader;
     fileHeader.name[0] = 'S';
     fileHeader.name[1] = 'H';
@@ -35,11 +35,21 @@ SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_createFileHeader(const uint32_t buffe
     fileHeader.version[0] = SHARC_MAJOR_VERSION;
     fileHeader.version[1] = SHARC_MINOR_VERSION;
     fileHeader.version[2] = SHARC_REVISION;
-    fileHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_size);
-    fileHeader.bufferSize = SHARC_LITTLE_ENDIAN_32(bufferSize);
-    fileHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileAttributes.st_mode);
-    fileHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_atime);
-    fileHeader.fileModified = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_mtime);
+    fileHeader.type = SHARC_LITTLE_ENDIAN_16(type);
+    switch(type) {
+        case SHARC_TYPE_STREAM:
+            fileHeader.fileMode = 0;
+            fileHeader.originalFileSize = 0;
+            fileHeader.fileAccessed = 0;
+            fileHeader.fileModified = 0;
+            break;
+        case SHARC_TYPE_FILE:
+            fileHeader.fileMode = SHARC_LITTLE_ENDIAN_16(fileAttributes.st_mode);
+            fileHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_size);
+            fileHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_atime);
+            fileHeader.fileModified = SHARC_LITTLE_ENDIAN_64(fileAttributes.st_mtime);
+            break;
+    }
     return fileHeader;
 }
 
@@ -60,9 +70,9 @@ SHARC_FORCE_INLINE sharc_bool sharc_checkFileType(sharc_byte* fileHeader) {
 SHARC_FORCE_INLINE SHARC_FILE_HEADER sharc_readFileHeader(FILE* file) {
     SHARC_FILE_HEADER fileHeader;
     fread(&fileHeader, sizeof(SHARC_FILE_HEADER), 1, file);
+    fileHeader.type = SHARC_LITTLE_ENDIAN_16(fileHeader.type);
+    fileHeader.fileMode = SHARC_LITTLE_ENDIAN_16(fileHeader.fileMode);
     fileHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileHeader.originalFileSize);
-    fileHeader.bufferSize = SHARC_LITTLE_ENDIAN_32(fileHeader.bufferSize);
-    fileHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileHeader.fileMode);
     fileHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileHeader.fileAccessed);
     fileHeader.fileModified = SHARC_LITTLE_ENDIAN_64(fileHeader.fileModified);
     if(sharc_checkFileType((sharc_byte*)&fileHeader.name) ^ 0x1)

@@ -29,10 +29,6 @@
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
-#ifdef __FreeBSD__
-#define stat64 stat
-#endif
-
 #include <sys/stat.h>
 #include <stdio.h>
 #include <time.h>
@@ -40,20 +36,27 @@
 
 #include "globals.h"
 
+#ifdef __FreeBSD__
+#define stat64 stat
+#endif
+
+#define SHARC_TYPE_STREAM             0
+#define SHARC_TYPE_FILE               1
+
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
     sharc_byte name[5];
     sharc_byte version[3];
+    uint16_t type;
+    uint16_t fileMode;
     uint64_t originalFileSize;
-    uint32_t bufferSize;
-    uint32_t fileMode;
     uint64_t fileAccessed;
     uint64_t fileModified;
 } SHARC_FILE_HEADER;
 #pragma pack(pop)
 
-SHARC_FILE_HEADER sharc_createFileHeader(const uint32_t, struct stat64);
+SHARC_FILE_HEADER sharc_createFileHeader(const uint32_t, const sharc_byte, struct stat64);
 sharc_bool sharc_checkFileType(sharc_byte*);
 SHARC_FILE_HEADER sharc_readFileHeader(FILE*);
 void sharc_restoreFileAttributes(SHARC_FILE_HEADER, const char*);

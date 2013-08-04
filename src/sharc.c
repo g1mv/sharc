@@ -24,10 +24,10 @@
 
 #include "sharc.h"
 
-SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
+SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sharc_byte inType, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
     SHARC_ENCODING_RESULT result;
     
-    SHARC_FILE_HEADER fileHeader = sharc_createFileHeader(blockSize, attributes);
+    SHARC_FILE_HEADER fileHeader = sharc_createFileHeader(blockSize, inType, attributes);
     fwrite(&fileHeader, sizeof(SHARC_FILE_HEADER), 1, outStream);
     
     while((in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockSize, inStream)) > 0) {

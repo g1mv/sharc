@@ -41,9 +41,6 @@
 #define SHARC_NO_PROMPTING            SHARC_FALSE
 #define SHARC_PROMPTING               SHARC_TRUE
 
-#define SHARC_TYPE_FILE               0
-#define SHARC_TYPE_STREAM             1
-
 #define SHARC_STDIN                   "stdin"
 #define SHARC_STDOUT                  "stdout"
 #define SHARC_STDIN_COMPRESSED        "stdin.sharc"
