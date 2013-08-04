@@ -81,9 +81,6 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
         
         stat64(in->name, &attributes);
     } else {
-#ifdef _WIN32
-        freopen(NULL, "rb", stdin);
-#endif
         if(out->type == TYPE_FILE)
             out->name = STDIN_COMPRESSED;
         
@@ -94,9 +91,6 @@ FORCE_INLINE void clientCompress(CLIENT_IO* in, CLIENT_IO* out, const byte attem
     if(out->type == TYPE_FILE)
         out->stream = checkOpenFile(out->name, "wb", prompting);
     else {
-#ifdef _WIN32
-        freopen(NULL, "wb", stdout);
-#endif
         out->stream = stdout;
         out->name = STDOUT;
     }
@@ -143,9 +137,6 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
     
         in->stream = checkOpenFile(in->name, "rb", FALSE);
     } else {
-#ifdef _WIN32
-        freopen(NULL, "rb", stdin);
-#endif
         if(out->type == TYPE_FILE)
             out->name = STDIN;
         
@@ -156,9 +147,6 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
     if(out->type == TYPE_FILE)
         out->stream = checkOpenFile(out->name, "wb", prompting);
     else {
-#ifdef _WIN32
-        freopen(NULL, "wb", stdout);
-#endif
         out->stream = stdout;
         out->name = STDOUT;
     }
@@ -199,6 +187,12 @@ FORCE_INLINE void clientDecompress(CLIENT_IO* in, CLIENT_IO* out, const bool pro
 }
 
 int main(int argc, char *argv[]) {
+#ifdef _WIN32
+    _setmode(_fileno(stdin), _O_BINARY);
+    _setmode(_fileno(stdout), _O_BINARY);
+    _setmode(_fileno(stderr), _O_BINARY);
+#endif
+
     if(argc <= 1)
         usage();
     

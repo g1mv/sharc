@@ -25,6 +25,10 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#ifdef _WIN32
+#include <fcntl.h>
+#endif
+
 #include <string.h>
 
 #include "file_header.h"
