@@ -168,7 +168,7 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
         fclose(out->stream);
         
         if(originType == SHARC_TYPE_FILE)
-            sharc_restoreFileAttributes(header.fileInformationHeader, out->name);
+            sharc_restoreFileAttributes(&(header.fileInformationHeader), out->name);
         
         if(in->type == SHARC_TYPE_FILE) {
             uint64_t totalRead = ftello(in->stream);

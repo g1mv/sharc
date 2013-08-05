@@ -49,11 +49,11 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_createHeader(const uint32_t bufferSize, co
     return header;
 }
 
-SHARC_FORCE_INLINE sharc_bool sharc_checkSourceType(const uint32_t magic) {
+SHARC_FORCE_INLINE sharc_bool sharc_checkSource(const uint32_t magic) {
     if(magic == SHARC_MAGIC_NUMBER)
         return SHARC_TRUE;
     else
-        return SHARC_TRUE;
+        return SHARC_FALSE;
 }
 
 SHARC_FORCE_INLINE SHARC_HEADER sharc_readHeader(FILE* inStream) {
@@ -62,7 +62,7 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_readHeader(FILE* inStream) {
     SHARC_FILE_INFORMATION_HEADER fileInformationHeader;
 
     fread(&genericHeader, sizeof(SHARC_GENERIC_HEADER), 1, inStream);
-    if(sharc_checkSourceType(SHARC_LITTLE_ENDIAN_32(genericHeader.magicNumber)) ^ 0x1)
+    if(sharc_checkSource(SHARC_LITTLE_ENDIAN_32(genericHeader.magicNumber)) ^ 0x1)
             sharc_error("Invalid file");
     header.genericHeader = genericHeader;
 
@@ -88,13 +88,13 @@ SHARC_FORCE_INLINE void sharc_writeHeader(SHARC_HEADER* header, FILE* outStream)
     }
 }
 
-SHARC_FORCE_INLINE void sharc_restoreFileAttributes(SHARC_FILE_INFORMATION_HEADER fileInformationHeader, const char* fileName) {
-    if(chmod(fileName, fileInformationHeader.fileMode))
+SHARC_FORCE_INLINE void sharc_restoreFileAttributes(SHARC_FILE_INFORMATION_HEADER* fileInformationHeader, const char* fileName) {
+    if(chmod(fileName, fileInformationHeader->fileMode))
         sharc_error("Unable to restore original file rights.");
     
     struct utimbuf ubuf;
-    ubuf.actime = fileInformationHeader.fileAccessed;
-    ubuf.modtime = fileInformationHeader.fileModified;
+    ubuf.actime = fileInformationHeader->fileAccessed;
+    ubuf.modtime = fileInformationHeader->fileModified;
     if(utime(fileName, &ubuf))
         sharc_error("Unable to restore original file accessed / modified times.");
 }
