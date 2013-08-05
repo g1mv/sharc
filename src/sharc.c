@@ -28,7 +28,7 @@ SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sh
     SHARC_ENCODING_RESULT result;
     
     SHARC_HEADER header = sharc_createHeader(blockSize, inType, attributes);
-    sharc_writeHeader(header, outStream);
+    sharc_writeHeader(&header, outStream);
     
     while((in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockSize, inStream)) > 0) {
         result = sharc_sharcEncode(in, inter, out, attemptMode);
