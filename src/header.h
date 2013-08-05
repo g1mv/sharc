@@ -69,6 +69,7 @@ typedef struct {
 SHARC_HEADER sharc_createHeader(const uint32_t, const sharc_byte, struct stat64);
 sharc_bool sharc_checkSourceType(const uint32_t);
 SHARC_HEADER sharc_readHeader(FILE*);
+void sharc_writeHeader(SHARC_HEADER*, FILE*);
 void sharc_restoreFileAttributes(SHARC_FILE_INFORMATION_HEADER, const char*);
 
 #endif
