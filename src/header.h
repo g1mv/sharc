@@ -36,7 +36,7 @@
 
 #include "globals.h"
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__APPLE__)
 #define stat64 stat
 #endif
 
