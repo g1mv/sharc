@@ -1,3 +1,18 @@
+0.9.7 beta
+----------
+<i>August 8, 2013</i>
+* Improved binary mode setting for stdin/stdout on Windows
+* Added support for big endian CPU systems
+* Date/time display now using preprocessor macros
+* Namespacing of macros, structures, types and functions names*
+* Modified platform detection compiler check strings
+* Client now displaying endianness
+* Modification of the file format to include the type of media (stream, file...)
+* Changed file type identification check to a magic number
+* Improved header functions signatures
+* Cleared remaining compilation warnings
+* Modified XOR hash mask
+
 0.9.6 beta
 ----------
 <i>August 1, 2013</i>
