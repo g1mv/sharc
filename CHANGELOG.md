@@ -4,7 +4,7 @@
 * Improved binary mode setting for stdin/stdout on Windows
 * Added support for big endian CPU systems
 * Date/time display now using preprocessor macros
-* Namespacing of macros, structures, types and functions names*
+* Namespacing of macros, structures, types and functions names
 * Modified platform detection compiler check strings
 * Client now displaying endianness
 * Modification of the file format to include the type of media (stream, file...)
