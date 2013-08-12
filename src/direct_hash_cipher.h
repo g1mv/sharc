@@ -31,7 +31,7 @@
 
 #define SHARC_DIRECT_XOR_MASK 0x00000000
 
-sharc_bool sharc_directHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
-sharc_bool sharc_directHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
+sharc_bool sharc_directHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
+sharc_bool sharc_directHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
 
 #endif

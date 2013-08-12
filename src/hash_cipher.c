@@ -45,7 +45,7 @@ SHARC_FORCE_INLINE sharc_bool sharc_reset(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFF
 
 SHARC_FORCE_INLINE void sharc_resetDictionary(SHARC_ENTRY* dictionary) {
     for(uint32_t i = 0; i < (1 << SHARC_HASH_BITS); i ++)
-        *(uint32_t*)&dictionary[i] = 0;
+        (&dictionary[i])->as_uint64_t = 0;
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_checkState(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, uint64_t* signature, sharc_byte* state, uint32_t* signaturePointer) {
@@ -67,7 +67,7 @@ SHARC_FORCE_INLINE void sharc_computeHash(uint32_t* hash, const uint32_t value, 
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_updateEntry(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* entry, const uint32_t chunk, const uint32_t index, uint64_t* signature, sharc_byte* state, uint32_t* signaturePointer) {
-    *(uint32_t*)entry = (index & 0xFFFFFF) | SHARC_MAX_BUFFER_REFERENCES;
+    entry->as_uint64_t = chunk | 0x100000000llu;
     *(uint32_t*)(out->pointer + out->position) = chunk;
     out->position += 4;
     *state = *state + 1;
@@ -77,8 +77,8 @@ SHARC_FORCE_INLINE sharc_bool sharc_updateEntry(SHARC_BYTE_BUFFER* in, SHARC_BYT
 SHARC_FORCE_INLINE sharc_bool sharc_kernelEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, SHARC_ENTRY* dictionary, uint32_t* hash, uint64_t* signature, sharc_byte* state, uint32_t* signaturePointer) {
     sharc_computeHash(hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
     SHARC_ENTRY* found = &dictionary[*hash];
-    if((*(uint32_t*)found) & SHARC_MAX_BUFFER_REFERENCES) {
-        if(chunk ^ buffer[*(uint32_t*)found & 0xFFFFFF]) {
+    if(found->as_uint64_t & 0x100000000llu) {
+        if(chunk ^ (found->as_uint64_t & 0xFFFFFFFF)) {
             if(sharc_updateEntry(in, out, found, chunk, index, signature, state, signaturePointer) ^ 0x1)
                 return SHARC_FALSE;
         } else {
@@ -96,15 +96,13 @@ SHARC_FORCE_INLINE sharc_bool sharc_kernelEncode(SHARC_BYTE_BUFFER* in, SHARC_BY
     return SHARC_TRUE;
 }
 
-SHARC_FORCE_INLINE sharc_bool sharc_hashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t xorMask) {
-    SHARC_ENTRY dictionary[1 << SHARC_HASH_BITS];
+SHARC_FORCE_INLINE sharc_bool sharc_hashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t xorMask, SHARC_ENTRY* dictionary) {
     uint64_t signature;
     uint32_t signaturePointer;
     sharc_byte state;
     uint32_t hash;
     
     sharc_reset(in, out, &signature, &state, &signaturePointer);
-    sharc_resetDictionary(dictionary);
     
     const uint32_t* intInBuffer = (const uint32_t*)in->pointer;
     const uint32_t intInSize = in->size >> 2;
@@ -137,13 +135,13 @@ SHARC_FORCE_INLINE void sharc_kernelDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUF
         case SHARC_FALSE:
             chunk = *(uint32_t*)(in->pointer + in->position);
             sharc_computeHash(&hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
-            *(uint32_t*)&dictionary[hash] = ((out->position >> 2) & 0xFFFFFF) | SHARC_MAX_BUFFER_REFERENCES;
+            (&dictionary[hash])->as_uint64_t = chunk | 0x100000000llu;
             *(uint32_t*)(out->pointer + out->position) = chunk;
             in->position += 4;
             break;
         case SHARC_TRUE:
             found = &dictionary[SHARC_LITTLE_ENDIAN_16(*(uint16_t*)(in->pointer + in->position))];
-            *(uint32_t*)(out->pointer + out->position) = *(uint32_t*)(out->pointer + ((*(uint32_t*)found & 0xFFFFFF) << 2));
+            *(uint32_t*)(out->pointer + out->position) = (uint32_t)(found->as_uint64_t & 0xFFFFFFFF);
             in->position += 2;
             break;
     }
@@ -155,11 +153,7 @@ SHARC_FORCE_INLINE void sharc_byteCopy(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER*
         out->pointer[out->position ++] = in->pointer[in->position ++];
 }
 
-SHARC_FORCE_INLINE sharc_bool sharc_hashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t xorMask) {
-    SHARC_ENTRY dictionary[1 << SHARC_HASH_BITS];
-    
-    sharc_resetDictionary(dictionary);
-    
+SHARC_FORCE_INLINE sharc_bool sharc_hashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t xorMask, SHARC_ENTRY* dictionary) {
     uint64_t signature;
     sharc_byte i;
     

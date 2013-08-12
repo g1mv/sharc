@@ -43,19 +43,19 @@ SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharc_copyMode(SHARC_BYTE_BUFFER* in) {
 SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharc_sharcEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte mode) {
     switch(mode) {
         case SHARC_MODE_SINGLE_PASS:
-            if(sharc_xorHashEncode(in, out))
+            if(sharc_xorHashEncode(in, out, dictionary_a))
                 return sharc_createEncodingResult(mode, out);
             else
                 return sharc_copyMode(in);
         case SHARC_MODE_DUAL_PASS:
             inter->size = in->size;
             sharc_rewindByteBuffer(inter);
-            if(sharc_directHashEncode(in, inter)) {
+            if(sharc_directHashEncode(in, inter, dictionary_a)) {
                 const uint32_t firstPassPosition = inter->position;
                 out->size = firstPassPosition;
                 inter->size = firstPassPosition;
                 sharc_rewindByteBuffer(inter);
-                if(sharc_xorHashEncode(inter, out))
+                if(sharc_xorHashEncode(inter, out, dictionary_b))
                     return sharc_createEncodingResult(mode, out);
                 else
                     return sharc_createEncodingResultWithPosition(SHARC_MODE_SINGLE_PASS, inter, firstPassPosition);
@@ -69,13 +69,13 @@ SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharc_sharcEncode(SHARC_BYTE_BUFFER* in
 SHARC_FORCE_INLINE sharc_bool sharc_sharcDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte mode) {
     switch(mode) {
         case SHARC_MODE_SINGLE_PASS:
-            return sharc_xorHashDecode(in, out);
+            return sharc_xorHashDecode(in, out, dictionary_a);
         case SHARC_MODE_DUAL_PASS:
             sharc_rewindByteBuffer(inter);
-            sharc_xorHashDecode(in, inter);
+            sharc_xorHashDecode(in, inter, dictionary_a);
             inter->size = inter->position;
             sharc_rewindByteBuffer(inter);
-            return sharc_directHashDecode(inter, out);
+            return sharc_directHashDecode(inter, out, dictionary_b);
         default:
             return SHARC_FALSE;
     }
