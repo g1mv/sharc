@@ -25,9 +25,17 @@
 #ifndef SHARC_SHARC_H
 #define SHARC_SHARC_H
 
+#ifndef __USE_LARGEFILE64
 #define __USE_LARGEFILE64
+#endif
+
+#ifndef _LARGEFILE_SOURCE
 #define _LARGEFILE_SOURCE
+#endif
+
+#ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
