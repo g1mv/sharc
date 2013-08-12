@@ -238,12 +238,16 @@ int main(int argc, char *argv[]) {
                         if(argLength == 2)
                             sharc_usage();
                         char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
-                        if(lastSeparator == NULL)
-                            sharc_usage();
-                        if(lastSeparator - argv[i] + 1 != strlen(argv[i]))
-                           sharc_usage();
+                        if(argv[i][2] == '.')
+                            outPath = "";
+                        else {
+                            if(lastSeparator == NULL)
+                                sharc_usage();
+                            if(lastSeparator - argv[i] + 1 != strlen(argv[i]))
+                                sharc_usage();
+                            outPath = argv[i] + 2;
+                        }
                         pathMode = SHARC_FIXED_OUTPUT_PATH;
-                        outPath = argv[i] + 2;
                         break;
                     case 'n':
                         prompting = SHARC_NO_PROMPTING;
@@ -281,12 +285,16 @@ int main(int argc, char *argv[]) {
                                 if(argLength <= 14)
                                     sharc_usage();
                                 char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
-                                if(lastSeparator == NULL)
-                                    sharc_usage();
-                                if(lastSeparator - argv[i] + 1 != strlen(argv[i]))
-                                    sharc_usage();
+                                if(argv[i][14] == '.')
+                                    outPath = "";
+                                else {
+                                    if(lastSeparator == NULL)
+                                        sharc_usage();
+                                    if(lastSeparator - argv[i] + 1 != strlen(argv[i]))
+                                        sharc_usage();
+                                    outPath = argv[i] + 14;
+                                }
                                 pathMode = SHARC_FIXED_OUTPUT_PATH;
-                                outPath = argv[i] + 14;
                                 break;
                             case 'n':
                                 if(argLength != 11)
@@ -327,7 +335,8 @@ int main(int argc, char *argv[]) {
                             sharc_usage();
                         if(pathMode == SHARC_FILE_OUTPUT_PATH)
                             strcpy(outPath, inPath);
-                    }
+                    } else
+                        in.name = argv[i];
                 }
                 switch(action) {
                     case SHARC_ACTION_DECOMPRESS:
