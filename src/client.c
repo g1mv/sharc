@@ -36,7 +36,7 @@ SHARC_FORCE_INLINE FILE* sharc_checkOpenFile(const char* fileName, const char* o
     }
     FILE* file = fopen(fileName, options);
     if(file == NULL) {
-        printf("Unable to open file : %s\n", fileName);
+        fprintf(stderr, "Unable to open file : %s\n", fileName);
         exit(0);
     }
     return file;
@@ -58,6 +58,7 @@ SHARC_FORCE_INLINE void sharc_usage() {
     printf("                                    0 = Fastest compression algorithm (default)\n");
     printf("                                    1 = Better compression (dual pass), slightly slower\n");
     printf("  -d, --decompress                  Decompress files\n");
+    printf("  -p[PATH], --output-path[=PATH]    Set output path\n");
     printf("  -n, --no-prompt                   Overwrite without prompting\n");
     printf("  -i, --stdin                       Read from stdin\n");
     printf("  -o, --stdout                      Write to stdout\n");
@@ -66,20 +67,24 @@ SHARC_FORCE_INLINE void sharc_usage() {
     exit(0);
 }
 
-SHARC_FORCE_INLINE void sharc_clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_IO* out, const sharc_byte attemptMode, const uint32_t blockSize, const sharc_bool prompting) {
+SHARC_FORCE_INLINE void sharc_clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_IO* out, const sharc_byte attemptMode, const uint32_t blockSize, const sharc_bool prompting, const char* inPath, const char* outPath) {
     struct stat64 attributes;
-    char outFileName[strlen(in->name) + 6];
+    
+    const size_t inFileNameLength = strlen(in->name);
+    char inFilePath[strlen(inPath) + inFileNameLength];
+    char outFilePath[strlen(outPath) + inFileNameLength + 6];
+    sprintf(inFilePath, "%s%s", inPath, in->name);
     
     if(in->type == SHARC_TYPE_FILE) {
         if(out->type == SHARC_TYPE_FILE) {
-            sprintf(outFileName, "%s.sharc", in->name);
+            sprintf(outFilePath, "%s%s.sharc", outPath, in->name);
             
-            out->name = outFileName;
+            out->name = outFilePath;
         }
         
-        in->stream = sharc_checkOpenFile(in->name, "rb", SHARC_FALSE);
+        in->stream = sharc_checkOpenFile(inFilePath, "rb", SHARC_FALSE);
         
-        stat64(in->name, &attributes);
+        stat64(inFilePath, &attributes);
     } else {
         if(out->type == SHARC_TYPE_FILE)
             out->name = SHARC_STDIN_COMPRESSED;
@@ -89,7 +94,7 @@ SHARC_FORCE_INLINE void sharc_clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_I
     }
     
     if(out->type == SHARC_TYPE_FILE)
-        out->stream = sharc_checkOpenFile(out->name, "wb", prompting);
+        out->stream = sharc_checkOpenFile(outFilePath, "wb", prompting);
     else {
         out->stream = stdout;
         out->name = SHARC_STDOUT;
@@ -116,26 +121,28 @@ SHARC_FORCE_INLINE void sharc_clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_I
         
             double ratio = (100.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
-            printf("Compressed %s to %s, %llu bytes in, %llu bytes out, ", in->name, out->name, totalRead, totalWritten);
+            printf("Compressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, outFilePath, totalRead, totalWritten);
             printf("Ratio out / in = %.1lf%%, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
         } else
             printf("Compressed %s to %s, %llu bytes written.\n", in->name, out->name, totalWritten);
     }
 }
 
-SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_IO* out, const sharc_bool prompting) {
-    const unsigned long originalFileNameLength = strlen(in->name) - 6;
-    char outFileName[originalFileNameLength];
+SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_IO* out, const sharc_bool prompting, const char* inPath, const char* outPath) {
+    const size_t inFileNameLength = strlen(in->name);
+    char inFilePath[strlen(inPath) + inFileNameLength];
+    char outFilePath[strlen(outPath) + inFileNameLength - 6];
+    sprintf(inFilePath, "%s%s", inPath, in->name);
     
     if(in->type == SHARC_TYPE_FILE) {
         if(out->type == SHARC_TYPE_FILE) {
-            outFileName[0] = '\0';
-            strncat(outFileName, in->name, originalFileNameLength);
+            strcat(outFilePath, outPath);
+            strncat(outFilePath, in->name, inFileNameLength - 6);
             
-            out->name = outFileName;
+            out->name = outFilePath;
         }
     
-        in->stream = sharc_checkOpenFile(in->name, "rb", SHARC_FALSE);
+        in->stream = sharc_checkOpenFile(inFilePath, "rb", SHARC_FALSE);
     } else {
         if(out->type == SHARC_TYPE_FILE)
             out->name = SHARC_STDIN;
@@ -145,7 +152,7 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
     }
     
     if(out->type == SHARC_TYPE_FILE)
-        out->stream = sharc_checkOpenFile(out->name, "wb", prompting);
+        out->stream = sharc_checkOpenFile(outFilePath, "wb", prompting);
     else {
         out->stream = stdout;
         out->name = SHARC_STDOUT;
@@ -168,7 +175,7 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
         fclose(out->stream);
         
         if(originType == SHARC_TYPE_FILE)
-            sharc_restoreFileAttributes(&(header.fileInformationHeader), out->name);
+            sharc_restoreFileAttributes(&(header.fileInformationHeader), outFilePath);
         
         if(in->type == SHARC_TYPE_FILE) {
             uint64_t totalRead = ftello(in->stream);
@@ -179,7 +186,7 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
                     sharc_error("Input file is corrupt !");
         
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
-            printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", in->name, out->name, totalRead, totalWritten);
+            printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, outFilePath, totalRead, totalWritten);
             printf("Time = %.3lf s, Speed = %.0lf MB/s\n", elapsed, speed);
         } else
             printf("Decompressed %s to %s, %llu bytes written.\n", in->name, out->name, totalWritten);
@@ -203,6 +210,9 @@ int main(int argc, char *argv[]) {
     in.type = SHARC_TYPE_FILE;
     SHARC_CLIENT_IO out;
     out.type = SHARC_TYPE_FILE;
+    sharc_byte pathMode = SHARC_FILE_OUTPUT_PATH;
+    char* inPath = alloca(SHARC_OUTPUT_PATH_MAX_SIZE * sizeof(char));
+    char* outPath = alloca(SHARC_OUTPUT_PATH_MAX_SIZE * sizeof(char));
     
     size_t argLength;
     for(int i = 1; i < argc; i ++) {
@@ -223,6 +233,17 @@ int main(int argc, char *argv[]) {
                         break;
                     case 'd':
                         action = SHARC_ACTION_DECOMPRESS;
+                        break;
+                    case 'p':
+                        if(argLength == 2)
+                            sharc_usage();
+                        char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
+                        if(lastSeparator == NULL)
+                            sharc_usage();
+                        if(lastSeparator - argv[i] + 1 != strlen(argv[i]))
+                           sharc_usage();
+                        pathMode = SHARC_FIXED_OUTPUT_PATH;
+                        outPath = argv[i] + 2;
                         break;
                     case 'n':
                         prompting = SHARC_NO_PROMPTING;
@@ -256,6 +277,17 @@ int main(int argc, char *argv[]) {
                                     sharc_usage();
 								action = SHARC_ACTION_DECOMPRESS;
 								break;
+                            case 'o':
+                                if(argLength <= 14)
+                                    sharc_usage();
+                                char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
+                                if(lastSeparator == NULL)
+                                    sharc_usage();
+                                if(lastSeparator - argv[i] + 1 != strlen(argv[i]))
+                                    sharc_usage();
+                                pathMode = SHARC_FIXED_OUTPUT_PATH;
+                                outPath = argv[i] + 14;
+                                break;
                             case 'n':
                                 if(argLength != 11)
                                     sharc_usage();
@@ -285,13 +317,24 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             default:
-                in.name = argv[i];
+                if(in.type == SHARC_TYPE_FILE) {
+                    char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
+                    if(lastSeparator != NULL) {
+                        in.name = lastSeparator + 1;
+                        if(in.name - argv[i] < SHARC_OUTPUT_PATH_MAX_SIZE)
+                            strncpy(inPath, argv[i], in.name - argv[i]);
+                        else
+                            sharc_usage();
+                        if(pathMode == SHARC_FILE_OUTPUT_PATH)
+                            strcpy(outPath, inPath);
+                    }
+                }
                 switch(action) {
                     case SHARC_ACTION_DECOMPRESS:
-                        sharc_clientDecompress(&in, &out, prompting);
+                        sharc_clientDecompress(&in, &out, prompting, inPath, outPath);
                         break;
                     default:
-                        sharc_clientCompress(&in, &out, mode, SHARC_PREFERRED_BUFFER_SIZE, prompting);
+                        sharc_clientCompress(&in, &out, mode, SHARC_PREFERRED_BUFFER_SIZE, prompting, inPath, outPath);
                         break;
                 }
                 break;
@@ -301,10 +344,10 @@ int main(int argc, char *argv[]) {
     if(in.type == SHARC_TYPE_STREAM) {
         switch(action) {
             case SHARC_ACTION_DECOMPRESS:
-                sharc_clientDecompress(&in, &out, prompting);
+                sharc_clientDecompress(&in, &out, prompting, inPath, outPath);
                 break;
             default:
-                sharc_clientCompress(&in, &out, mode, SHARC_PREFERRED_BUFFER_SIZE, prompting);
+                sharc_clientCompress(&in, &out, mode, SHARC_PREFERRED_BUFFER_SIZE, prompting, inPath, outPath);
                 break;
         }
     }

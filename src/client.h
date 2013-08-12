@@ -46,10 +46,20 @@
 #define SHARC_STDOUT                  "stdout"
 #define SHARC_STDIN_COMPRESSED        "stdin.sharc"
 
+#define SHARC_OUTPUT_PATH_MAX_SIZE    256
+#define SHARC_FILE_OUTPUT_PATH        SHARC_FALSE
+#define SHARC_FIXED_OUTPUT_PATH       SHARC_TRUE
+
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define SHARC_ENDIAN_STRING           "Little"
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define SHARC_ENDIAN_STRING           "Big"
+#endif
+
+#if defined(_WIN64) || defined(_WIN32)
+#define SHARC_PATH_SEPARATOR          '\'
+#else
+#define SHARC_PATH_SEPARATOR          '/'
 #endif
 
 #if defined(_WIN64) || defined(_WIN32)
@@ -90,8 +100,8 @@ sharc_byte sharc_writeBuffer[SHARC_MAX_BUFFER_SIZE];
 FILE* sharc_checkOpenFile(const char*, const char*, const sharc_bool);
 void sharc_version();
 void sharc_usage();
-void sharc_clientCompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const sharc_byte, const uint32_t, const sharc_bool);
-void sharc_clientDecompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const sharc_bool);
+void sharc_clientCompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const sharc_byte, const uint32_t, const sharc_bool, const char*, const char*);
+void sharc_clientDecompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const sharc_bool, const char*, const char*);
 int main(int, char **);
 
 #endif
