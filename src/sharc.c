@@ -25,8 +25,8 @@
 #include "sharc.h"
 
 SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sharc_byte inType, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
-    sharc_resetDictionary(dictionary_a);
-    sharc_resetDictionary(dictionary_b);
+    sharc_resetDictionary(sharc_dictionary_a);
+    sharc_resetDictionary(sharc_dictionary_b);
     
     SHARC_ENCODING_RESULT result;
     
@@ -46,8 +46,8 @@ SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sh
 } 
 
 SHARC_FORCE_INLINE SHARC_HEADER sharc_decompress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out) {
-    sharc_resetDictionary(dictionary_a);
-    sharc_resetDictionary(dictionary_b);
+    sharc_resetDictionary(sharc_dictionary_a);
+    sharc_resetDictionary(sharc_dictionary_b);
     
     SHARC_HEADER header = sharc_readHeader(inStream);
     SHARC_BLOCK_HEADER blockHeader;
