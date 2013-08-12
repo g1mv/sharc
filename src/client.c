@@ -211,8 +211,8 @@ int main(int argc, char *argv[]) {
     SHARC_CLIENT_IO out;
     out.type = SHARC_TYPE_FILE;
     sharc_byte pathMode = SHARC_FILE_OUTPUT_PATH;
-    char* inPath = alloca(SHARC_OUTPUT_PATH_MAX_SIZE * sizeof(char));
-    char* outPath = alloca(SHARC_OUTPUT_PATH_MAX_SIZE * sizeof(char));
+    char inPath[SHARC_OUTPUT_PATH_MAX_SIZE];
+    char outPath[SHARC_OUTPUT_PATH_MAX_SIZE];
     
     size_t argLength;
     for(int i = 1; i < argc; i ++) {
@@ -238,14 +238,12 @@ int main(int argc, char *argv[]) {
                         if(argLength == 2)
                             sharc_usage();
                         char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
-                        if(argv[i][2] == '.')
-                            outPath = "";
-                        else {
+                        if(argv[i][2] != '.') {
                             if(lastSeparator == NULL)
                                 sharc_usage();
-                            if(lastSeparator - argv[i] + 1 != strlen(argv[i]))
+                            if(lastSeparator - argv[i] + 1 != argLength)
                                 sharc_usage();
-                            outPath = argv[i] + 2;
+                            strncpy(outPath, argv[i] + 2, SHARC_OUTPUT_PATH_MAX_SIZE);
                         }
                         pathMode = SHARC_FIXED_OUTPUT_PATH;
                         break;
@@ -285,14 +283,12 @@ int main(int argc, char *argv[]) {
                                 if(argLength <= 14)
                                     sharc_usage();
                                 char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
-                                if(argv[i][14] == '.')
-                                    outPath = "";
-                                else {
+                                if(argv[i][14] != '.') {
                                     if(lastSeparator == NULL)
                                         sharc_usage();
-                                    if(lastSeparator - argv[i] + 1 != strlen(argv[i]))
+                                    if(lastSeparator - argv[i] + 1 != argLength)
                                         sharc_usage();
-                                    outPath = argv[i] + 14;
+                                    strncpy(outPath, argv[i] + 14, SHARC_OUTPUT_PATH_MAX_SIZE);
                                 }
                                 pathMode = SHARC_FIXED_OUTPUT_PATH;
                                 break;

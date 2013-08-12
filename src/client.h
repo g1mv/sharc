@@ -57,7 +57,7 @@
 #endif
 
 #if defined(_WIN64) || defined(_WIN32)
-#define SHARC_PATH_SEPARATOR          '\'
+#define SHARC_PATH_SEPARATOR          '\\'
 #else
 #define SHARC_PATH_SEPARATOR          '/'
 #endif
