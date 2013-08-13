@@ -25,8 +25,11 @@
 #include "sharc.h"
 
 SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sharc_byte inType, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out, const sharc_byte attemptMode, const uint32_t blockSize, const struct stat64 attributes) {
-    sharc_resetDictionary(sharc_dictionary_a);
-    sharc_resetDictionary(sharc_dictionary_b);
+    SHARC_ENTRY dictionary_a[1 << SHARC_HASH_BITS];
+    SHARC_ENTRY dictionary_b[1 << SHARC_HASH_BITS];
+    
+    sharc_resetDictionary(dictionary_a);
+    sharc_resetDictionary(dictionary_b);
     
     SHARC_ENCODING_RESULT result;
     
@@ -34,7 +37,7 @@ SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sh
     sharc_writeHeader(&header, outStream);
     
     while((in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockSize, inStream)) > 0) {
-        result = sharc_sharcEncode(in, inter, out, attemptMode);
+        result = sharc_sharcEncode(in, inter, out, attemptMode, dictionary_a, dictionary_b);
         
         SHARC_BLOCK_HEADER blockHeader = sharc_createBlockHeader(result.reachableMode, result.out->position);
         fwrite(&blockHeader, sizeof(SHARC_BLOCK_HEADER), 1, outStream);
@@ -46,8 +49,11 @@ SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sh
 } 
 
 SHARC_FORCE_INLINE SHARC_HEADER sharc_decompress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out) {
-    sharc_resetDictionary(sharc_dictionary_a);
-    sharc_resetDictionary(sharc_dictionary_b);
+    SHARC_ENTRY dictionary_a[1 << SHARC_HASH_BITS];
+    SHARC_ENTRY dictionary_b[1 << SHARC_HASH_BITS];
+    
+    sharc_resetDictionary(dictionary_a);
+    sharc_resetDictionary(dictionary_b);
     
     SHARC_HEADER header = sharc_readHeader(inStream);
     SHARC_BLOCK_HEADER blockHeader;
@@ -59,7 +65,7 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_decompress(FILE* inStream, FILE* outStream
                 fwrite(in->pointer, sizeof(sharc_byte), in->size, outStream);
                 break;
             default:
-                if(sharc_sharcDecode(in, inter, out, (const sharc_byte)blockHeader.mode) ^ 0x1)
+                if(sharc_sharcDecode(in, inter, out, (const sharc_byte)blockHeader.mode, dictionary_a, dictionary_b) ^ 0x1)
                     sharc_error("Unable to decompress !");
                 fwrite(out->pointer, sizeof(sharc_byte), out->position, outStream);
                 break;

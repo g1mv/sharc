@@ -41,7 +41,7 @@ typedef struct {
 SHARC_ENCODING_RESULT sharc_createEncodingResult(const sharc_byte, SHARC_BYTE_BUFFER*);
 SHARC_ENCODING_RESULT sharc_createEncodingResultWithPosition(const sharc_byte, SHARC_BYTE_BUFFER*, const uint32_t);
 SHARC_ENCODING_RESULT sharc_copyMode(SHARC_BYTE_BUFFER*);
-SHARC_ENCODING_RESULT sharc_sharcEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte);
-sharc_bool sharc_sharcDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte);
+SHARC_ENCODING_RESULT sharc_sharcEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte, SHARC_ENTRY*, SHARC_ENTRY*);
+sharc_bool sharc_sharcDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte, SHARC_ENTRY*, SHARC_ENTRY*);
 
 #endif

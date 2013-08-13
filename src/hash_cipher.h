@@ -47,9 +47,6 @@ typedef union {
 } SHARC_ENTRY;
 #pragma pack(pop)
 
-SHARC_ENTRY sharc_dictionary_a[1 << SHARC_HASH_BITS];
-SHARC_ENTRY sharc_dictionary_b[1 << SHARC_HASH_BITS];
-
 void sharc_writeSignature(uint64_t*, const sharc_byte*);
 void sharc_flush(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint64_t*, const sharc_byte*, const uint32_t*);
 sharc_bool sharc_reset(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, sharc_byte*, uint32_t*);
