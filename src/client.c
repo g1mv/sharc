@@ -94,7 +94,7 @@ SHARC_FORCE_INLINE void sharc_clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_I
     }
     
     if(out->type == SHARC_TYPE_FILE)
-        out->stream = sharc_checkOpenFile(outFilePath, "wb", prompting);
+        out->stream = sharc_checkOpenFile(out->name, "wb", prompting);
     else {
         out->stream = stdout;
         out->name = SHARC_STDOUT;
@@ -121,7 +121,7 @@ SHARC_FORCE_INLINE void sharc_clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_I
         
             double ratio = (100.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
-            printf("Compressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, outFilePath, totalRead, totalWritten);
+            printf("Compressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, out->name, totalRead, totalWritten);
             printf("Ratio out / in = %.1lf%%, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
         } else
             printf("Compressed %s to %s, %llu bytes written.\n", in->name, out->name, totalWritten);
@@ -152,7 +152,7 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
     }
     
     if(out->type == SHARC_TYPE_FILE)
-        out->stream = sharc_checkOpenFile(outFilePath, "wb", prompting);
+        out->stream = sharc_checkOpenFile(out->name, "wb", prompting);
     else {
         out->stream = stdout;
         out->name = SHARC_STDOUT;
@@ -175,7 +175,7 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
         fclose(out->stream);
         
         if(originType == SHARC_TYPE_FILE)
-            sharc_restoreFileAttributes(&(header.fileInformationHeader), outFilePath);
+            sharc_restoreFileAttributes(&(header.fileInformationHeader), out->name);
         
         if(in->type == SHARC_TYPE_FILE) {
             uint64_t totalRead = ftello(in->stream);
@@ -186,7 +186,7 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
                     sharc_error("Input file is corrupt !");
         
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
-            printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, outFilePath, totalRead, totalWritten);
+            printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, out->name, totalRead, totalWritten);
             printf("Time = %.3lf s, Speed = %.0lf MB/s\n", elapsed, speed);
         } else
             printf("Decompressed %s to %s, %llu bytes written.\n", in->name, out->name, totalWritten);
@@ -208,11 +208,13 @@ int main(int argc, char *argv[]) {
     sharc_byte prompting = SHARC_PROMPTING;
     SHARC_CLIENT_IO in;
     in.type = SHARC_TYPE_FILE;
+    in.name = "";
     SHARC_CLIENT_IO out;
     out.type = SHARC_TYPE_FILE;
+    out.name = "";
     sharc_byte pathMode = SHARC_FILE_OUTPUT_PATH;
-    char inPath[SHARC_OUTPUT_PATH_MAX_SIZE];
-    char outPath[SHARC_OUTPUT_PATH_MAX_SIZE];
+    char inPath[SHARC_OUTPUT_PATH_MAX_SIZE] = "";
+    char outPath[SHARC_OUTPUT_PATH_MAX_SIZE] = "";
     
     size_t argLength;
     for(int i = 1; i < argc; i ++) {
