@@ -34,12 +34,14 @@
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
-    uint32_t mode;
+    sharc_byte mode;
+    sharc_byte resetDictionaries;
+    uint16_t reserved;
     uint32_t nextBlock;
 } SHARC_BLOCK_HEADER;
 #pragma pack(pop)
 
-SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte, const uint32_t);
+SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte, const sharc_bool, const uint32_t);
 const size_t sharc_readBlockHeaderFromFile(SHARC_BLOCK_HEADER*, FILE*);
 
 #endif
