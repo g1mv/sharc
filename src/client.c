@@ -136,6 +136,7 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
     
     if(in->type == SHARC_TYPE_FILE) {
         if(out->type == SHARC_TYPE_FILE) {
+            outFilePath[0] = '\0';
             strcat(outFilePath, outPath);
             strncat(outFilePath, in->name, inFileNameLength - 6);
             
@@ -327,9 +328,11 @@ int main(int argc, char *argv[]) {
                     char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
                     if(lastSeparator != NULL) {
                         in.name = lastSeparator + 1;
-                        if(in.name - argv[i] < SHARC_OUTPUT_PATH_MAX_SIZE)
-                            strncpy(inPath, argv[i], in.name - argv[i]);
-                        else
+                        if(in.name - argv[i] < SHARC_OUTPUT_PATH_MAX_SIZE) {
+                            size_t charsToCopy = in.name - argv[i];
+                            strncpy(inPath, argv[i], charsToCopy);
+                            inPath[charsToCopy] = '\0';
+                        } else
                             sharc_usage();
                         if(pathMode == SHARC_FILE_OUTPUT_PATH)
                             strcpy(outPath, inPath);
