@@ -71,8 +71,8 @@ SHARC_FORCE_INLINE void sharc_clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_I
     struct stat64 attributes;
     
     const size_t inFileNameLength = strlen(in->name);
-    char inFilePath[strlen(inPath) + inFileNameLength];
-    char outFilePath[strlen(outPath) + inFileNameLength + 6];
+    char inFilePath[strlen(inPath) + inFileNameLength + 1];
+    char outFilePath[strlen(outPath) + inFileNameLength + 6 + 1];
     sprintf(inFilePath, "%s%s", inPath, in->name);
     
     if(in->type == SHARC_TYPE_FILE) {
@@ -328,8 +328,8 @@ int main(int argc, char *argv[]) {
                     char* lastSeparator = strrchr(argv[i], SHARC_PATH_SEPARATOR);
                     if(lastSeparator != NULL) {
                         in.name = lastSeparator + 1;
-                        if(in.name - argv[i] < SHARC_OUTPUT_PATH_MAX_SIZE) {
-                            size_t charsToCopy = in.name - argv[i];
+                        size_t charsToCopy = in.name - argv[i];
+                        if(charsToCopy < SHARC_OUTPUT_PATH_MAX_SIZE) {
                             strncpy(inPath, argv[i], charsToCopy);
                             inPath[charsToCopy] = '\0';
                         } else
