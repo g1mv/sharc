@@ -1,3 +1,15 @@
+0.9.8 beta
+----------
+<i>August 19, 2013</i>
+* Added preprocessor guards on large file #defines
+* Modified dictionary indexing process to enable reuse of long distance previously-read file data (major performance boost)
+* Namespaced dictionaries
+* Added the specify output path (-p) option
+* Fixed problem with some strings not being initialized in client.c
+* Added parenthesis protection on preprocessor macro SHARC_PREFERRED_BUFFER_SIZE
+* Added reset dictionary information in block header
+* Modified -std=c99 to -std=gnu99 in Makefile to remove the ftello implicit declaration warning
+
 0.9.7 beta
 ----------
 <i>August 8, 2013</i>
