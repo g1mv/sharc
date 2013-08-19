@@ -26,31 +26,19 @@
 #define SHARC_HASH_CIPHER_H
 
 #include "byte_buffer.h"
+#include "dictionary.h"
 
 #include <stdio.h>
 
-#define SHARC_HASH_BITS                   16
 #define SHARC_HASH_OFFSET_BASIS           2166115717
 #define SHARC_HASH_PRIME                  16777619
 
 #define SHARC_PREFERRED_BUFFER_SIZE       (1 << 18)
 #define SHARC_MAX_BUFFER_SIZE             SHARC_PREFERRED_BUFFER_SIZE
 
-#pragma pack(push)
-#pragma pack(4)
-typedef union {
-    struct {
-        uint32_t value;
-        uint32_t exists;
-    } as_struct;
-    uint64_t as_uint64_t;
-} SHARC_ENTRY;
-#pragma pack(pop)
-
 void sharc_writeSignature(uint64_t*, const sharc_byte*);
 void sharc_flush(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint64_t*, const sharc_byte*, const uint32_t*);
 sharc_bool sharc_reset(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, sharc_byte*, uint32_t*);
-void sharc_resetDictionary(SHARC_ENTRY*);
 sharc_bool sharc_checkState(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, sharc_byte*, uint32_t*);
 void sharc_computeHash(uint32_t*, const uint32_t, const uint32_t);
 sharc_bool sharc_updateEntry(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*, const uint32_t, const uint32_t, uint64_t*, sharc_byte*, uint32_t*);

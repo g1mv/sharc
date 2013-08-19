@@ -43,11 +43,6 @@ SHARC_FORCE_INLINE sharc_bool sharc_reset(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFF
     return SHARC_TRUE;
 }
 
-SHARC_FORCE_INLINE void sharc_resetDictionary(SHARC_ENTRY* dictionary) {
-    for(uint32_t i = 0; i < (1 << SHARC_HASH_BITS); i ++)
-        (&dictionary[i])->as_uint64_t = 0;
-}
-
 SHARC_FORCE_INLINE sharc_bool sharc_checkState(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, uint64_t* signature, sharc_byte* state, uint32_t* signaturePointer) {
     switch(*state) {
         case 64:
