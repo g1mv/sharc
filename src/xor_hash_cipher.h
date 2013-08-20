@@ -29,7 +29,7 @@
 
 #include <stdio.h>
 
-#define SHARC_XOR_MASK    0x71446490
+#define SHARC_XOR_MASK    0x2AE2752F
 
 sharc_bool sharc_xorHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
 sharc_bool sharc_xorHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
