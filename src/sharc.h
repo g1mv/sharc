@@ -37,6 +37,9 @@
 #define _LARGEFILE64_SOURCE
 #endif
 
+#define SHARC_DICTIONARY_MAX_RESET_CYCLE   64
+#define SHARC_DICTIONARY_RESET_CYCLE       SHARC_DICTIONARY_MAX_RESET_CYCLE
+
 #include <stdlib.h>
 #include <stdio.h>
 

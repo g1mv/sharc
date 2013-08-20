@@ -39,19 +39,25 @@ SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sh
     SHARC_ENTRY dictionary_a[1 << SHARC_HASH_BITS];
     SHARC_ENTRY dictionary_b[1 << SHARC_HASH_BITS];
     
-    sharc_resetDictionary(dictionary_a);
-    sharc_resetDictionary(dictionary_b);
-    
     SHARC_HEADER header = sharc_createHeader(blockSize, inType, attributes);
     sharc_writeHeader(&header, outStream);
     
-    if((in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockSize, inStream)) > 0)
-        sharc_compressBlock(outStream, in, inter, out, attemptMode, dictionary_a, dictionary_b, SHARC_TRUE);
-    else
-        return;
+    uint32_t resetCycle = 0;
     
-    while((in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockSize, inStream)) > 0)
-        sharc_compressBlock(outStream, in, inter, out, attemptMode, dictionary_a, dictionary_b, SHARC_FALSE);
+    while((in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockSize, inStream)) > 0) {
+        if(resetCycle) {
+            sharc_compressBlock(outStream, in, inter, out, attemptMode, dictionary_a, dictionary_b, SHARC_FALSE);
+            
+            resetCycle --;
+        } else {
+            sharc_resetDictionary(dictionary_a);
+            sharc_resetDictionary(dictionary_b);
+            
+            sharc_compressBlock(outStream, in, inter, out, attemptMode, dictionary_a, dictionary_b, SHARC_TRUE);
+            
+            resetCycle = SHARC_DICTIONARY_RESET_CYCLE - 1;
+        }
+    }
 }
 
 SHARC_FORCE_INLINE SHARC_HEADER sharc_decompress(FILE* inStream, FILE* outStream, SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* inter, SHARC_BYTE_BUFFER* out) {
