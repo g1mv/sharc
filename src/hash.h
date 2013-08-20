@@ -19,12 +19,14 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 19/08/13 18:49
+ * 21/08/13 00:44
  */
 
+#ifndef SHARC_HASH_H
+#define SHARC_HASH_H
 
-#include "dictionary.h"
+#define SHARC_HASH_BITS                   16
+#define SHARC_HASH_OFFSET_BASIS           2166115717
+#define SHARC_HASH_PRIME                  16777619
 
-SHARC_FORCE_INLINE void sharc_resetDictionary(SHARC_ENTRY* dictionary) {
-    memset(dictionary, 0, (1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY));
-}
+#endif

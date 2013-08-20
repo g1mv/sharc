@@ -30,9 +30,6 @@
 
 #include <stdio.h>
 
-#define SHARC_HASH_OFFSET_BASIS           2166115717
-#define SHARC_HASH_PRIME                  16777619
-
 #define SHARC_PREFERRED_BUFFER_SIZE       (1 << 18)
 #define SHARC_MAX_BUFFER_SIZE             SHARC_PREFERRED_BUFFER_SIZE
 

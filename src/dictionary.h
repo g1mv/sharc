@@ -26,10 +26,14 @@
 #define SHARC_DICTIONARY_H
 
 #include "globals.h"
+#include "hash.h"
 
 #include <string.h>
 
-#define SHARC_HASH_BITS                   16
+#define SHARC_DICTIONARY_MAX_RESET_CYCLE        64
+#define SHARC_DICTIONARY_RESET_CYCLE            SHARC_DICTIONARY_MAX_RESET_CYCLE
+
+#define SHARC_DICTIONARY_MASK_EXISTING_ENTRY    0x100000000llu
 
 #pragma pack(push)
 #pragma pack(4)

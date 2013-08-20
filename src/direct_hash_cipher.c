@@ -25,9 +25,9 @@
 #include "direct_hash_cipher.h"
 
 SHARC_FORCE_INLINE sharc_bool sharc_directHashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary) {
-    return sharc_hashEncode(in, out, SHARC_DIRECT_XOR_MASK, dictionary);
+    return sharc_hashEncode(in, out, SHARC_BYPASS_XOR_MASK, dictionary);
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_directHashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary) {
-    return sharc_hashDecode(in, out, SHARC_DIRECT_XOR_MASK, dictionary);
+    return sharc_hashDecode(in, out, SHARC_BYPASS_XOR_MASK, dictionary);
 }
