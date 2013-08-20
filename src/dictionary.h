@@ -27,6 +27,8 @@
 
 #include "globals.h"
 
+#include <string.h>
+
 #define SHARC_HASH_BITS                   16
 
 #pragma pack(push)
