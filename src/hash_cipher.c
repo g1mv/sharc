@@ -58,7 +58,7 @@ SHARC_FORCE_INLINE void sharc_computeHash(uint32_t* hash, const uint32_t value, 
     *hash = SHARC_HASH_OFFSET_BASIS;
     *hash ^= (value ^ xorMask);
     *hash *= SHARC_HASH_PRIME;
-    *hash = (*hash >> (32 - SHARC_HASH_BITS)) ^ (*hash & 0xFFFF);
+    *hash = (*hash >> (32 - SHARC_HASH_BITS)) ^ (*hash & ((1 << SHARC_HASH_BITS) - 1));
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_updateEntry(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* entry, const uint32_t chunk, const uint32_t index, uint64_t* signature, sharc_byte* state, uint32_t* signaturePointer) {
