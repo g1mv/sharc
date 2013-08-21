@@ -27,6 +27,10 @@
 
 #include "globals.h"
 
+#define SHARC_PREFERRED_BUFFER_SIZE_SHIFT       18
+#define SHARC_PREFERRED_BUFFER_SIZE             (1 << SHARC_PREFERRED_BUFFER_SIZE_SHIFT)
+#define SHARC_MAX_BUFFER_SIZE                   SHARC_PREFERRED_BUFFER_SIZE
+
 typedef struct {
     sharc_byte* pointer;
     uint32_t position;

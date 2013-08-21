@@ -31,9 +31,9 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_createHeader(const uint32_t bufferSize, co
     SHARC_FILE_INFORMATION_HEADER fileInformationHeader;
 
     genericHeader.magicNumber = SHARC_LITTLE_ENDIAN_32(SHARC_MAGIC_NUMBER);
-    genericHeader.version[0] = SHARC_MAJOR_VERSION;
-    genericHeader.version[1] = SHARC_MINOR_VERSION;
-    genericHeader.version[2] = SHARC_REVISION;
+    genericHeader.version = (SHARC_MAJOR_VERSION << 4) | SHARC_MINOR_VERSION;
+    genericHeader.revision = SHARC_REVISION;
+    genericHeader.sizeShifts = (SHARC_DICTIONARY_MAX_RESET_CYCLE_SHIFT << 5) | SHARC_PREFERRED_BUFFER_SIZE_SHIFT;
     genericHeader.type = type;
     switch(type) {
         case SHARC_TYPE_FILE:

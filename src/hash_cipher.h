@@ -30,9 +30,6 @@
 
 #include <stdio.h>
 
-#define SHARC_PREFERRED_BUFFER_SIZE       (1 << 18)
-#define SHARC_MAX_BUFFER_SIZE             SHARC_PREFERRED_BUFFER_SIZE
-
 void sharc_writeSignature(uint64_t*, const sharc_byte*);
 void sharc_flush(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const uint64_t*, const sharc_byte*, const uint32_t*);
 sharc_bool sharc_reset(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, uint64_t*, sharc_byte*, uint32_t*);

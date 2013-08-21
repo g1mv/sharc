@@ -43,6 +43,8 @@
 #include <utime.h>
 
 #include "globals.h"
+#include "dictionary.h"
+#include "byte_buffer.h"
 
 #if defined(__FreeBSD__) || defined(__APPLE__)
 #define stat64 stat
@@ -57,7 +59,9 @@
 #pragma pack(4)
 typedef struct {
     uint32_t magicNumber;
-    sharc_byte version[3];
+    sharc_byte version;
+    sharc_byte revision;
+    sharc_byte sizeShifts;
     sharc_byte type;
 } SHARC_GENERIC_HEADER;
 
