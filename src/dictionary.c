@@ -26,5 +26,6 @@
 #include "dictionary.h"
 
 SHARC_FORCE_INLINE void sharc_resetDictionary(SHARC_ENTRY* dictionary) {
-    memset(dictionary, 0, (1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY));
+    for(uint32_t i = 0; i < (1 << SHARC_HASH_BITS); i++)
+        (&dictionary[i])->as_uint32_t = SHARC_DICTIONARY_VALUE_NOT_SET;
 }

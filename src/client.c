@@ -50,7 +50,7 @@ SHARC_FORCE_INLINE void sharc_version() {
 SHARC_FORCE_INLINE void sharc_usage() {
     sharc_version();
     printf("Copyright (C) 2013 Guillaume Voirin\n");
-    printf("Usage : sharc [OPTIONS]... [FILES]...\n")   ;
+    printf("Usage : sharc [OPTIONS]... [FILES]...\n");
     printf("Superfast archiving of files.\n\n");
     printf("Available options :\n");
     printf("  -c[LEVEL], --compress[=LEVEL]     Compress files using LEVEL if specified (default)\n");

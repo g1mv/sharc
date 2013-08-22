@@ -34,16 +34,12 @@
 #define SHARC_DICTIONARY_MAX_RESET_CYCLE            (1 << SHARC_DICTIONARY_MAX_RESET_CYCLE_SHIFT)
 #define SHARC_DICTIONARY_RESET_CYCLE                SHARC_DICTIONARY_MAX_RESET_CYCLE
 
-#define SHARC_DICTIONARY_MASK_EXISTING_ENTRY        0x100000000llu
+#define SHARC_DICTIONARY_VALUE_NOT_SET              0x76EFE1F1
 
 #pragma pack(push)
 #pragma pack(4)
-typedef union {
-    struct {
-        uint32_t value;
-        uint32_t exists;
-    } as_struct;
-    uint64_t as_uint64_t;
+typedef struct {
+    uint32_t as_uint32_t;
 } SHARC_ENTRY;
 #pragma pack(pop)
 

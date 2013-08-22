@@ -62,7 +62,7 @@ SHARC_FORCE_INLINE void sharc_computeHash(uint32_t* hash, const uint32_t value, 
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_updateEntry(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* entry, const uint32_t chunk, const uint32_t index, uint64_t* signature, sharc_byte* state, uint32_t* signaturePointer) {
-    entry->as_uint64_t = chunk | SHARC_DICTIONARY_MASK_EXISTING_ENTRY;
+    entry->as_uint32_t = chunk;
     *(uint32_t*)(out->pointer + out->position) = chunk;
     out->position += 4;
     *state = *state + 1;
@@ -72,8 +72,8 @@ SHARC_FORCE_INLINE sharc_bool sharc_updateEntry(SHARC_BYTE_BUFFER* in, SHARC_BYT
 SHARC_FORCE_INLINE sharc_bool sharc_kernelEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, SHARC_ENTRY* dictionary, uint32_t* hash, uint64_t* signature, sharc_byte* state, uint32_t* signaturePointer) {
     sharc_computeHash(hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
     SHARC_ENTRY* found = &dictionary[*hash];
-    if(found->as_uint64_t & SHARC_DICTIONARY_MASK_EXISTING_ENTRY) {
-        if(chunk ^ (found->as_uint64_t & 0xFFFFFFFF)) {
+    if(found->as_uint32_t ^ SHARC_DICTIONARY_VALUE_NOT_SET) {
+        if(chunk ^ found->as_uint32_t) {
             if(sharc_updateEntry(in, out, found, chunk, index, signature, state, signaturePointer) ^ 0x1)
                 return SHARC_FALSE;
         } else {
@@ -130,13 +130,13 @@ SHARC_FORCE_INLINE void sharc_kernelDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUF
         case SHARC_FALSE:
             chunk = *(uint32_t*)(in->pointer + in->position);
             sharc_computeHash(&hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
-            (&dictionary[hash])->as_uint64_t = chunk | SHARC_DICTIONARY_MASK_EXISTING_ENTRY;
+            (&dictionary[hash])->as_uint32_t = chunk;
             *(uint32_t*)(out->pointer + out->position) = chunk;
             in->position += 4;
             break;
         case SHARC_TRUE:
             found = &dictionary[SHARC_LITTLE_ENDIAN_16(*(uint16_t*)(in->pointer + in->position))];
-            *(uint32_t*)(out->pointer + out->position) = (uint32_t)(found->as_uint64_t & 0xFFFFFFFF);
+            *(uint32_t*)(out->pointer + out->position) = found->as_uint32_t;
             in->position += 2;
             break;
     }
