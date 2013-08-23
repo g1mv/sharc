@@ -39,9 +39,9 @@ SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sh
     SHARC_ENTRY dictionary_a[1 << SHARC_HASH_BITS];
     SHARC_ENTRY dictionary_b[1 << SHARC_HASH_BITS];
     
-    sharc_byte readBuffer[SHARC_PREFERRED_BUFFER_SIZE];
-    sharc_byte interBuffer[SHARC_PREFERRED_BUFFER_SIZE];
-    sharc_byte writeBuffer[SHARC_PREFERRED_BUFFER_SIZE];
+    sharc_byte readBuffer[blockSize];
+    sharc_byte interBuffer[blockSize];
+    sharc_byte writeBuffer[blockSize];
     
     SHARC_BYTE_BUFFER in = sharc_createByteBuffer(readBuffer, 0, blockSize);
     SHARC_BYTE_BUFFER inter = sharc_createByteBuffer(interBuffer, 0, blockSize);
