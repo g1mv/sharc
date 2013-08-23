@@ -25,7 +25,8 @@
 
 #include "dictionary.h"
 
+const SHARC_ENTRY sharc_defaultDictionary[(1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY)] = {SHARC_DICTIONARY_VALUE_NOT_SET};
+
 SHARC_FORCE_INLINE void sharc_resetDictionary(SHARC_ENTRY* dictionary) {
-    for(uint32_t i = 0; i < (1 << SHARC_HASH_BITS); i++)
-        (&dictionary[i])->as_uint32_t = SHARC_DICTIONARY_VALUE_NOT_SET;
+    memcpy(dictionary, sharc_defaultDictionary, (1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY));
 }
