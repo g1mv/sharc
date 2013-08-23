@@ -93,10 +93,6 @@ typedef struct {
     sharc_byte type;
 } SHARC_CLIENT_IO;
 
-sharc_byte sharc_readBuffer[SHARC_MAX_BUFFER_SIZE];
-sharc_byte sharc_interBuffer[SHARC_MAX_BUFFER_SIZE];
-sharc_byte sharc_writeBuffer[SHARC_MAX_BUFFER_SIZE];
-
 FILE* sharc_checkOpenFile(const char*, const char*, const sharc_bool);
 void sharc_version();
 void sharc_usage();

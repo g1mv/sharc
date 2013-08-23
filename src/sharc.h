@@ -46,7 +46,7 @@
 #include "block_header.h"
 
 void sharc_compressBlock(FILE*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte, SHARC_ENTRY*, SHARC_ENTRY*, const sharc_bool);
-void sharc_compress(FILE*, FILE*, const sharc_byte, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte, const uint32_t, const struct stat64);
-SHARC_HEADER sharc_decompress(FILE*, FILE*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*);
+void sharc_compress(FILE*, FILE*, const sharc_byte, const sharc_byte, const uint32_t, const struct stat64);
+SHARC_HEADER sharc_decompress(FILE*, FILE*);
 
 #endif

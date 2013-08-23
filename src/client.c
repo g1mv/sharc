@@ -100,13 +100,9 @@ SHARC_FORCE_INLINE void sharc_clientCompress(SHARC_CLIENT_IO* in, SHARC_CLIENT_I
         out->name = SHARC_STDOUT;
     }
     
-    SHARC_BYTE_BUFFER read = sharc_createByteBuffer(sharc_readBuffer, 0, blockSize);
-    SHARC_BYTE_BUFFER inter = sharc_createByteBuffer(sharc_interBuffer, 0, blockSize);
-    SHARC_BYTE_BUFFER write = sharc_createByteBuffer(sharc_writeBuffer, 0, blockSize);
-    
     SHARC_CHRONO chrono;
     sharc_chronoStart(&chrono);
-    sharc_compress(in->stream, out->stream, in->type, &read, &inter, &write, attemptMode, blockSize, attributes);
+    sharc_compress(in->stream, out->stream, in->type, attemptMode, blockSize, attributes);
     sharc_chronoStop(&chrono);
     
     if(out->type == SHARC_TYPE_FILE) {
@@ -159,13 +155,9 @@ SHARC_FORCE_INLINE void sharc_clientDecompress(SHARC_CLIENT_IO* in, SHARC_CLIENT
         out->name = SHARC_STDOUT;
     }
     
-    SHARC_BYTE_BUFFER read = sharc_createByteBuffer(sharc_readBuffer, 0, 0);
-    SHARC_BYTE_BUFFER inter = sharc_createByteBuffer(sharc_interBuffer, 0, 0);
-    SHARC_BYTE_BUFFER write = sharc_createByteBuffer(sharc_writeBuffer, 0, 0);
-    
     SHARC_CHRONO chrono;
     sharc_chronoStart(&chrono);
-    SHARC_HEADER header = sharc_decompress(in->stream, out->stream, &read, &inter, &write);
+    SHARC_HEADER header = sharc_decompress(in->stream, out->stream);
     sharc_chronoStop(&chrono);
     
     if(out->type == SHARC_TYPE_FILE) {
