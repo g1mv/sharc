@@ -25,8 +25,8 @@
 #ifndef SHARC_SHARC_CIPHER_H
 #define SHARC_SHARC_CIPHER_H
 
-#include "direct_hash_cipher.h"
-#include "xor_hash_cipher.h"
+#include "direct_hash_transform.h"
+#include "xor_hash_transform.h"
 #include "block_header.h"
 
 #define SHARC_MODE_SINGLE_PASS        0

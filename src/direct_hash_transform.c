@@ -19,19 +19,15 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 20:03
+ * 01/06/13 13:08
  */
 
-#ifndef SHARC_XOR_HASH_CIPHER_H
-#define SHARC_XOR_HASH_CIPHER_H
+#include "direct_hash_transform.h"
 
-#include "hash_cipher.h"
+SHARC_FORCE_INLINE sharc_bool sharc_directHashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary) {
+    return sharc_hashEncode(in, out, SHARC_BYPASS_XOR_MASK, dictionary);
+}
 
-#include <stdio.h>
-
-#define SHARC_XOR_MASK    0x2AE2752F
-
-sharc_bool sharc_xorHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
-sharc_bool sharc_xorHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
-
-#endif
+SHARC_FORCE_INLINE sharc_bool sharc_directHashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary) {
+    return sharc_hashDecode(in, out, SHARC_BYPASS_XOR_MASK, dictionary);
+}

@@ -22,7 +22,7 @@
  * 01/06/13 17:31
  */
 
-#include "hash_cipher.h"
+#include "hash_transform.h"
 
 SHARC_FORCE_INLINE void sharc_writeSignature(uint64_t* signature, const sharc_byte* state) {
     *signature |= ((uint64_t)1) << *state;

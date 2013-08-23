@@ -41,7 +41,7 @@
 #include <stdio.h>
 
 #include "chrono.h"
-#include "sharc_cipher.h"
+#include "sharc_transform.h"
 #include "header.h"
 #include "block_header.h"
 

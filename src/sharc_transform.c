@@ -22,7 +22,7 @@
  * 01/06/13 20:52
  */
 
-#include "sharc_cipher.h"
+#include "sharc_transform.h"
 
 SHARC_FORCE_INLINE SHARC_ENCODING_RESULT sharc_createEncodingResult(const sharc_byte reachableMode, SHARC_BYTE_BUFFER* out) {
     SHARC_ENCODING_RESULT encodingResult;
