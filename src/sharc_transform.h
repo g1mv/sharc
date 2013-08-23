@@ -22,8 +22,8 @@
  * 01/06/13 20:51
  */
 
-#ifndef SHARC_SHARC_CIPHER_H
-#define SHARC_SHARC_CIPHER_H
+#ifndef SHARC_SHARC_TRANSFORM_H
+#define SHARC_SHARC_TRANSFORM_H
 
 #include "direct_hash_transform.h"
 #include "xor_hash_transform.h"

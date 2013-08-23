@@ -22,8 +22,8 @@
  * 01/06/13 17:27
  */
 
-#ifndef SHARC_HASH_CIPHER_H
-#define SHARC_HASH_CIPHER_H
+#ifndef SHARC_HASH_TRANSFORM_H
+#define SHARC_HASH_TRANSFORM_H
 
 #include "byte_buffer.h"
 #include "dictionary.h"
