@@ -70,8 +70,8 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_decompress(FILE* inStream, FILE* outStream
     while(sharc_readBlockHeaderFromFile(&blockHeader, inStream) > 0) {
         in->size = (uint32_t)fread(in->pointer, sizeof(sharc_byte), blockHeader.nextBlock, inStream);
         
-        switch(blockHeader.resetDictionaries) {
-            case SHARC_TRUE:
+        switch(blockHeader.dictionaryFlags & SHARC_BLOCK_HEADER_DICTIONARY_RESET_MASK) {
+            case SHARC_BLOCK_HEADER_DICTIONARY_RESET_MASK:
                 sharc_resetDictionary(dictionary_a);
                 sharc_resetDictionary(dictionary_b);
                 break;

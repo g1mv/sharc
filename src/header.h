@@ -59,10 +59,11 @@
 #pragma pack(4)
 typedef struct {
     uint32_t magicNumber;
-    sharc_byte version;
-    sharc_byte revision;
-    sharc_byte sizeShifts;
+    sharc_byte version[3];
+    sharc_byte bufferSizeShift;
+    sharc_byte resetCycleSizeShift;
     sharc_byte type;
+    sharc_byte reserved[2];
 } SHARC_GENERIC_HEADER;
 
 typedef struct {

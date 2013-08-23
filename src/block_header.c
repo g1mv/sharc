@@ -27,7 +27,9 @@
 SHARC_FORCE_INLINE SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte mode, sharc_bool resetDictionaries, const uint32_t nextBlock) {
     SHARC_BLOCK_HEADER blockHeader;
     blockHeader.mode = mode;
-    blockHeader.resetDictionaries = resetDictionaries;
+    blockHeader.dictionaryFlags = resetDictionaries;
+    blockHeader.reserved[0] = 0;
+    blockHeader.reserved[1] = 0;
     blockHeader.nextBlock = SHARC_LITTLE_ENDIAN_32(nextBlock);
     return blockHeader;
 }

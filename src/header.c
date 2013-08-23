@@ -31,9 +31,13 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_createHeader(const uint32_t bufferSize, co
     SHARC_FILE_INFORMATION_HEADER fileInformationHeader;
 
     genericHeader.magicNumber = SHARC_LITTLE_ENDIAN_32(SHARC_MAGIC_NUMBER);
-    genericHeader.version = (SHARC_MAJOR_VERSION << 4) | SHARC_MINOR_VERSION;
-    genericHeader.revision = SHARC_REVISION;
-    genericHeader.sizeShifts = (SHARC_DICTIONARY_MAX_RESET_CYCLE_SHIFT << 5) | SHARC_PREFERRED_BUFFER_SIZE_SHIFT;
+    genericHeader.version[0] = SHARC_MAJOR_VERSION;
+    genericHeader.version[1] = SHARC_MINOR_VERSION;
+    genericHeader.version[2] = SHARC_REVISION;
+    genericHeader.bufferSizeShift = SHARC_PREFERRED_BUFFER_SIZE_SHIFT;
+    genericHeader.resetCycleSizeShift = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT;
+    genericHeader.reserved[0] = 0;
+    genericHeader.reserved[1] = 0;
     genericHeader.type = type;
     switch(type) {
         case SHARC_TYPE_FILE:
@@ -63,7 +67,7 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_readHeader(FILE* inStream) {
 
     fread(&genericHeader, sizeof(SHARC_GENERIC_HEADER), 1, inStream);
     if(sharc_checkSource(SHARC_LITTLE_ENDIAN_32(genericHeader.magicNumber)) ^ 0x1)
-            sharc_error("Invalid file");
+        sharc_error("Invalid file");
     header.genericHeader = genericHeader;
 
     switch(genericHeader.type) {

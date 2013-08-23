@@ -31,12 +31,14 @@
 
 #include "globals.h"
 
+#define SHARC_BLOCK_HEADER_DICTIONARY_RESET_MASK    0x1
+
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
     sharc_byte mode;
-    sharc_byte resetDictionaries;
-    uint16_t reserved;
+    sharc_byte dictionaryFlags;
+    sharc_byte reserved[2];
     uint32_t nextBlock;
 } SHARC_BLOCK_HEADER;
 #pragma pack(pop)
