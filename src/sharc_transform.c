@@ -72,10 +72,10 @@ SHARC_FORCE_INLINE sharc_bool sharc_sharcDecode(SHARC_BYTE_BUFFER* in, SHARC_BYT
             return sharc_xorHashDecode(in, out, dictionary_a);
         case SHARC_MODE_DUAL_PASS:
             sharc_rewindByteBuffer(inter);
-            sharc_xorHashDecode(in, inter, dictionary_a);
+            sharc_xorHashDecode(in, inter, dictionary_b);
             inter->size = inter->position;
             sharc_rewindByteBuffer(inter);
-            return sharc_directHashDecode(inter, out, dictionary_b);
+            return sharc_directHashDecode(inter, out, dictionary_a);
         default:
             return SHARC_FALSE;
     }

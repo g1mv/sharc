@@ -27,6 +27,7 @@
 
 #include "globals.h"
 #include "hash.h"
+#include "dictionary.data"
 
 #include <string.h>
 
@@ -45,5 +46,6 @@ typedef struct {
 #pragma pack(pop)
 
 void sharc_resetDictionary(SHARC_ENTRY*);
+void sharc_resetDualPassDictionary(SHARC_ENTRY*);
 
 #endif
