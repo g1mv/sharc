@@ -72,20 +72,15 @@ SHARC_FORCE_INLINE sharc_bool sharc_updateEntry(SHARC_BYTE_BUFFER* in, SHARC_BYT
 SHARC_FORCE_INLINE sharc_bool sharc_kernelEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, const uint32_t chunk, const uint32_t xorMask, const uint32_t* buffer, const uint32_t index, SHARC_ENTRY* dictionary, uint32_t* hash, uint64_t* signature, sharc_byte* state, uint32_t* signaturePointer) {
     sharc_computeHash(hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
     SHARC_ENTRY* found = &dictionary[*hash];
-    if(found->as_uint32_t ^ SHARC_DICTIONARY_VALUE_NOT_SET) {
-        if(chunk ^ found->as_uint32_t) {
-            if(sharc_updateEntry(in, out, found, chunk, index, signature, state, signaturePointer) ^ 0x1)
-                return SHARC_FALSE;
-        } else {
-            sharc_writeSignature(signature, state);
-            *(uint16_t*)(out->pointer + out->position) = SHARC_LITTLE_ENDIAN_16(*hash);
-            out->position += 2;
-            *state = *state + 1;
-            if(sharc_checkState(in, out, signature, state, signaturePointer) ^ 0x1)
-                return SHARC_FALSE;
-        }
-    } else {
+    if(chunk ^ found->as_uint32_t) {
         if(sharc_updateEntry(in, out, found, chunk, index, signature, state, signaturePointer) ^ 0x1)
+            return SHARC_FALSE;
+    } else {
+        sharc_writeSignature(signature, state);
+        *(uint16_t*)(out->pointer + out->position) = SHARC_LITTLE_ENDIAN_16(*hash);
+        out->position += 2;
+        *state = *state + 1;
+        if(sharc_checkState(in, out, signature, state, signaturePointer) ^ 0x1)
             return SHARC_FALSE;
     }
     return SHARC_TRUE;
