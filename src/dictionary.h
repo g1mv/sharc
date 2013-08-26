@@ -27,7 +27,14 @@
 
 #include "globals.h"
 #include "hash.h"
-#include "dictionary.data"
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#include "dictionary_little_endian.data"
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#include "dictionary_big_endian.data"
+#else
+#error
+#endif
 
 #include <string.h>
 
