@@ -1,3 +1,14 @@
+0.9.9 beta
+----------
+<i>August 26, 2013</i>
+* Added maximum dictionary reset cycle to ensure possible parallelization
+* Improved XOR mask
+* Reorganized global variables
+* Added buffer size and dictionary max cycles in stream header
+* Reduced dictionary sizes to optimize fitting in processor caches
+* Removed "cipher" references in file names, functions, and preprocessor macro guard names
+* Added dictionary preloading to optimize encoding/decoding startup efficiency
+
 0.9.8 beta
 ----------
 <i>August 19, 2013</i>
