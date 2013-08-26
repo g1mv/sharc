@@ -31,7 +31,9 @@
 
 #include "globals.h"
 
-#define SHARC_BLOCK_HEADER_DICTIONARY_RESET_MASK    0x1
+#define SHARC_BLOCK_HEADER_DIRECT_DICTIONARY_RESET_MASK         0x1
+#define SHARC_BLOCK_HEADER_COMPRESSED_DICTIONARY_RESET_MASK     0x2
+#define SHARC_BLOCK_HEADER_DICTIONARIES_RESET_MASK              (SHARC_BLOCK_HEADER_DIRECT_DICTIONARY_RESET_MASK | SHARC_BLOCK_HEADER_COMPRESSED_DICTIONARY_RESET_MASK)
 
 #pragma pack(push)
 #pragma pack(4)
@@ -43,7 +45,7 @@ typedef struct {
 } SHARC_BLOCK_HEADER;
 #pragma pack(pop)
 
-SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte, const sharc_bool, const uint32_t);
+SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte, const sharc_byte, const uint32_t);
 const size_t sharc_readBlockHeaderFromFile(SHARC_BLOCK_HEADER*, FILE*);
 
 #endif

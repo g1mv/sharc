@@ -24,10 +24,10 @@
 
 #include "block_header.h"
 
-SHARC_FORCE_INLINE SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte mode, sharc_bool resetDictionaries, const uint32_t nextBlock) {
+SHARC_FORCE_INLINE SHARC_BLOCK_HEADER sharc_createBlockHeader(const sharc_byte mode, sharc_byte dictionaryFlags, const uint32_t nextBlock) {
     SHARC_BLOCK_HEADER blockHeader;
     blockHeader.mode = mode;
-    blockHeader.dictionaryFlags = resetDictionaries;
+    blockHeader.dictionaryFlags = dictionaryFlags;
     blockHeader.reserved[0] = 0;
     blockHeader.reserved[1] = 0;
     blockHeader.nextBlock = SHARC_LITTLE_ENDIAN_32(nextBlock);
