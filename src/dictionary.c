@@ -25,12 +25,12 @@
 #include "dictionary.h"
 
 const SHARC_ENTRY sharc_chameleonDictionary[(1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY)] = SHARC_CHAMELEON_DICTIONARY;
-const SHARC_ENTRY sharc_dualPassDictionary[(1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY)] = SHARC_DUAL_PASS_DICTIONARY;
+const SHARC_ENTRY sharc_compressedDictionary[(1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY)] = SHARC_COMPRESSED_DICTIONARY;
 
-SHARC_FORCE_INLINE void sharc_resetDictionary(SHARC_ENTRY* dictionary) {
+SHARC_FORCE_INLINE void sharc_resetDirectDictionary(SHARC_ENTRY* dictionary) {
     memcpy(dictionary, sharc_chameleonDictionary, (1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY));
 }
 
-SHARC_FORCE_INLINE void sharc_resetDualPassDictionary(SHARC_ENTRY* dictionary) {
-    memcpy(dictionary, sharc_dualPassDictionary, (1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY));
+SHARC_FORCE_INLINE void sharc_resetCompressedDictionary(SHARC_ENTRY* dictionary) {
+    memcpy(dictionary, sharc_compressedDictionary, (1 << SHARC_HASH_BITS) * sizeof(SHARC_ENTRY));
 }

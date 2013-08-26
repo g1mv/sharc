@@ -58,8 +58,8 @@ SHARC_FORCE_INLINE void sharc_compress(FILE* inStream, FILE* outStream, const sh
             
             resetCycle --;
         } else {
-            sharc_resetDictionary(dictionary_a);
-            sharc_resetDualPassDictionary(dictionary_b);
+            sharc_resetDirectDictionary(dictionary_a);
+            sharc_resetCompressedDictionary(dictionary_b);
             
             sharc_compressBlock(outStream, &in, &inter, &out, attemptMode, dictionary_a, dictionary_b, SHARC_TRUE);
             
@@ -93,8 +93,8 @@ SHARC_FORCE_INLINE SHARC_HEADER sharc_decompress(FILE* inStream, FILE* outStream
         
         switch(blockHeader.dictionaryFlags & SHARC_BLOCK_HEADER_DICTIONARY_RESET_MASK) {
             case SHARC_BLOCK_HEADER_DICTIONARY_RESET_MASK:
-                sharc_resetDictionary(dictionary_a);
-                sharc_resetDualPassDictionary(dictionary_b);
+                sharc_resetDirectDictionary(dictionary_a);
+                sharc_resetCompressedDictionary(dictionary_b);
                 break;
         }
         

@@ -52,7 +52,7 @@ typedef struct {
 } SHARC_ENTRY;
 #pragma pack(pop)
 
-void sharc_resetDictionary(SHARC_ENTRY*);
-void sharc_resetDualPassDictionary(SHARC_ENTRY*);
+void sharc_resetDirectDictionary(SHARC_ENTRY*);
+void sharc_resetCompressedDictionary(SHARC_ENTRY*);
 
 #endif
