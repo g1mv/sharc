@@ -29,9 +29,9 @@
 #include "hash.h"
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#include "dictionary_little_endian.data"
+#include "dictionary_le.data"
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#include "dictionary_big_endian.data"
+#include "dictionary_be.data"
 #else
 #error
 #endif
