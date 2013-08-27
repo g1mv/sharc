@@ -62,7 +62,7 @@
 
 #define SHARC_MAJOR_VERSION               0
 #define SHARC_MINOR_VERSION               9
-#define SHARC_REVISION                    9
+#define SHARC_REVISION                    10
 
 #define SHARC_FALSE                       0
 #define SHARC_TRUE                        1
