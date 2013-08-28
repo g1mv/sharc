@@ -29,15 +29,15 @@
 
 #include "globals.h"
 
-#define SHARC_MICROSECONDS    1000000.0
+#define SHARC_CHRONO_MICROSECONDS    1000000.0
 
 typedef struct {
     struct timeval start;
     struct timeval stop;
-} SHARC_CHRONO;
+} sharc_chrono;
 
-void sharc_chronoStart(SHARC_CHRONO*);
-void sharc_chronoStop(SHARC_CHRONO*);
-double sharc_chronoElapsed(SHARC_CHRONO*);
+void sharc_chrono_start(sharc_chrono *);
+void sharc_chrono_stop(sharc_chrono *);
+double sharc_chrono_elapsed(sharc_chrono *);
 
 #endif

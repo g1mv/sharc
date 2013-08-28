@@ -19,25 +19,30 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 18:46
+ * 27/08/13 15:01
  */
 
-#include "byte_buffer.h"
+#ifndef SHARC_API_BUFFERS_H
+#define SHARC_API_BUFFERS_H
 
-SHARC_FORCE_INLINE sharc_byte_buffer* sharc_byte_buffer_allocate() {
-    return (sharc_byte_buffer*)malloc(sizeof(sharc_byte_buffer));
-}
+#include "api.h"
+#include "state.h"
 
-SHARC_FORCE_INLINE void sharc_byte_buffer_deallocate(sharc_byte_buffer* byteBuffer) {
-    free(byteBuffer);
-}
+#define SHARC_API_BUFFERS_STATE_OK       0
+#define SHARC_API_BUFFERS_STATE_ERROR    1
 
-SHARC_FORCE_INLINE void sharc_byte_buffer_encapsulate(sharc_byte_buffer * buffer, sharc_byte* pointer, uint32_t position, uint32_t size) {
-    buffer->pointer = pointer;
-    buffer->position = position;
-    buffer->size = size;
-}
+/*
+ * Utility function, returns the maximum length that compressed data can occupy
+ *
+ * Example :
+ * uint64_t compressedBufferSize = 65536;
+ * uint64_t decompressedBufferSize = sharc_api_buffers_max_compressed_total_length(compressionBufferSize);
+ */
+uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t);
 
-SHARC_FORCE_INLINE void sharc_byte_buffer_rewind(sharc_byte_buffer * buffer) {
-    buffer->position = 0;
-}
+uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t);
+
+uint32_t sharc_api_buffers_compress(uint8_t*, uint64_t, uint8_t*, uint64_t*, uint32_t);
+uint32_t sharc_api_buffers_decompress(uint8_t*, uint64_t, uint8_t*, uint64_t*);
+
+#endif

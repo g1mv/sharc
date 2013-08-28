@@ -19,34 +19,26 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 17:55
+ * 28/08/13 18:56
  */
 
-#ifndef SHARC_SHARC_H
-#define SHARC_SHARC_H
+#ifndef SHARC_HASH_ENCODE_H
+#define SHARC_HASH_ENCODE_H
 
-#ifndef __USE_LARGEFILE64
-#define __USE_LARGEFILE64
-#endif
+#include "byte_buffer.h"
+#include "dictionary.h"
+#include "state.h"
+#include "hash.h"
 
-#ifndef _LARGEFILE_SOURCE
-#define _LARGEFILE_SOURCE
-#endif
+#define SHARC_HASH_ENCODE_MINIMUM_LOOKAHEAD             (sizeof(sharc_signature) + 32 * sizeof(sharc_signature))
 
-#ifndef _LARGEFILE64_SOURCE
-#define _LARGEFILE64_SOURCE
-#endif
+typedef enum {
+    SHARC_HASH_ENCODE_STATE_READY_FOR_NEXT,
+    SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER,
+    SHARC_HASH_ENCODE_STATE_STALL_ON_INPUT_BUFFER
+} SHARC_HASH_ENCODE_STATE;
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "chrono.h"
-#include "sharc_transform.h"
-#include "header.h"
-#include "block_header.h"
-
-void sharc_compressBlock(FILE*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, const sharc_byte, SHARC_ENTRY*, SHARC_ENTRY*, const sharc_bool);
-void sharc_compress(FILE*, FILE*, const sharc_byte, const sharc_byte, const uint32_t, const struct stat64);
-SHARC_HEADER sharc_decompress(FILE*, FILE*);
+SHARC_HASH_ENCODE_STATE sharc_hash_encode_resetState(sharc_byte_buffer*, sharc_state *);
+SHARC_HASH_ENCODE_STATE sharc_hash_encode_kernel(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_dictionary *, sharc_state *);
 
 #endif

@@ -19,19 +19,24 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 20:03
+ * 27/08/13 15:01
  */
 
-#ifndef SHARC_XOR_HASH_TRANSFORM_H
-#define SHARC_XOR_HASH_TRANSFORM_H
+#ifndef SHARC_API_H
+#define SHARC_API_H
 
-#include "hash_transform.h"
+#include "globals.h"
+#include "header.h"
+#include "block_header.h"
+#include "footer.h"
 
-#include <stdio.h>
+#define SHARC_YES    1
+#define SHARC_NO     0
 
-#define SHARC_XOR_MASK    0x2AE2752F
-
-sharc_bool sharc_xorHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
-sharc_bool sharc_xorHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
+/*
+ * If you intend to use SHARC as a library, replace SHARC_NO by SHARC_YES.
+ * client.c and client.h content will be masked : there will not be any main() function compiled.
+ */
+#define SHARC_USE_AS_LIBRARY    SHARC_NO
 
 #endif

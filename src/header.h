@@ -50,10 +50,12 @@
 #define stat64 stat
 #endif
 
-#define SHARC_MAGIC_NUMBER      1908011803
+#define SHARC_HEADER_MAGIC_NUMBER      1908011803
 
-#define SHARC_TYPE_STREAM       0
-#define SHARC_TYPE_FILE         1
+typedef enum {
+    SHARC_HEADER_ORIGIN_TYPE_STREAM,
+    SHARC_HEADER_ORIGIN_TYPE_FILE
+} SHARC_HEADER_ORIGIN_TYPE;
 
 #pragma pack(push)
 #pragma pack(4)
@@ -62,27 +64,29 @@ typedef struct {
     sharc_byte version[3];
     sharc_byte bufferSizeShift;
     sharc_byte resetCycleSizeShift;
-    sharc_byte type;
+    SHARC_HEADER_ORIGIN_TYPE type;
     sharc_byte reserved[2];
-} SHARC_GENERIC_HEADER;
+} SHARC_HEADER_GENERIC;
 
 typedef struct {
     uint64_t originalFileSize;
     uint32_t fileMode;
     uint64_t fileAccessed;
     uint64_t fileModified;
-} SHARC_FILE_INFORMATION_HEADER;
+} SHARC_HEADER_FILE_INFORMATION;
 
 typedef struct {
-    SHARC_GENERIC_HEADER genericHeader;
-    SHARC_FILE_INFORMATION_HEADER fileInformationHeader;
+    SHARC_HEADER_GENERIC genericHeader;
+    SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
 } SHARC_HEADER;
 #pragma pack(pop)
 
-SHARC_HEADER sharc_createHeader(const uint32_t, const sharc_byte, struct stat64);
+void sharc_header_populate(SHARC_HEADER*, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
+SHARC_HEADER sharc_createHeader(const uint32_t, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
 sharc_bool sharc_checkSource(const uint32_t);
-SHARC_HEADER sharc_readHeader(FILE*);
-void sharc_writeHeader(SHARC_HEADER*, FILE*);
-void sharc_restoreFileAttributes(SHARC_FILE_INFORMATION_HEADER*, const char*);
+SHARC_HEADER sharc_readHeaderFromStream(FILE*);
+uint32_t sharc_writeHeader(sharc_byte*, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
+void sharc_writeHeaderToStream(SHARC_HEADER *, FILE*);
+void sharc_restoreFileAttributes(SHARC_HEADER_FILE_INFORMATION*, const char*);
 
 #endif

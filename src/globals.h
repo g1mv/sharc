@@ -42,9 +42,9 @@
 #endif
  
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define SHARC_LITTLE_ENDIAN_64(b)   (b)
-#define SHARC_LITTLE_ENDIAN_32(b)   (b)
-#define SHARC_LITTLE_ENDIAN_16(b)   (b)
+#define SHARC_LITTLE_ENDIAN_64(b)   ((uint64_t)b)
+#define SHARC_LITTLE_ENDIAN_32(b)   ((uint32_t)b)
+#define SHARC_LITTLE_ENDIAN_16(b)   ((uint16_t)b)
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #if __GNUC__ * 100 + __GNUC_MINOR__ >= 403
 #define SHARC_LITTLE_ENDIAN_64(b)   __builtin_bswap64(b)

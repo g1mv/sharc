@@ -19,15 +19,6 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 13:08
+ * 28/08/13 17:19
  */
 
-#include "direct_hash_transform.h"
-
-SHARC_FORCE_INLINE sharc_bool sharc_directHashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary) {
-    return sharc_hashEncode(in, out, SHARC_BYPASS_XOR_MASK, dictionary);
-}
-
-SHARC_FORCE_INLINE sharc_bool sharc_directHashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary) {
-    return sharc_hashDecode(in, out, SHARC_BYPASS_XOR_MASK, dictionary);
-}

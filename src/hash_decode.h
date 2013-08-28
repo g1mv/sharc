@@ -19,19 +19,15 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 17:47
+ * 28/08/13 22:28
  */
 
-#ifndef SHARC_DIRECT_HASH_TRANSFORM_H
-#define SHARC_DIRECT_HASH_TRANSFORM_H
+#ifndef SHARC_HASH_DECODE_H
+#define SHARC_HASH_DECODE_H
 
-#include "hash_transform.h"
-
-#include <stdio.h>
-
-#define SHARC_BYPASS_XOR_MASK 0x00000000
-
-sharc_bool sharc_directHashEncode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
-sharc_bool sharc_directHashDecode(SHARC_BYTE_BUFFER*, SHARC_BYTE_BUFFER*, SHARC_ENTRY*);
+#include "byte_buffer.h"
+#include "dictionary.h"
+#include "state.h"
+#include "hash.h"
 
 #endif

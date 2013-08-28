@@ -25,6 +25,10 @@
 #ifndef SHARC_CLIENT_H
 #define SHARC_CLIENT_H
 
+#include "api.h"
+
+#if SHARC_USE_AS_LIBRARY == SHARC_NO
+
 #ifdef _WIN32
 #include <fcntl.h>
 #endif
@@ -32,9 +36,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "header.h"
-#include "sharc.h"
 #include "chrono.h"
+#include "api_stream.h"
 
 #define SHARC_ACTION_COMPRESS         0
 #define SHARC_ACTION_DECOMPRESS       1
@@ -91,13 +94,14 @@ typedef struct {
     const char* name;
     FILE* stream;
     sharc_byte type;
-} SHARC_CLIENT_IO;
+} sharc_client_io;
 
-FILE* sharc_checkOpenFile(const char*, const char*, const sharc_bool);
-void sharc_version();
-void sharc_usage();
-void sharc_clientCompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const sharc_byte, const uint32_t, const sharc_bool, const char*, const char*);
-void sharc_clientDecompress(SHARC_CLIENT_IO*, SHARC_CLIENT_IO*, const sharc_bool, const char*, const char*);
-int main(int, char **);
+FILE* sharc_client_checkOpenFile(const char*, const char*, const sharc_bool);
+void sharc_client_version();
+void sharc_client_usage();
+void sharc_client_compress(sharc_client_io *, sharc_client_io *, const sharc_byte, const uint32_t, const sharc_bool, const char*, const char*);
+void sharc_client_decompress(sharc_client_io *, sharc_client_io *, const sharc_bool, const char*, const char*);
+
+#endif
 
 #endif

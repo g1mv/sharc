@@ -25,8 +25,15 @@
 #ifndef SHARC_HASH_H
 #define SHARC_HASH_H
 
-#define SHARC_HASH_BITS                   16
-#define SHARC_HASH_OFFSET_BASIS           2166115717
-#define SHARC_HASH_PRIME                  16777619
+#include "globals.h"
+
+#define SHARC_HASH_BITS                             16
+#define SHARC_HASH_OFFSET_BASIS                     (uint32_t)2166115717
+#define SHARC_HASH_PRIME                            16777619
+
+#define SHARC_HASH_XOR_MASK_DIRECT                  0x00000000
+#define SHARC_HASH_XOR_MASK_DISPERSION              0x2AE2752F
+
+void sharc_hash_compute(uint32_t*, const uint32_t, const uint32_t);
 
 #endif

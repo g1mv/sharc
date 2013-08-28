@@ -19,25 +19,13 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 18:46
+ * 28/08/13 17:18
  */
 
-#include "byte_buffer.h"
+#ifndef SHARC_FOOTER_H
+#define SHARC_FOOTER_H
 
-SHARC_FORCE_INLINE sharc_byte_buffer* sharc_byte_buffer_allocate() {
-    return (sharc_byte_buffer*)malloc(sizeof(sharc_byte_buffer));
-}
+typedef struct {
+} SHARC_FOOTER;
 
-SHARC_FORCE_INLINE void sharc_byte_buffer_deallocate(sharc_byte_buffer* byteBuffer) {
-    free(byteBuffer);
-}
-
-SHARC_FORCE_INLINE void sharc_byte_buffer_encapsulate(sharc_byte_buffer * buffer, sharc_byte* pointer, uint32_t position, uint32_t size) {
-    buffer->pointer = pointer;
-    buffer->position = position;
-    buffer->size = size;
-}
-
-SHARC_FORCE_INLINE void sharc_byte_buffer_rewind(sharc_byte_buffer * buffer) {
-    buffer->position = 0;
-}
+#endif

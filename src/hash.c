@@ -19,25 +19,14 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 18:46
+ * 28/08/13 19:02
  */
 
-#include "byte_buffer.h"
+#include "hash.h"
 
-SHARC_FORCE_INLINE sharc_byte_buffer* sharc_byte_buffer_allocate() {
-    return (sharc_byte_buffer*)malloc(sizeof(sharc_byte_buffer));
-}
-
-SHARC_FORCE_INLINE void sharc_byte_buffer_deallocate(sharc_byte_buffer* byteBuffer) {
-    free(byteBuffer);
-}
-
-SHARC_FORCE_INLINE void sharc_byte_buffer_encapsulate(sharc_byte_buffer * buffer, sharc_byte* pointer, uint32_t position, uint32_t size) {
-    buffer->pointer = pointer;
-    buffer->position = position;
-    buffer->size = size;
-}
-
-SHARC_FORCE_INLINE void sharc_byte_buffer_rewind(sharc_byte_buffer * buffer) {
-    buffer->position = 0;
+SHARC_FORCE_INLINE void sharc_hash_compute(uint32_t* hash, const uint32_t value, const uint32_t xorMask) {
+    *hash = SHARC_HASH_OFFSET_BASIS;
+    *hash ^= (value ^ xorMask);
+    *hash *= SHARC_HASH_PRIME;
+    *hash = (*hash >> (32 - SHARC_HASH_BITS)) ^ (*hash & ((1 << SHARC_HASH_BITS) - 1));
 }

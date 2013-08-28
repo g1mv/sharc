@@ -27,18 +27,21 @@
 
 #include "globals.h"
 
-#define SHARC_MAX_BUFFER_SIZE_SHIFT             30
+#define SHARC_MAX_BLOCK_SIZE_SHIFT             30
 
-#define SHARC_PREFERRED_BUFFER_SIZE_SHIFT       19
-#define SHARC_PREFERRED_BUFFER_SIZE             (1 << SHARC_PREFERRED_BUFFER_SIZE_SHIFT)
+#define SHARC_PREFERRED_BLOCK_SIZE_SHIFT       19
+#define SHARC_PREFERRED_BLOCK_SIZE             (1 << SHARC_PREFERRED_BLOCK_SIZE_SHIFT)
 
 typedef struct {
     sharc_byte* pointer;
     uint32_t position;
     uint32_t size;
-} SHARC_BYTE_BUFFER;
+} sharc_byte_buffer;
 
-SHARC_BYTE_BUFFER sharc_createByteBuffer(sharc_byte*, uint32_t, uint32_t);
-void sharc_rewindByteBuffer(SHARC_BYTE_BUFFER*);
+
+sharc_byte_buffer* sharc_byte_buffer_allocate();
+void sharc_byte_buffer_deallocate(sharc_byte_buffer*);
+void sharc_byte_buffer_rewind(sharc_byte_buffer *);
+void sharc_byte_buffer_encapsulate(sharc_byte_buffer *, sharc_byte*, uint32_t, uint32_t);
 
 #endif

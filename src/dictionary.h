@@ -33,7 +33,7 @@
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #include "dictionary_be.data"
 #else
-#error
+#error Unable to load dictionary due to unsupported endian
 #endif
 
 #include <string.h>
@@ -49,10 +49,17 @@
 #pragma pack(4)
 typedef struct {
     uint32_t as_uint32_t;
-} SHARC_ENTRY;
+} sharc_dictionary_entry;
+
+typedef struct {
+    sharc_dictionary_entry * entries;
+} sharc_dictionary;
 #pragma pack(pop)
 
-void sharc_resetDirectDictionary(SHARC_ENTRY*);
-void sharc_resetCompressedDictionary(SHARC_ENTRY*);
+sharc_dictionary* sharc_dictionary_allocate();
+void sharc_dictionary_deallocate(sharc_dictionary*);
+
+void sharc_dictionary_resetDirect(sharc_dictionary *);
+void sharc_dictionary_resetCompressed(sharc_dictionary *);
 
 #endif

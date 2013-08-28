@@ -19,15 +19,15 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 20:03
+ * 27/08/13 15:02
  */
 
-#include "xor_hash_transform.h"
+#include "api_buffers.h"
 
-SHARC_FORCE_INLINE sharc_bool sharc_xorHashEncode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary) {
-    return sharc_hashEncode(in, out, SHARC_XOR_MASK, dictionary);
+uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t uncompressedLength) {
+    return sizeof(SHARC_BLOCK_HEADER) * (1 + uncompressedLength / SHARC_PREFERRED_BLOCK_SIZE) /*+ sizeof(sharc_signature) * (1 + uncompressedLength / 32)*/ + uncompressedLength;
 }
 
-SHARC_FORCE_INLINE sharc_bool sharc_xorHashDecode(SHARC_BYTE_BUFFER* in, SHARC_BYTE_BUFFER* out, SHARC_ENTRY* dictionary) {
-    return sharc_hashDecode(in, out, SHARC_XOR_MASK, dictionary);
+uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t uncompressedLength) {
+    return sizeof(SHARC_HEADER) + sharc_api_buffers_max_compressed_length_without_header(uncompressedLength);
 }
