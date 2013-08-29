@@ -37,7 +37,7 @@
 #include <string.h>
 
 #include "chrono.h"
-#include "api_stream.h"
+#include "stream.h"
 
 #define SHARC_ACTION_COMPRESS         0
 #define SHARC_ACTION_DECOMPRESS       1

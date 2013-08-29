@@ -52,12 +52,9 @@ typedef struct {
 } sharc_dictionary_entry;
 
 typedef struct {
-    sharc_dictionary_entry * entries;
+    sharc_dictionary_entry entries[1 << SHARC_HASH_BITS];
 } sharc_dictionary;
 #pragma pack(pop)
-
-sharc_dictionary* sharc_dictionary_allocate();
-void sharc_dictionary_deallocate(sharc_dictionary*);
 
 void sharc_dictionary_resetDirect(sharc_dictionary *);
 void sharc_dictionary_resetCompressed(sharc_dictionary *);

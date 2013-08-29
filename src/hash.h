@@ -34,6 +34,9 @@
 #define SHARC_HASH_XOR_MASK_DIRECT                  0x00000000
 #define SHARC_HASH_XOR_MASK_DISPERSION              0x2AE2752F
 
-void sharc_hash_compute(uint32_t*, const uint32_t, const uint32_t);
+#define SHARC_HASH_ALGORITHM(hash, value, xorMask)  hash = SHARC_HASH_OFFSET_BASIS;\
+                                                    hash ^= (value ^ xorMask);\
+                                                    hash *= SHARC_HASH_PRIME;\
+                                                    hash = (hash >> (32 - SHARC_HASH_BITS)) ^ (hash & ((1 << SHARC_HASH_BITS) - 1));
 
 #endif

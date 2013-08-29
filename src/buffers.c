@@ -22,12 +22,12 @@
  * 27/08/13 15:02
  */
 
-#include "api_buffers.h"
+#include "buffers.h"
 
 uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t uncompressedLength) {
-    return sizeof(SHARC_BLOCK_HEADER) * (1 + uncompressedLength / SHARC_PREFERRED_BLOCK_SIZE) /*+ sizeof(sharc_signature) * (1 + uncompressedLength / 32)*/ + uncompressedLength;
+    return sizeof(sharc_block_header) * (1 + uncompressedLength / SHARC_PREFERRED_BLOCK_SIZE) /*+ sizeof(sharc_hash_encode_signature) * (1 + uncompressedLength / 32)*/ + uncompressedLength;
 }
 
 uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t uncompressedLength) {
-    return sizeof(SHARC_HEADER) + sharc_api_buffers_max_compressed_length_without_header(uncompressedLength);
+    return sizeof(sharc_header) + sharc_api_buffers_max_compressed_length_without_header(uncompressedLength);
 }

@@ -78,15 +78,15 @@ typedef struct {
 typedef struct {
     SHARC_HEADER_GENERIC genericHeader;
     SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
-} SHARC_HEADER;
+} sharc_header;
 #pragma pack(pop)
 
-void sharc_header_populate(SHARC_HEADER*, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
-SHARC_HEADER sharc_createHeader(const uint32_t, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
+void sharc_header_populate(sharc_header *, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
+sharc_header sharc_createHeader(const uint32_t, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
 sharc_bool sharc_checkSource(const uint32_t);
-SHARC_HEADER sharc_readHeaderFromStream(FILE*);
+sharc_header sharc_readHeaderFromStream(FILE*);
 uint32_t sharc_writeHeader(sharc_byte*, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
-void sharc_writeHeaderToStream(SHARC_HEADER *, FILE*);
+void sharc_writeHeaderToStream(sharc_header *, FILE*);
 void sharc_restoreFileAttributes(SHARC_HEADER_FILE_INFORMATION*, const char*);
 
 #endif

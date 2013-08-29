@@ -19,17 +19,15 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 01/06/13 18:46
+ * 26/08/13 23:19
  */
 
+#ifndef SHARC_INTERNAL_STATE_H
+#define SHARC_INTERNAL_STATE_H
+
+#include "globals.h"
+#include "dictionary.h"
 #include "byte_buffer.h"
+#include "hash_encode.h"
 
-SHARC_FORCE_INLINE void sharc_byte_buffer_encapsulate(sharc_byte_buffer * restrict buffer, sharc_byte* restrict pointer, uint32_t position, uint32_t size) {
-    buffer->pointer = pointer;
-    buffer->position = position;
-    buffer->size = size;
-}
-
-SHARC_FORCE_INLINE void sharc_byte_buffer_rewind(sharc_byte_buffer * buffer) {
-    buffer->position = 0;
-}
+#endif

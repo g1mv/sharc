@@ -42,7 +42,7 @@ ifndef WARNINGS
     CFLAGS += -w
 endif
 
-CC = @$(CROSS-PREFIX)gcc
+CC = @$(CROSS-PREFIX)cc
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)

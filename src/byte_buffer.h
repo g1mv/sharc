@@ -38,10 +38,7 @@ typedef struct {
     uint32_t size;
 } sharc_byte_buffer;
 
-
-sharc_byte_buffer* sharc_byte_buffer_allocate();
-void sharc_byte_buffer_deallocate(sharc_byte_buffer*);
-void sharc_byte_buffer_rewind(sharc_byte_buffer *);
 void sharc_byte_buffer_encapsulate(sharc_byte_buffer *, sharc_byte*, uint32_t, uint32_t);
+void sharc_byte_buffer_rewind(sharc_byte_buffer *);
 
 #endif

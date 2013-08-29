@@ -105,38 +105,70 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io * in, sharc_client
     sharc_chrono chrono;
     sharc_chrono_start(&chrono);
 
-    sharc_stream* stream = sharc_api_stream_allocate();
-    sharc_byte_buffer_encapsulate(stream->in, (sharc_byte*)malloc(blockSize * sizeof(sharc_byte)), 0, blockSize);
-    sharc_byte_buffer_encapsulate(stream->out, (sharc_byte*)malloc(blockSize * sizeof(sharc_byte)), 0, blockSize);
+    sharc_stream stream;
+    sharc_byte inBuffer[SHARC_PREFERRED_BLOCK_SIZE];
+    sharc_byte outBuffer[SHARC_PREFERRED_BLOCK_SIZE];
 
-    SHARC_API_STREAM_STATE returnState;
-    returnState = sharc_api_stream_pushHeaderWithFileInformation(stream, &attributes);
-    returnState = sharc_api_stream_compressInit(stream, SHARC_STATE_COMPRESSION_MODE_FASTEST_NO_REVERSION);
-    while((stream->in->size = (uint32_t)fread(stream->in->pointer, sizeof(sharc_byte), blockSize, in->stream)) > 0) {
-        while ((returnState = sharc_api_stream_compress(stream)) != SHARC_API_STREAM_STATE_STALL_ON_INPUT_BUFFER) {
-            switch(returnState) {
-                case SHARC_API_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
-                    fwrite(stream->out->pointer, sizeof(sharc_byte), stream->out->position, out->stream);
-                    sharc_byte_buffer_rewind(stream->out);
+    sharc_byte_buffer_encapsulate(&stream.in, inBuffer, 0, SHARC_PREFERRED_BLOCK_SIZE);
+    sharc_byte_buffer_encapsulate(&stream.out, outBuffer, 0, SHARC_PREFERRED_BLOCK_SIZE);
+
+    if(sharc_stream_compressInit(&stream, SHARC_API_COMPRESSION_MODE_FASTEST, SHARC_API_OUTPUT_TYPE_WITH_HEADER))
+        sharc_error("Unable to initialize compression");
+
+    stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), blockSize, in->stream);
+
+    sharc_bool proceed = SHARC_TRUE;
+    while (proceed) {
+        switch (sharc_stream_compress(&stream)) {
+            case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
+                fwrite(stream.out.pointer, sizeof(sharc_byte), stream.out.position, out->stream);
+                sharc_byte_buffer_rewind(&stream.out);
+                break;
+
+            case SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER:
+                stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), blockSize, in->stream);
+                if (stream.in.size <= 0 || stream.in.size < SHARC_PREFERRED_BLOCK_SIZE)
+                    proceed = SHARC_FALSE;
+                else
+                    sharc_byte_buffer_rewind(&stream.in);
+                break;
+
+            default:
+                sharc_error("A problem happened during compression");
+                break;
+        }
+    }
+
+    sharc_byte_buffer_rewind(&stream.in);
+    proceed = SHARC_TRUE;
+    if(stream.in.size > 0)
+        while (proceed) {
+            switch (sharc_stream_compressEnd(&stream)) {
+                case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
+                    fwrite(stream.out.pointer, sizeof(sharc_byte), stream.out.position, out->stream);
+                    sharc_byte_buffer_rewind(&stream.out);
                     break;
+
+                case SHARC_STREAM_STATE_OK:
+                    proceed = SHARC_FALSE;
+                    break;
+
                 default:
+                    sharc_error("A problem happened while finishing compression");
                     break;
             }
         }
-        sharc_byte_buffer_rewind(stream->in);
-    }
-    sharc_api_stream_deallocate(stream);
 
     sharc_chrono_stop(&chrono);
     
     if(out->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
         const double elapsed = sharc_chrono_elapsed(&chrono);
         
-        uint64_t totalWritten = ftello(out->stream);
+        uint64_t totalWritten = (uint64_t)ftello(out->stream);
         fclose(out->stream);
         
         if(in->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            uint64_t totalRead = ftello(in->stream);
+            uint64_t totalRead = (uint64_t)ftello(in->stream);
             fclose(in->stream);
         
             double ratio = (100.0 * totalWritten) / totalRead;
@@ -181,7 +213,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io * in, sharc_clie
     
     sharc_chrono chrono;
     sharc_chrono_start(&chrono);
-    SHARC_HEADER header = sharc_decompress(in->stream, out->stream);
+    sharc_header header = sharc_decompress(in->stream, out->stream);
     sharc_chrono_stop(&chrono);
     
     if(out->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
@@ -221,7 +253,7 @@ int main(int argc, char *argv[]) {
         sharc_client_usage();
     
     sharc_byte action = SHARC_ACTION_COMPRESS;
-	SHARC_STATE_COMPRESSION_MODE mode = SHARC_STATE_COMPRESSION_MODE_FASTEST_NO_REVERSION;
+	SHARC_API_COMPRESSION_MODE mode = SHARC_API_COMPRESSION_MODE_FASTEST;
     sharc_byte prompting = SHARC_PROMPTING;
     sharc_client_io in;
     in.type = SHARC_HEADER_ORIGIN_TYPE_FILE;
@@ -243,13 +275,13 @@ int main(int argc, char *argv[]) {
                 switch(argv[i][1]) {
                     case 'c':
                         if(argLength == 2) {
-                            mode = SHARC_STATE_COMPRESSION_MODE_FASTEST_NO_REVERSION;
+                            mode = SHARC_API_COMPRESSION_MODE_FASTEST;
                             break;
                         }
                         if(argLength != 3)
                             sharc_client_usage();
                         if(argv[i][2] - '0')
-                            mode = SHARC_STATE_COMPRESSION_MODE_DUAL_PASS_NO_REVERSION;
+                            mode = SHARC_API_COMPRESSION_MODE_DUAL_PASS;
                         break;
                     case 'd':
                         action = SHARC_ACTION_DECOMPRESS;
@@ -293,7 +325,7 @@ int main(int argc, char *argv[]) {
 								if(argLength != 12)
 									sharc_client_usage();
 								if(argv[i][11] - '0')
-                                    mode = SHARC_STATE_COMPRESSION_MODE_DUAL_PASS_NO_REVERSION;
+                                    mode = SHARC_API_COMPRESSION_MODE_DUAL_PASS;
 								break;
 							case 'd':
                                 if(argLength != 12)

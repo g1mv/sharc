@@ -24,24 +24,13 @@
 
 #include "dictionary.h"
 
-const sharc_dictionary_entry sharc_dictionary_chameleon[(1 << SHARC_HASH_BITS) * sizeof(sharc_dictionary_entry)] = SHARC_DICTIONARY_CHAMELEON;
-const sharc_dictionary_entry sharc_dictionary_compressed[(1 << SHARC_HASH_BITS) * sizeof(sharc_dictionary_entry)] = SHARC_DICTIONARY_COMPRESSED;
-
-SHARC_FORCE_INLINE sharc_dictionary* sharc_dictionary_allocate() {
-    sharc_dictionary* created = (sharc_dictionary*)malloc(sizeof(sharc_dictionary));
-    created->entries = (sharc_dictionary_entry*)malloc((1 << SHARC_HASH_BITS) * sizeof(sharc_dictionary_entry));
-    return created;
-}
-
-SHARC_FORCE_INLINE void sharc_dictionary_deallocate(sharc_dictionary* dictionary) {
-    free(dictionary->entries);
-    free(dictionary);
-}
+const sharc_dictionary sharc_dictionary_chameleon = {.entries = SHARC_DICTIONARY_CHAMELEON};
+const sharc_dictionary sharc_dictionary_compressed = {.entries = SHARC_DICTIONARY_COMPRESSED};
 
 SHARC_FORCE_INLINE void sharc_dictionary_resetDirect(sharc_dictionary * dictionary) {
-    memcpy(dictionary, sharc_dictionary_chameleon, (1 << SHARC_HASH_BITS) * sizeof(sharc_dictionary_entry));
+    memcpy(dictionary, &sharc_dictionary_chameleon, sizeof(sharc_dictionary));
 }
 
 SHARC_FORCE_INLINE void sharc_dictionary_resetCompressed(sharc_dictionary * dictionary) {
-    memcpy(dictionary, sharc_dictionary_compressed, (1 << SHARC_HASH_BITS) * sizeof(sharc_dictionary_entry));
+    memcpy(dictionary, &sharc_dictionary_compressed, sizeof(sharc_dictionary));
 }

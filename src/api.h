@@ -26,9 +26,6 @@
 #define SHARC_API_H
 
 #include "globals.h"
-#include "header.h"
-#include "block_header.h"
-#include "footer.h"
 
 #define SHARC_YES    1
 #define SHARC_NO     0
@@ -38,5 +35,42 @@
  * client.c and client.h content will be masked : there will not be any main() function compiled.
  */
 #define SHARC_USE_AS_LIBRARY    SHARC_NO
+
+typedef enum {
+    SHARC_API_COMPRESSION_MODE_FASTEST,
+    SHARC_API_COMPRESSION_MODE_DUAL_PASS
+} SHARC_API_COMPRESSION_MODE;
+
+typedef enum {
+    SHARC_API_OUTPUT_TYPE_WITH_HEADER,
+    SHARC_API_OUTPUT_TYPE_WITHOUT_HEADER
+} SHARC_API_OUTPUT_TYPE;
+
+/*
+    SHARC byte buffer utilities
+
+    void sharc_byte_buffer_encapsulate(sharc_byte_buffer *, sharc_byte*, uint32_t, uint32_t);
+    void sharc_byte_buffer_rewind(sharc_byte_buffer *);
+*/
+
+/*
+    SHARC stream API functions :
+
+    SHARC_STREAM_STATE sharc_stream_compressInit(sharc_stream *, SHARC_API_COMPRESSION_MODE, SHARC_API_OUTPUT_TYPE);
+    SHARC_STREAM_STATE sharc_stream_decompressInit(sharc_stream *);
+    SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *);
+    SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *);
+    SHARC_STREAM_STATE sharc_stream_compressEnd(sharc_stream *);
+    SHARC_STREAM_STATE sharc_stream_decompressEnd(sharc_stream *);
+*/
+
+/*
+    SHARC buffers API functions :
+
+    uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t);
+    uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t);
+    uint32_t sharc_api_buffers_compress(uint8_t*, uint64_t, uint8_t*, uint64_t*, uint32_t);
+    uint32_t sharc_api_buffers_decompress(uint8_t*, uint64_t, uint8_t*, uint64_t*);
+*/
 
 #endif

@@ -25,7 +25,7 @@
 
 #include "header.h"
 
-SHARC_FORCE_INLINE void sharc_header_populate(SHARC_HEADER* header, const SHARC_HEADER_ORIGIN_TYPE type, const struct stat64* fileAttributes) {
+SHARC_FORCE_INLINE void sharc_header_populate(sharc_header * header, const SHARC_HEADER_ORIGIN_TYPE type, const struct stat64* fileAttributes) {
     SHARC_HEADER_GENERIC genericHeader;
     SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
 
@@ -53,8 +53,8 @@ SHARC_FORCE_INLINE void sharc_header_populate(SHARC_HEADER* header, const SHARC_
     header->genericHeader = genericHeader;
 }
 
-SHARC_FORCE_INLINE SHARC_HEADER sharc_createHeader(const uint32_t bufferSize, const SHARC_HEADER_ORIGIN_TYPE type, const struct stat64* fileAttributes) {
-    SHARC_HEADER header;
+SHARC_FORCE_INLINE sharc_header sharc_createHeader(const uint32_t bufferSize, const SHARC_HEADER_ORIGIN_TYPE type, const struct stat64* fileAttributes) {
+    sharc_header header;
     SHARC_HEADER_GENERIC genericHeader;
     SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
 
@@ -90,8 +90,8 @@ SHARC_FORCE_INLINE sharc_bool sharc_checkSource(const uint32_t magic) {
         return SHARC_FALSE;
 }
 
-SHARC_FORCE_INLINE SHARC_HEADER sharc_readHeaderFromStream(FILE* inStream) {
-    SHARC_HEADER header;
+SHARC_FORCE_INLINE sharc_header sharc_readHeaderFromStream(FILE* inStream) {
+    sharc_header header;
     SHARC_HEADER_GENERIC genericHeader;
     SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
 
@@ -137,7 +137,7 @@ SHARC_FORCE_INLINE uint32_t sharc_writeHeader(sharc_byte* out, const SHARC_HEADE
     }
 }
 
-SHARC_FORCE_INLINE void sharc_writeHeaderToStream(SHARC_HEADER * header, FILE* outStream) {
+SHARC_FORCE_INLINE void sharc_writeHeaderToStream(sharc_header * header, FILE* outStream) {
     fwrite(&header->genericHeader, sizeof(SHARC_HEADER_GENERIC), 1, outStream);
     switch(header->genericHeader.type) {
         case SHARC_HEADER_ORIGIN_TYPE_FILE:

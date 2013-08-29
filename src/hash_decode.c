@@ -31,7 +31,7 @@ SHARC_FORCE_INLINE void sharc_kernelDecode(sharc_byte_buffer *in, sharc_byte_buf
     switch (mode) {
         case SHARC_FALSE:
             chunk = *(uint32_t *) (in->pointer + in->position);
-            sharc_hash_compute(&hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
+            SHARC_HASH_ALGORITHM(hash, SHARC_LITTLE_ENDIAN_32(chunk), xorMask);
             (&dictionary[hash])->as_uint32_t = chunk;
             *(uint32_t *) (out->pointer + out->position) = chunk;
             in->position += 4;
@@ -46,8 +46,7 @@ SHARC_FORCE_INLINE void sharc_kernelDecode(sharc_byte_buffer *in, sharc_byte_buf
 }
 
 SHARC_FORCE_INLINE void sharc_byteCopy(sharc_byte_buffer *in, sharc_byte_buffer *out, const uint32_t number) {
-    for (sharc_byte r = 0; r < number; r++)
-        out->pointer[out->position++] = in->pointer[in->position++];
+    memcpy(out->pointer + out->position, in->pointer + in->position, number);
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_hashDecode(sharc_byte_buffer *in, sharc_byte_buffer *out, const uint32_t xorMask, sharc_dictionary_entry *dictionary) {

@@ -22,11 +22,3 @@
  * 28/08/13 19:02
  */
 
-#include "hash.h"
-
-SHARC_FORCE_INLINE void sharc_hash_compute(uint32_t* hash, const uint32_t value, const uint32_t xorMask) {
-    *hash = SHARC_HASH_OFFSET_BASIS;
-    *hash ^= (value ^ xorMask);
-    *hash *= SHARC_HASH_PRIME;
-    *hash = (*hash >> (32 - SHARC_HASH_BITS)) ^ (*hash & ((1 << SHARC_HASH_BITS) - 1));
-}
