@@ -30,10 +30,10 @@
 #include "hash.h"
 #include "block_header.h"
 
-#define SHARC_HASH_ENCODE_MINIMUM_LOOKAHEAD             (sizeof(uint64_t) + 32 * sizeof(uint64_t))
+#define SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD             (sizeof(uint64_t) + 32 * sizeof(uint64_t))
 
 typedef enum {
-    SHARC_HASH_ENCODE_STATE_OK = 0,
+    SHARC_HASH_ENCODE_STATE_READY = 0,
     SHARC_HASH_ENCODE_STATE_INFO_NEW_BLOCK,
     SHARC_HASH_ENCODE_STATE_FINISHED,
     SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER,
@@ -44,7 +44,7 @@ typedef enum {
 typedef enum {
     SHARC_HASH_ENCODE_PROCESS_CHECK_STATE,
     SHARC_HASH_ENCODE_PROCESS_PREPARE_NEW_BLOCK,
-    SHARC_HASH_ENCODE_PROCESS_WRITE_DATA,
+    SHARC_HASH_ENCODE_PROCESS_DATA,
     SHARC_HASH_ENCODE_PROCESS_FINISH
 } SHARC_HASH_ENCODE_PROCESS;
 
@@ -52,13 +52,13 @@ typedef uint64_t sharc_hash_encode_signature;
 
 typedef struct {
     SHARC_HASH_ENCODE_PROCESS process;
-    uint32_t shift;
+    uint_fast32_t shift;
     sharc_hash_encode_signature * signature;
-    uint32_t signaturesCount;
+    uint_fast32_t signaturesCount;
 } sharc_hash_encode_state;
 
 SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_encode_state*);
-SHARC_HASH_ENCODE_STATE sharc_hash_encode_continue(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, const uint32_t, sharc_dictionary *, sharc_hash_encode_state *);
-SHARC_HASH_ENCODE_STATE sharc_hash_encode_finish(sharc_byte_buffer*, sharc_byte_buffer*, const uint32_t, sharc_dictionary*, sharc_hash_encode_state*);
+SHARC_HASH_ENCODE_STATE sharc_hash_encode_continue(sharc_byte_buffer *, sharc_byte_buffer *, const uint_fast32_t, sharc_dictionary *, sharc_hash_encode_state *);
+SHARC_HASH_ENCODE_STATE sharc_hash_encode_finish(sharc_byte_buffer*, sharc_byte_buffer*, const uint_fast32_t, sharc_dictionary*, sharc_hash_encode_state*);
 
 #endif

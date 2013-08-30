@@ -108,7 +108,6 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     /*
      * The following code is an example of how to use the stream API to compress a file
      */
-
     sharc_stream stream;
     char inBuffer[bufferSize];
     char outBuffer[bufferSize];
@@ -116,10 +115,16 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (sharc_stream_prepare(&stream, inBuffer, bufferSize, outBuffer, bufferSize))
         sharc_error("Unable to prepare compression");
 
-    if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST))
+    if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, &attributes))
         sharc_error("Unable to initialize compression");
 
     stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), bufferSize, io_in->stream);
+    if (stream.in.size < bufferSize) {
+        if (ferror(io_in->stream))
+            sharc_error("Error reading file");
+        else
+            goto finish;
+    }
 
     loop_continue:
     switch (sharc_stream_compress_continue(&stream)) {
@@ -164,12 +169,11 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
         }
         goto loop_finish;
     }
-
+    exit:
     /*
      * That's it !
      */
 
-    exit:
     sharc_chrono_stop(&chrono);
 
     if (io_out->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {

@@ -26,7 +26,7 @@
 
 SHARC_FORCE_INLINE uint32_t sharc_block_header_write(sharc_byte_buffer* out, sharc_byte dictionaryFlags) {
     *(out->pointer + out->position) = dictionaryFlags;
-    out->position ++;
 
-    return 1;
+    out->position += sizeof(sharc_block_header);
+    return sizeof(sharc_block_header);
 }

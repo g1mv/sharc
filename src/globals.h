@@ -64,8 +64,10 @@
 #define SHARC_MINOR_VERSION               9
 #define SHARC_REVISION                    10
 
-#define SHARC_FALSE                       0
-#define SHARC_TRUE                        1
+typedef enum {
+    SHARC_FALSE = 0,
+    SHARC_TRUE = 1
+} SHARC_BOOL;
 
 typedef uint8_t sharc_byte;
 typedef uint8_t sharc_bool;

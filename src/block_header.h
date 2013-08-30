@@ -41,7 +41,7 @@
 #define SHARC_BLOCK_HEADER_COMPRESSED_DICTIONARY_RESET_MASK     0x2
 
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(4)
 typedef struct {
     sharc_byte dictionaryFlags;
 } sharc_block_header;

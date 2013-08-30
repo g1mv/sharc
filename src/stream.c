@@ -28,27 +28,27 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream * restri
     sharc_byte_buffer_encapsulate(&stream->in, (sharc_byte*)in, availableIn);
     sharc_byte_buffer_encapsulate(&stream->out, (sharc_byte*)out, availableOut);
 
-    return SHARC_STREAM_STATE_OK;
+    return SHARC_STREAM_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream * stream, SHARC_COMPRESSION_MODE compressionMode) {
-    if (sharc_encode_init(&stream->out, &stream->internal_state.internal_state, compressionMode, SHARC_ENCODE_TYPE_WITH_HEADER))
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream * stream, SHARC_COMPRESSION_MODE compressionMode, struct stat64* fileAttributes) {
+    if (sharc_encode_init_with_file(&stream->out, &stream->internal_state.internal_state, compressionMode, SHARC_ENCODE_TYPE_WITH_HEADER, fileAttributes))
         return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
 
-    return SHARC_STREAM_STATE_OK;
+    return SHARC_STREAM_STATE_READY;
 }
 
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_check_conformity(sharc_stream *stream) {
-    if ((uint32_t) &stream->in.pointer & 0x3)
+    if ((uint32_t) &stream->in.pointer & 0x7)
         return SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_NOT_PROPERLY_ALIGNED;
 
-    if ((uint32_t) &stream->out.pointer & 0x1)
-        return SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_NOT_PROPERLY_ALIGNED;
+    //if ((uint32_t) &stream->out.pointer & 0x1)
+    //    return SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_NOT_PROPERLY_ALIGNED;
 
     if(stream->out.size < SHARC_STREAM_MINIMUM_OUT_BUFFER_SIZE)
         return SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_TOO_SMALL;
 
-    return SHARC_STREAM_STATE_OK;
+    return SHARC_STREAM_STATE_READY;
 }
 
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_continue(sharc_stream *stream) {
@@ -56,8 +56,8 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_continue(sharc_strea
     if(streamState)
         return streamState;
 
-    if (stream->out.size & 0x3)
-        return SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_SIZE_NOT_MULTIPLE_OF_4;
+    if (stream->out.size & 31)
+        return SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_SIZE_NOT_MULTIPLE_OF_32;
 
     SHARC_ENCODE_STATE returnState = sharc_encode_continue(&stream->in, &stream->out, &stream->internal_state.internal_state);
     stream->in_total_read = stream->internal_state.internal_state.totalRead;

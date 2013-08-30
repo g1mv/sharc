@@ -25,14 +25,14 @@
 #ifndef SHARC_ENCODE_H
 #define SHARC_ENCODE_H
 
+#include "block_header.h"
 #include "byte_buffer.h"
 #include "dictionary.h"
 #include "hash_encode.h"
 #include "header.h"
-#include "block_header.h"
 
 typedef enum {
-    SHARC_ENCODE_STATE_OK = 0,
+    SHARC_ENCODE_STATE_READY = 0,
     SHARC_ENCODE_STATE_FINISHED,
     SHARC_ENCODE_STATE_STALL_OUTPUT_BUFFER,
     SHARC_ENCODE_STATE_STALL_INPUT_BUFFER,
@@ -64,6 +64,7 @@ typedef struct {
 typedef struct {
     SHARC_ENCODE_PROCESS process;
     SHARC_COMPRESSION_MODE mode;
+    struct stat64* fileAttributes;
 
     uint64_t totalRead;
     uint64_t totalWritten;
@@ -76,6 +77,7 @@ typedef struct {
 } sharc_encode_state;
 
 SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *, sharc_encode_state *, SHARC_COMPRESSION_MODE, SHARC_ENCODE_TYPE);
+SHARC_ENCODE_STATE sharc_encode_init_with_file(sharc_byte_buffer *, sharc_encode_state *, SHARC_COMPRESSION_MODE, SHARC_ENCODE_TYPE, struct stat64*);
 SHARC_ENCODE_STATE sharc_encode_continue(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *);
 SHARC_ENCODE_STATE sharc_encode_finish(sharc_byte_buffer*, sharc_byte_buffer*, sharc_encode_state*);
 

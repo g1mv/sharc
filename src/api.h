@@ -47,8 +47,8 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer *);
 /*
  * SHARC stream API functions
  */
-SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream * stream, char*, const uint32_t, char*, const uint32_t);
-SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, SHARC_COMPRESSION_MODE);
+SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint32_t, char*, const uint32_t);
+SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, SHARC_COMPRESSION_MODE, struct stat64*);
 SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_compress_continue(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress_continue(sharc_stream *);
@@ -60,7 +60,5 @@ SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
  */
 uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t);
 uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t);
-uint32_t sharc_api_buffers_compress(uint8_t*, uint64_t, uint8_t*, uint64_t*, uint32_t);
-uint32_t sharc_api_buffers_decompress(uint8_t*, uint64_t, uint8_t*, uint64_t*);
 
 #endif
