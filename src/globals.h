@@ -70,6 +70,12 @@
 typedef uint8_t sharc_byte;
 typedef uint8_t sharc_bool;
 
+typedef enum {
+    SHARC_COMPRESSION_MODE_COPY,
+    SHARC_COMPRESSION_MODE_FASTEST,
+    SHARC_COMPRESSION_MODE_DUAL_PASS
+} SHARC_COMPRESSION_MODE;
+
 void sharc_error(const char*);
 
 #endif

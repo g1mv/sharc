@@ -47,6 +47,9 @@ SHARC_FORCE_INLINE void sharc_kernelDecode(sharc_byte_buffer *in, sharc_byte_buf
 
 SHARC_FORCE_INLINE void sharc_byteCopy(sharc_byte_buffer *in, sharc_byte_buffer *out, const uint32_t number) {
     memcpy(out->pointer + out->position, in->pointer + in->position, number);
+
+    in->position += number;
+    out->position += number;
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_hashDecode(sharc_byte_buffer *in, sharc_byte_buffer *out, const uint32_t xorMask, sharc_dictionary_entry *dictionary) {

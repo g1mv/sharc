@@ -33,29 +33,22 @@
 
 typedef enum {
     SHARC_ENCODE_STATE_OK = 0,
+    SHARC_ENCODE_STATE_FINISHED,
     SHARC_ENCODE_STATE_STALL_OUTPUT_BUFFER,
     SHARC_ENCODE_STATE_STALL_INPUT_BUFFER,
     SHARC_ENCODE_STATE_ERROR
 } SHARC_ENCODE_STATE;
 
 typedef enum {
-    SHARC_ENCODE_PROCESS_HEADER,
-    SHARC_ENCODE_PROCESS_BLOCK_HEADER,
-    SHARC_ENCODE_PROCESS_INPUT_DATA
+    SHARC_ENCODE_PROCESS_WRITE_HEADER,
+    SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER,
+    SHARC_ENCODE_PROCESS_WRITE_DATA
 } SHARC_ENCODE_PROCESS;
 
 typedef enum {
     SHARC_ENCODE_TYPE_WITH_HEADER,
     SHARC_ENCODE_TYPE_WITHOUT_HEADER
 } SHARC_ENCODE_TYPE;
-
-typedef enum {
-    SHARC_COMPRESSION_MODE_NO_COMPRESSION,
-    SHARC_COMPRESSION_MODE_FASTEST_NO_REVERSION,
-    SHARC_COMPRESSION_MODE_FASTEST_WITH_REVERSION,
-    SHARC_COMPRESSION_MODE_DUAL_PASS_NO_REVERSION,
-    SHARC_COMPRESSION_MODE_DUAL_PASS_WITH_REVERSION,
-} SHARC_COMPRESSION_MODE;
 
 typedef struct {
     uint64_t inStart;
@@ -82,8 +75,8 @@ typedef struct {
     sharc_byte_buffer workBuffer;
 } sharc_encode_state;
 
-SHARC_ENCODE_STATE sharc_encode_initialize(sharc_byte_buffer *, sharc_encode_state *, SHARC_COMPRESSION_MODE, SHARC_ENCODE_TYPE);
-SHARC_ENCODE_STATE sharc_encode_kernel(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *);
+SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *, sharc_encode_state *, SHARC_COMPRESSION_MODE, SHARC_ENCODE_TYPE);
+SHARC_ENCODE_STATE sharc_encode_continue(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *);
 SHARC_ENCODE_STATE sharc_encode_finish(sharc_byte_buffer*, sharc_byte_buffer*, sharc_encode_state*);
 
 #endif

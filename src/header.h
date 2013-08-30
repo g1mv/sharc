@@ -44,6 +44,7 @@
 
 #include "globals.h"
 #include "dictionary.h"
+#include "block_header.h"
 #include "byte_buffer.h"
 
 #if defined(__FreeBSD__) || defined(__APPLE__)
@@ -62,31 +63,26 @@ typedef enum {
 typedef struct {
     uint32_t magicNumber;
     sharc_byte version[3];
-    sharc_byte bufferSizeShift;
+    sharc_byte blockSignaturesShift;
     sharc_byte resetCycleSizeShift;
-    SHARC_HEADER_ORIGIN_TYPE type;
-    sharc_byte reserved[2];
-} SHARC_HEADER_GENERIC;
+    sharc_byte type;
+    sharc_byte compressionMode;
+    sharc_byte reserved;
+} sharc_header_generic;
 
 typedef struct {
     uint64_t originalFileSize;
     uint32_t fileMode;
     uint64_t fileAccessed;
     uint64_t fileModified;
-} SHARC_HEADER_FILE_INFORMATION;
+} sharc_header_file_information;
 
 typedef struct {
-    SHARC_HEADER_GENERIC genericHeader;
-    SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
+    sharc_header_generic genericHeader;
+    sharc_header_file_information fileInformationHeader;
 } sharc_header;
 #pragma pack(pop)
 
-void sharc_header_populate(sharc_header *, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
-sharc_header sharc_createHeader(const uint32_t, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
-sharc_bool sharc_checkSource(const uint32_t);
-sharc_header sharc_readHeaderFromStream(FILE*);
-uint32_t sharc_writeHeader(sharc_byte*, const SHARC_HEADER_ORIGIN_TYPE, const struct stat64*);
-void sharc_writeHeaderToStream(sharc_header *, FILE*);
-void sharc_restoreFileAttributes(SHARC_HEADER_FILE_INFORMATION*, const char*);
+uint32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const struct stat64*);
 
 #endif

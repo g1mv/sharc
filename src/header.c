@@ -25,62 +25,33 @@
 
 #include "header.h"
 
-SHARC_FORCE_INLINE void sharc_header_populate(sharc_header * header, const SHARC_HEADER_ORIGIN_TYPE type, const struct stat64* fileAttributes) {
-    SHARC_HEADER_GENERIC genericHeader;
-    SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
-
-    genericHeader.magicNumber = SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER);
-    genericHeader.version[0] = SHARC_MAJOR_VERSION;
-    genericHeader.version[1] = SHARC_MINOR_VERSION;
-    genericHeader.version[2] = SHARC_REVISION;
-    genericHeader.bufferSizeShift = SHARC_PREFERRED_BLOCK_SIZE_SHIFT;
-    genericHeader.resetCycleSizeShift = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT;
-    genericHeader.type = type;
-    genericHeader.reserved[0] = 0;
-    genericHeader.reserved[1] = 0;
-    switch(type) {
+SHARC_FORCE_INLINE uint32_t sharc_header_write(sharc_byte_buffer* restrict out, const SHARC_HEADER_ORIGIN_TYPE originType, const SHARC_COMPRESSION_MODE compressionMode, const struct stat64* restrict fileAttributes) {
+    uint32_t written;
+    sharc_byte* pointer = out->pointer + out->position;
+    *(uint32_t*) pointer = SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER);
+    *(pointer + 4) = SHARC_MAJOR_VERSION;
+    *(pointer + 5) = SHARC_MINOR_VERSION;
+    *(pointer + 6) = SHARC_REVISION;
+    *(pointer + 7) = SHARC_PREFERRED_BLOCK_SIGNATURES_SHIFT;
+    *(pointer + 8) = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT;
+    *(pointer + 9) = originType;
+    *(pointer + 10) = compressionMode;
+    *(pointer + 11) = 0;
+    switch(originType) {
         case SHARC_HEADER_ORIGIN_TYPE_FILE:
-            fileInformationHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_size);
-            fileInformationHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileAttributes->st_mode);
-            fileInformationHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_atime);
-            fileInformationHeader.fileModified = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_mtime);
-            header->fileInformationHeader = fileInformationHeader;
+            *(uint64_t*)(pointer + 12) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_size);
+            *(uint32_t*)(pointer + 20) = SHARC_LITTLE_ENDIAN_32(fileAttributes->st_mode);
+            *(uint64_t*)(pointer + 24) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_atime);
+            *(uint64_t*)(pointer + 32) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_mtime);
+            written = sizeof(sharc_header_generic) + sizeof(sharc_header_file_information);
             break;
+
         default:
+            written = sizeof(sharc_header_generic);
             break;
     }
-
-    header->genericHeader = genericHeader;
-}
-
-SHARC_FORCE_INLINE sharc_header sharc_createHeader(const uint32_t bufferSize, const SHARC_HEADER_ORIGIN_TYPE type, const struct stat64* fileAttributes) {
-    sharc_header header;
-    SHARC_HEADER_GENERIC genericHeader;
-    SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
-
-    genericHeader.magicNumber = SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER);
-    genericHeader.version[0] = SHARC_MAJOR_VERSION;
-    genericHeader.version[1] = SHARC_MINOR_VERSION;
-    genericHeader.version[2] = SHARC_REVISION;
-    genericHeader.bufferSizeShift = SHARC_PREFERRED_BLOCK_SIZE_SHIFT;
-    genericHeader.resetCycleSizeShift = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT;
-    genericHeader.type = type;
-    genericHeader.reserved[0] = 0;
-    genericHeader.reserved[1] = 0;
-    switch(type) {
-        case SHARC_HEADER_ORIGIN_TYPE_FILE:
-            fileInformationHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_size);
-            fileInformationHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileAttributes->st_mode);
-            fileInformationHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_atime);
-            fileInformationHeader.fileModified = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_mtime);
-            header.fileInformationHeader = fileInformationHeader;
-            break;
-        default:
-            break;
-    }
-
-    header.genericHeader = genericHeader;
-    return header;
+    out->position += written;
+    return written;
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_checkSource(const uint32_t magic) {
@@ -92,17 +63,17 @@ SHARC_FORCE_INLINE sharc_bool sharc_checkSource(const uint32_t magic) {
 
 SHARC_FORCE_INLINE sharc_header sharc_readHeaderFromStream(FILE* inStream) {
     sharc_header header;
-    SHARC_HEADER_GENERIC genericHeader;
-    SHARC_HEADER_FILE_INFORMATION fileInformationHeader;
+    sharc_header_generic genericHeader;
+    sharc_header_file_information fileInformationHeader;
 
-    fread(&genericHeader, sizeof(SHARC_HEADER_GENERIC), 1, inStream);
+    fread(&genericHeader, sizeof(sharc_header_generic), 1, inStream);
     if(sharc_checkSource(SHARC_LITTLE_ENDIAN_32(genericHeader.magicNumber)) ^ 0x1)
         sharc_error("Invalid file");
     header.genericHeader = genericHeader;
 
     switch(genericHeader.type) {
         case SHARC_HEADER_ORIGIN_TYPE_FILE:
-            fread(&fileInformationHeader, sizeof(SHARC_HEADER_FILE_INFORMATION), 1, inStream);
+            fread(&fileInformationHeader, sizeof(sharc_header_file_information), 1, inStream);
             fileInformationHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(fileInformationHeader.originalFileSize);
             fileInformationHeader.fileMode = SHARC_LITTLE_ENDIAN_32(fileInformationHeader.fileMode);
             fileInformationHeader.fileAccessed = SHARC_LITTLE_ENDIAN_64(fileInformationHeader.fileAccessed);
@@ -115,40 +86,7 @@ SHARC_FORCE_INLINE sharc_header sharc_readHeaderFromStream(FILE* inStream) {
     return header;
 }
 
-SHARC_FORCE_INLINE uint32_t sharc_writeHeader(sharc_byte* out, const SHARC_HEADER_ORIGIN_TYPE type, const struct stat64* fileAttributes) {
-    *(uint32_t*)out = SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER);
-    *(out + 4) = SHARC_MAJOR_VERSION;
-    *(out + 5) = SHARC_MINOR_VERSION;
-    *(out + 6) = SHARC_REVISION;
-    *(out + 7) = SHARC_PREFERRED_BLOCK_SIZE_SHIFT;
-    *(out + 8) = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT;
-    *(out + 9) = type;
-    *(out + 10) = 0;
-    *(out + 11) = 0;
-    switch(type) {
-        case SHARC_HEADER_ORIGIN_TYPE_FILE:
-            *(uint64_t*)(out + 12) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_size);
-            *(uint32_t*)(out + 20) = SHARC_LITTLE_ENDIAN_32(fileAttributes->st_mode);
-            *(uint64_t*)(out + 24) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_atime);
-            *(uint64_t*)(out + 32) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_mtime);
-            return sizeof(SHARC_HEADER_GENERIC) + sizeof(SHARC_HEADER_FILE_INFORMATION);
-        default:
-            return sizeof(SHARC_HEADER_GENERIC);
-    }
-}
-
-SHARC_FORCE_INLINE void sharc_writeHeaderToStream(sharc_header * header, FILE* outStream) {
-    fwrite(&header->genericHeader, sizeof(SHARC_HEADER_GENERIC), 1, outStream);
-    switch(header->genericHeader.type) {
-        case SHARC_HEADER_ORIGIN_TYPE_FILE:
-            fwrite(&header->fileInformationHeader, sizeof(SHARC_HEADER_FILE_INFORMATION), 1, outStream);
-            break;
-        default:
-            break;
-    }
-}
-
-SHARC_FORCE_INLINE void sharc_restoreFileAttributes(SHARC_HEADER_FILE_INFORMATION * fileInformationHeader, const char* fileName) {
+SHARC_FORCE_INLINE void sharc_restoreFileAttributes(sharc_header_file_information * fileInformationHeader, const char* fileName) {
     if(chmod(fileName, fileInformationHeader->fileMode))
         sharc_error("Unable to restore original file rights.");
     

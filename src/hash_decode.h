@@ -27,7 +27,7 @@
 
 #include "byte_buffer.h"
 #include "dictionary.h"
-#include "stream_state.h"
 #include "hash.h"
+#include "block_header.h"
 
 #endif

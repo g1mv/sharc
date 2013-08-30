@@ -30,16 +30,23 @@
 #include <time.h>
 
 #include "globals.h"
+#include "byte_buffer.h"
+
+#define SHARC_MAX_BLOCK_SIGNATURES_SHIFT                        32
+
+#define SHARC_PREFERRED_BLOCK_SIGNATURES_SHIFT                  11
+#define SHARC_PREFERRED_BLOCK_SIGNATURES                        (1 << SHARC_PREFERRED_BLOCK_SIGNATURES_SHIFT)
+
+#define SHARC_BLOCK_HEADER_DIRECT_DICTIONARY_RESET_MASK         0x1
+#define SHARC_BLOCK_HEADER_COMPRESSED_DICTIONARY_RESET_MASK     0x2
 
 #pragma pack(push)
-#pragma pack(4)
+#pragma pack(1)
 typedef struct {
-    sharc_byte mode;
-    sharc_byte reserved[3];
+    sharc_byte dictionaryFlags;
 } sharc_block_header;
 #pragma pack(pop)
 
-sharc_block_header sharc_createBlockHeader(const sharc_byte, const sharc_byte, const uint32_t);
-const size_t sharc_readBlockHeaderFromFile(sharc_block_header *, FILE*);
+uint32_t sharc_block_header_write(sharc_byte_buffer*, sharc_byte);
 
 #endif

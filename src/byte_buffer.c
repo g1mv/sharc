@@ -24,10 +24,14 @@
 
 #include "byte_buffer.h"
 
-SHARC_FORCE_INLINE void sharc_byte_buffer_encapsulate(sharc_byte_buffer * restrict buffer, sharc_byte* restrict pointer, uint32_t position, uint32_t size) {
+SHARC_FORCE_INLINE void sharc_byte_buffer_encapsulateWithPosition(sharc_byte_buffer * restrict buffer, sharc_byte* restrict pointer, const uint32_t position, const uint32_t size) {
     buffer->pointer = pointer;
     buffer->position = position;
     buffer->size = size;
+}
+
+SHARC_FORCE_INLINE void sharc_byte_buffer_encapsulate(sharc_byte_buffer * restrict buffer, sharc_byte* restrict pointer, const uint32_t size) {
+    sharc_byte_buffer_encapsulateWithPosition(buffer, pointer, 0, size);
 }
 
 SHARC_FORCE_INLINE void sharc_byte_buffer_rewind(sharc_byte_buffer * buffer) {

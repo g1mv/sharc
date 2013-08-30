@@ -31,19 +31,22 @@
 #define stat64 stat
 #endif
 
-#include "api.h"
 #include "hash_encode.h"
 #include "encode.h"
 #include "byte_buffer.h"
 
+#define SHARC_STREAM_MINIMUM_OUT_BUFFER_SIZE            (1 << 11)
+
 typedef enum {
     SHARC_STREAM_STATE_OK = 0,
+    SHARC_STREAM_STATE_FINISHED,
     SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER,
     SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER,
     SHARC_STREAM_STATE_ERROR_INVALID_FILE_ATTRIBUTES,
     SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_NOT_PROPERLY_ALIGNED,
     SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_SIZE_NOT_MULTIPLE_OF_4,
-    SHARC_STREAM_STATE_ERROR_UNSUPPORTED_COMPRESSION_MODE,
+    SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_TOO_SMALL,
+    SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_NOT_PROPERLY_ALIGNED,
     SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE
 } SHARC_STREAM_STATE;
 
@@ -61,11 +64,12 @@ typedef struct {
     sharc_stream_state internal_state;
 } sharc_stream;
 
-SHARC_STREAM_STATE sharc_stream_compressInit(sharc_stream *, SHARC_API_COMPRESSION_MODE, SHARC_API_OUTPUT_TYPE);
-SHARC_STREAM_STATE sharc_stream_decompressInit(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_compressEnd(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_decompressEnd(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream * stream, char*, const uint32_t, char*, const uint32_t);
+SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, SHARC_COMPRESSION_MODE);
+SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_compress_continue(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_decompress_continue(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
 
 #endif
