@@ -38,6 +38,7 @@
 
 #include "chrono.h"
 #include "stream.h"
+#include "header.h"
 
 #define SHARC_ACTION_COMPRESS         0
 #define SHARC_ACTION_DECOMPRESS       1

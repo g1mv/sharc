@@ -25,12 +25,6 @@
 #ifndef SHARC_API_STREAM_H
 #define SHARC_API_STREAM_H
 
-#include <sys/stat.h>
-
-#if defined(__FreeBSD__) || defined(__APPLE__)
-#define stat64 stat
-#endif
-
 #include "hash_encode.h"
 #include "encode.h"
 #include "byte_buffer.h"
