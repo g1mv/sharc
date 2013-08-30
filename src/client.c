@@ -69,7 +69,7 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     exit(0);
 }
 
-SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *io_out, const sharc_byte attemptMode, const uint32_t bufferSize, const sharc_bool prompting, const char *inPath, const char *outPath) {
+SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *io_out, const sharc_byte attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
     struct stat64 attributes;
 
     const size_t inFileNameLength = strlen(io_in->name);
@@ -109,17 +109,15 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
      * The following code is an example of how to use the stream API to compress a file
      */
     sharc_stream stream;
-    char inBuffer[bufferSize];
-    char outBuffer[bufferSize];
 
-    if (sharc_stream_prepare(&stream, inBuffer, bufferSize, outBuffer, bufferSize))
+    if (sharc_stream_prepare(&stream, inBuffer, SHARC_PREFERRED_BUFFER_SIZE, outBuffer, SHARC_PREFERRED_BUFFER_SIZE))
         sharc_error("Unable to prepare compression");
 
     if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, &attributes))
         sharc_error("Unable to initialize compression");
 
-    stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), bufferSize, io_in->stream);
-    if (stream.in.size < bufferSize) {
+    stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
+    if (stream.in.size < SHARC_PREFERRED_BUFFER_SIZE) {
         if (ferror(io_in->stream))
             sharc_error("Error reading file");
         else
@@ -134,9 +132,9 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
             break;
 
         case SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER:
-            stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), bufferSize, io_in->stream);
+            stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
             sharc_byte_buffer_rewind(&stream.in);
-            if (stream.in.size < bufferSize) {
+            if (stream.in.size < SHARC_PREFERRED_BUFFER_SIZE) {
                 if (ferror(io_in->stream))
                     sharc_error("Error reading file");
                 else
@@ -408,7 +406,7 @@ int main(int argc, char *argv[]) {
                         sharc_client_decompress(&in, &out, prompting, inPath, outPath);
                         break;
                     default:
-                        sharc_client_compress(&in, &out, mode, SHARC_PREFERRED_BUFFER_SIZE, prompting, inPath, outPath);
+                        sharc_client_compress(&in, &out, mode, prompting, inPath, outPath);
                         break;
                 }
                 break;
@@ -421,7 +419,7 @@ int main(int argc, char *argv[]) {
                 sharc_client_decompress(&in, &out, prompting, inPath, outPath);
                 break;
             default:
-                sharc_client_compress(&in, &out, mode, SHARC_PREFERRED_BUFFER_SIZE, prompting, inPath, outPath);
+                sharc_client_compress(&in, &out, mode, prompting, inPath, outPath);
                 break;
         }
     }

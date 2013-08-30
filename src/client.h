@@ -97,10 +97,13 @@ typedef struct {
     sharc_byte type;
 } sharc_client_io;
 
+char inBuffer[SHARC_PREFERRED_BUFFER_SIZE];
+char outBuffer[SHARC_PREFERRED_BUFFER_SIZE];
+
 FILE* sharc_client_checkOpenFile(const char*, const char*, const sharc_bool);
 void sharc_client_version();
 void sharc_client_usage();
-void sharc_client_compress(sharc_client_io *, sharc_client_io *, const sharc_byte, const uint32_t, const sharc_bool, const char*, const char*);
+void sharc_client_compress(sharc_client_io *, sharc_client_io *, const sharc_byte, const sharc_bool, const char*, const char*);
 void sharc_client_decompress(sharc_client_io *, sharc_client_io *, const sharc_bool, const char*, const char*);
 
 #endif
