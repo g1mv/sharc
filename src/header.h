@@ -47,10 +47,6 @@
 #include "block_header.h"
 #include "byte_buffer.h"
 
-#if defined(__FreeBSD__) || defined(__APPLE__)
-#define stat64 stat
-#endif
-
 #define SHARC_HEADER_MAGIC_NUMBER      1908011803
 
 typedef enum {
@@ -83,6 +79,6 @@ typedef struct {
 } sharc_header;
 #pragma pack(pop)
 
-uint32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const struct stat64*);
+uint32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const struct stat*);
 
 #endif

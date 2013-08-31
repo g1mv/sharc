@@ -31,8 +31,8 @@
 
 typedef struct {
     sharc_byte* pointer;
-    uint32_t position;
-    uint32_t size;
+    uint_fast32_t position;
+    uint_fast32_t size;
 } sharc_byte_buffer;
 
 void sharc_byte_buffer_encapsulate(sharc_byte_buffer *, sharc_byte*, const uint32_t);

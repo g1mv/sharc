@@ -51,23 +51,23 @@ typedef enum {
 } SHARC_ENCODE_TYPE;
 
 typedef struct {
-    uint64_t inStart;
-    uint64_t outStart;
+    uint_fast64_t inStart;
+    uint_fast64_t outStart;
 } sharc_encode_block_data;
 
 typedef struct {
     sharc_dictionary dictionary_a;
     sharc_dictionary dictionary_b;
-    uint32_t resetCycle;
+    uint_fast32_t resetCycle;
 } sharc_encode_dictionary_data;
 
 typedef struct {
     SHARC_ENCODE_PROCESS process;
     SHARC_COMPRESSION_MODE mode;
-    struct stat64* fileAttributes;
+    const struct stat* fileAttributes;
 
-    uint64_t totalRead;
-    uint64_t totalWritten;
+    uint_fast64_t totalRead;
+    uint_fast64_t totalWritten;
 
     sharc_hash_encode_state hashEncodeState;
     sharc_encode_block_data blockData;
@@ -76,9 +76,9 @@ typedef struct {
     sharc_byte_buffer workBuffer;
 } sharc_encode_state;
 
-SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *, sharc_encode_state *, SHARC_COMPRESSION_MODE, SHARC_ENCODE_TYPE);
-SHARC_ENCODE_STATE sharc_encode_init_with_file(sharc_byte_buffer *, sharc_encode_state *, SHARC_COMPRESSION_MODE, SHARC_ENCODE_TYPE, struct stat64*);
-SHARC_ENCODE_STATE sharc_encode_continue(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *);
-SHARC_ENCODE_STATE sharc_encode_finish(sharc_byte_buffer*, sharc_byte_buffer*, sharc_encode_state*);
+SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_TYPE);
+SHARC_ENCODE_STATE sharc_encode_init_with_file(sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_TYPE, const struct stat*);
+SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const SHARC_BOOL);
+SHARC_ENCODE_STATE sharc_encode_finish(sharc_encode_state*);
 
 #endif

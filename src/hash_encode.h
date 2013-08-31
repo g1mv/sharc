@@ -58,7 +58,7 @@ typedef struct {
 } sharc_hash_encode_state;
 
 SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_encode_state*);
-SHARC_HASH_ENCODE_STATE sharc_hash_encode_continue(sharc_byte_buffer *, sharc_byte_buffer *, const uint_fast32_t, sharc_dictionary *, sharc_hash_encode_state *);
-SHARC_HASH_ENCODE_STATE sharc_hash_encode_finish(sharc_byte_buffer*, sharc_byte_buffer*, const uint_fast32_t, sharc_dictionary*, sharc_hash_encode_state*);
+SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint_fast32_t, sharc_dictionary *, sharc_hash_encode_state *, const SHARC_BOOL);
+SHARC_HASH_ENCODE_STATE sharc_hash_encode_finish(sharc_hash_encode_state*);
 
 #endif

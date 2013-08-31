@@ -50,18 +50,18 @@ typedef struct {
 
 typedef struct {
     sharc_byte_buffer in;
-    uint64_t in_total_read;
+    uint_fast64_t in_total_read;
 
     sharc_byte_buffer out;
-    uint64_t out_total_written;
+    uint_fast64_t out_total_written;
 
     sharc_stream_state internal_state;
 } sharc_stream;
 
-SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint32_t, char*, const uint32_t);
-SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, SHARC_COMPRESSION_MODE, struct stat64*);
+SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint_fast32_t, char*, const uint_fast32_t);
+SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const struct stat*);
 SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_compress_continue(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const SHARC_BOOL);
 SHARC_STREAM_STATE sharc_stream_decompress_continue(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);

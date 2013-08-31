@@ -69,8 +69,24 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     exit(0);
 }
 
+SHARC_FORCE_INLINE uint_fast32_t reloadInputBuffer(sharc_stream *stream, sharc_client_io *io_in) {
+    stream->in.size = (uint_fast32_t) fread(stream->in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
+    if (stream->in.size < SHARC_PREFERRED_BUFFER_SIZE) if (ferror(io_in->stream))
+        sharc_error("Error reading file");
+    sharc_byte_buffer_rewind(&stream->in);
+    return stream->in.size;
+}
+
+SHARC_FORCE_INLINE uint_fast32_t emptyOutputBuffer(sharc_stream *stream, sharc_client_io *io_out) {
+    uint_fast32_t written = (uint_fast32_t) fwrite(stream->out.pointer, sizeof(sharc_byte), stream->out.position, io_out->stream);
+    if (written < stream->out.position) if (ferror(io_out->stream))
+        sharc_error("Error writing file");
+    sharc_byte_buffer_rewind(&stream->out);
+    return written;
+}
+
 SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *io_out, const sharc_byte attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
-    struct stat64 attributes;
+    struct stat attributes;
 
     const size_t inFileNameLength = strlen(io_in->name);
     char inFilePath[strlen(inPath) + inFileNameLength + 1];
@@ -86,7 +102,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 
         io_in->stream = sharc_client_checkOpenFile(inFilePath, "rb", SHARC_FALSE);
 
-        stat64(inFilePath, &attributes);
+        stat(inFilePath, &attributes);
     } else {
         if (io_out->type == SHARC_HEADER_ORIGIN_TYPE_FILE)
             io_out->name = SHARC_STDIN_COMPRESSED;
@@ -109,65 +125,32 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
      * The following code is an example of how to use the stream API to compress a file
      */
     sharc_stream stream;
-
-    if (sharc_stream_prepare(&stream, inBuffer, SHARC_PREFERRED_BUFFER_SIZE, outBuffer, SHARC_PREFERRED_BUFFER_SIZE))
+    SHARC_STREAM_STATE returnState;
+    if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
         sharc_error("Unable to prepare compression");
 
     if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, &attributes))
         sharc_error("Unable to initialize compression");
 
-    stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
-    if (stream.in.size < SHARC_PREFERRED_BUFFER_SIZE) {
-        if (ferror(io_in->stream))
-            sharc_error("Error reading file");
-        else
-            goto finish;
-    }
-
-    loop_continue:
-    switch (sharc_stream_compress_continue(&stream)) {
-        case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
-            fwrite(stream.out.pointer, sizeof(sharc_byte), stream.out.position, io_out->stream);
-            sharc_byte_buffer_rewind(&stream.out);
-            break;
-
-        case SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER:
-            stream.in.size = (uint32_t) fread(stream.in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
-            sharc_byte_buffer_rewind(&stream.in);
-            if (stream.in.size < SHARC_PREFERRED_BUFFER_SIZE) {
-                if (ferror(io_in->stream))
-                    sharc_error("Error reading file");
-                else
-                    goto finish;
-            }
-            break;
-
-        default:
-            sharc_error("An error occured during compression");
-            break;
-    }
-    goto loop_continue;
-
-    finish:
-    if (stream.in.size > 0) {
-        loop_finish:
-        switch (sharc_stream_compress_finish(&stream)) {
+    uint_fast32_t read = reloadInputBuffer(&stream, io_in);
+    while ((returnState = sharc_stream_compress(&stream, (read < SHARC_PREFERRED_BUFFER_SIZE ? SHARC_TRUE : SHARC_FALSE))) != SHARC_STREAM_STATE_FINISHED) {
+        switch (returnState) {
             case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
-                fwrite(stream.out.pointer, sizeof(sharc_byte), stream.out.position, io_out->stream);
-                sharc_byte_buffer_rewind(&stream.out);
+                emptyOutputBuffer(&stream, io_out);
                 break;
 
-            case SHARC_STREAM_STATE_FINISHED:
-                fwrite(stream.out.pointer, sizeof(sharc_byte), stream.out.position, io_out->stream);
-                goto exit;
+            case SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER:
+                read = reloadInputBuffer(&stream, io_in);
+                break;
 
             default:
-                sharc_error("An error occured while finishing compression");
+                sharc_error("An error occured during compression");
                 break;
         }
-        goto loop_finish;
     }
-    exit:
+    emptyOutputBuffer(&stream, io_out);
+    if (sharc_stream_compress_finish(&stream))
+        sharc_error("An error occured while finishing compression");
     /*
      * That's it !
      */

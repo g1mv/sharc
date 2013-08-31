@@ -25,6 +25,7 @@
 #ifndef SHARC_HASH_DECODE_H
 #define SHARC_HASH_DECODE_H
 
+#include <stdint.h>
 #include "byte_buffer.h"
 #include "dictionary.h"
 #include "hash.h"
@@ -50,8 +51,9 @@ typedef uint64_t sharc_hash_decode_signature;
 
 typedef struct {
     SHARC_HASH_DECODE_PROCESS process;
-    uint64_t signature;
-    uint32_t signaturesCount;
+    uint_fast64_t signature;
+    uint_fast8_t signatureBytes;
+    uint_fast32_t signaturesCount;
 } sharc_hash_decode_state;
 
 #endif

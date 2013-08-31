@@ -25,7 +25,7 @@
 
 #include "header.h"
 
-SHARC_FORCE_INLINE uint32_t sharc_header_write(sharc_byte_buffer* restrict out, const SHARC_HEADER_ORIGIN_TYPE originType, const SHARC_COMPRESSION_MODE compressionMode, const struct stat64* restrict fileAttributes) {
+SHARC_FORCE_INLINE uint32_t sharc_header_write(sharc_byte_buffer* restrict out, const SHARC_HEADER_ORIGIN_TYPE originType, const SHARC_COMPRESSION_MODE compressionMode, const struct stat* restrict fileAttributes) {
     uint32_t written;
     sharc_byte* pointer = out->pointer + out->position;
     *(uint32_t*) pointer = SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER);

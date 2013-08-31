@@ -85,7 +85,6 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_continue(sharc_byte
             sharc_hash_decode_kernel(in, out, dictionary, xorMask, (sharc_bool)((state->signature >> i) & 0x1));
 
     }
-
 }
 
 SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_finish(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *dictionary) {
@@ -122,5 +121,5 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_finish(sharc_byte_b
             sharc_byteCopy(in, out, remaining);
     }
 
-    return SHARC_TRUE;
+    return SHARC_HASH_DECODE_STATE_READY;
 }
