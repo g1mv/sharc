@@ -71,16 +71,20 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
 
 SHARC_FORCE_INLINE uint_fast32_t reloadInputBuffer(sharc_stream *stream, sharc_client_io *io_in) {
     stream->in.size = (uint_fast32_t) fread(stream->in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
-    if (stream->in.size < SHARC_PREFERRED_BUFFER_SIZE) if (ferror(io_in->stream))
-        sharc_error("Error reading file");
+    if (stream->in.size < SHARC_PREFERRED_BUFFER_SIZE) {
+        if (ferror(io_in->stream))
+            sharc_error("Error reading file");
+    }
     sharc_byte_buffer_rewind(&stream->in);
     return stream->in.size;
 }
 
 SHARC_FORCE_INLINE uint_fast32_t emptyOutputBuffer(sharc_stream *stream, sharc_client_io *io_out) {
     uint_fast32_t written = (uint_fast32_t) fwrite(stream->out.pointer, sizeof(sharc_byte), stream->out.position, io_out->stream);
-    if (written < stream->out.position) if (ferror(io_out->stream))
-        sharc_error("Error writing file");
+    if (written < stream->out.position) {
+        if (ferror(io_out->stream))
+            sharc_error("Error writing file");
+    }
     sharc_byte_buffer_rewind(&stream->out);
     return written;
 }
@@ -100,7 +104,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
             io_out->name = outFilePath;
         }
 
-        io_in->stream = sharc_client_checkOpenFile(inFilePath, "rb", SHARC_FALSE);
+        io_in->stream = sharc_client_checkOpenFile(inFilePath, "rb", false);
 
         stat(inFilePath, &attributes);
     } else {
@@ -133,7 +137,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
         sharc_error("Unable to initialize compression");
 
     uint_fast32_t read = reloadInputBuffer(&stream, io_in);
-    while ((returnState = sharc_stream_compress(&stream, (read < SHARC_PREFERRED_BUFFER_SIZE ? SHARC_TRUE : SHARC_FALSE))) != SHARC_STREAM_STATE_FINISHED) {
+    while ((returnState = sharc_stream_compress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)) != SHARC_STREAM_STATE_FINISHED) {
         switch (returnState) {
             case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
                 emptyOutputBuffer(&stream, io_out);
@@ -176,66 +180,99 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     }
 }
 
-SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *in, sharc_client_io *out, const sharc_bool prompting, const char *inPath, const char *outPath) {
-    /*const size_t inFileNameLength = strlen(in->name);
+SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_client_io *io_out, const sharc_bool prompting, const char *inPath, const char *outPath) {
+    const size_t inFileNameLength = strlen(io_in->name);
     char inFilePath[strlen(inPath) + inFileNameLength];
     char outFilePath[strlen(outPath) + inFileNameLength - 6];
-    sprintf(inFilePath, "%s%s", inPath, in->name);
-    
-    if(in->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-        if(out->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
+    sprintf(inFilePath, "%s%s", inPath, io_in->name);
+
+    if (io_in->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
+        if (io_out->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
             outFilePath[0] = '\0';
             strcat(outFilePath, outPath);
-            strncat(outFilePath, in->name, inFileNameLength - 6);
-            
-            out->name = outFilePath;
+            strncat(outFilePath, io_in->name, inFileNameLength - 6);
+
+            io_out->name = outFilePath;
         }
-    
-        in->stream = sharc_client_checkOpenFile(inFilePath, "rb", SHARC_FALSE);
+
+        io_in->stream = sharc_client_checkOpenFile(inFilePath, "rb", false);
     } else {
-        if(out->type == SHARC_HEADER_ORIGIN_TYPE_FILE)
-            out->name = SHARC_STDIN;
-        
-        in->stream = stdin;
-        in->name = SHARC_STDIN;
+        if (io_out->type == SHARC_HEADER_ORIGIN_TYPE_FILE)
+            io_out->name = SHARC_STDIN;
+
+        io_in->stream = stdin;
+        io_in->name = SHARC_STDIN;
     }
-    
-    if(out->type == SHARC_HEADER_ORIGIN_TYPE_FILE)
-        out->stream = sharc_client_checkOpenFile(out->name, "wb", prompting);
+
+    if (io_out->type == SHARC_HEADER_ORIGIN_TYPE_FILE)
+        io_out->stream = sharc_client_checkOpenFile(io_out->name, "wb", prompting);
     else {
-        out->stream = stdout;
-        out->name = SHARC_STDOUT;
+        io_out->stream = stdout;
+        io_out->name = SHARC_STDOUT;
     }
-    
+
     sharc_chrono chrono;
     sharc_chrono_start(&chrono);
-    sharc_header header = sharc_decompress(in->stream, out->stream);
+
+    /*
+     * The following code is an example of how to use the stream API to decompress a file
+     */
+    sharc_stream stream;
+    SHARC_STREAM_STATE returnState;
+    if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
+        sharc_error("Unable to prepare decompression");
+
+    if (sharc_stream_decompress_init(&stream))
+        sharc_error("Unable to initialize decompression");
+
+    uint_fast32_t read = reloadInputBuffer(&stream, io_in);
+    while ((returnState = sharc_stream_decompress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)) != SHARC_STREAM_STATE_FINISHED) {
+        switch (returnState) {
+            case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
+                emptyOutputBuffer(&stream, io_out);
+                break;
+
+            case SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER:
+                read = reloadInputBuffer(&stream, io_in);
+                break;
+
+            default:
+                sharc_error("An error occured during decompression");
+                break;
+        }
+    }
+    emptyOutputBuffer(&stream, io_out);
+    if (sharc_stream_decompress_finish(&stream))
+        sharc_error("An error occured while finishing decompression");
+    /*
+     * That's it !
+     */
+
     sharc_chrono_stop(&chrono);
-    
-    if(out->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-        const sharc_byte originType = header.genericHeader.type;
+
+    if (io_out->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
+        //const sharc_byte originType = header.genericHeader.type;
         const double elapsed = sharc_chrono_elapsed(&chrono);
-        
-        uint64_t totalWritten = ftello(out->stream);
-        fclose(out->stream);
-        
-        if(originType == SHARC_HEADER_ORIGIN_TYPE_FILE)
-            sharc_restoreFileAttributes(&(header.fileInformationHeader), out->name);
-        
-        if(in->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            uint64_t totalRead = ftello(in->stream);
-            fclose(in->stream);
-        
-            if(originType == SHARC_HEADER_ORIGIN_TYPE_FILE)
-                if(totalWritten != header.fileInformationHeader.originalFileSize)
-                    sharc_error("Input file is corrupt !");
-        
+
+        uint64_t totalWritten = ftello(io_out->stream);
+        fclose(io_out->stream);
+
+        //if (originType == SHARC_HEADER_ORIGIN_TYPE_FILE)
+        //    sharc_header_restoreFileAttributes(&(header.fileInformationHeader), io_out->name);
+
+        if (io_in->type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
+            uint64_t totalRead = ftello(io_in->stream);
+            fclose(io_in->stream);
+
+            //if (originType == SHARC_HEADER_ORIGIN_TYPE_FILE) if (totalWritten != header.fileInformationHeader.originalFileSize)
+            //    sharc_error("Input file is corrupt !");
+
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
-            printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, out->name, totalRead, totalWritten);
+            printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, io_out->name, totalRead, totalWritten);
             printf("Time = %.3lf s, Speed = %.0lf MB/s\n", elapsed, speed);
         } else
-            printf("Decompressed %s to %s, %llu bytes written.\n", in->name, out->name, totalWritten);
-    }*/
+            printf("Decompressed %s to %s, %llu bytes written.\n", io_in->name, io_out->name, totalWritten);
+    }
 }
 
 int main(int argc, char *argv[]) {

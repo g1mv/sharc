@@ -50,8 +50,8 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer *);
 SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint_fast32_t, char*, const uint_fast32_t);
 SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const struct stat*);
 SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const SHARC_BOOL);
-SHARC_STREAM_STATE sharc_stream_decompress_continue(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);
+SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
 SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
 

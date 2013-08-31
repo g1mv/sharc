@@ -26,7 +26,7 @@
 
 SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_header(sharc_byte_buffer *restrict out, sharc_encode_state *restrict state) {
     if (out->position + sizeof(sharc_header) > out->size)
-        return SHARC_ENCODE_STATE_STALL_OUTPUT_BUFFER;
+        return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
     if (!state->fileAttributes)
         state->totalWritten += sharc_header_write(out, SHARC_HEADER_ORIGIN_TYPE_STREAM, state->mode, NULL);
@@ -40,7 +40,7 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_header(sharc_byte_buffe
 
 SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_block_header(sharc_byte_buffer *restrict out, sharc_encode_state *restrict state) {
     if (out->position + sizeof(sharc_block_header) > out->size)
-        return SHARC_ENCODE_STATE_STALL_OUTPUT_BUFFER;
+        return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
     sharc_byte dictionaryFlags = 0;
     if (state->dictionaryData.resetCycle)
@@ -107,13 +107,13 @@ SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *restrict state, const S
     return sharc_encode_init_with_file(state, mode, encodeType, NULL);
 }
 
-SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_encode_state *restrict state, const SHARC_BOOL lastIn) {
+SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_encode_state *restrict state, const sharc_bool lastIn) {
     SHARC_ENCODE_STATE encodeState;
     SHARC_HASH_ENCODE_STATE hashEncodeState;
     uint_fast64_t inPositionBefore;
     uint_fast64_t outPositionBefore;
 
-    while (SHARC_TRUE) {
+    while (true) {
         switch (state->process) {
             case SHARC_ENCODE_PROCESS_WRITE_HEADER:
                 if ((encodeState = sharc_encode_write_header(out, state)))
@@ -134,10 +134,10 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
 
                 switch (hashEncodeState) {
                     case SHARC_HASH_ENCODE_STATE_STALL_ON_INPUT_BUFFER:
-                        return SHARC_ENCODE_STATE_STALL_INPUT_BUFFER;
+                        return SHARC_ENCODE_STATE_STALL_ON_INPUT_BUFFER;
 
                     case SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER:
-                        return SHARC_ENCODE_STATE_STALL_OUTPUT_BUFFER;
+                        return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
                     case SHARC_HASH_ENCODE_STATE_INFO_NEW_BLOCK:
                         state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER;

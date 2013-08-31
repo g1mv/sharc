@@ -27,6 +27,7 @@
 
 #include "hash_encode.h"
 #include "encode.h"
+#include "decode.h"
 #include "byte_buffer.h"
 #include "header.h"
 
@@ -45,7 +46,8 @@ typedef enum {
 } SHARC_STREAM_STATE;
 
 typedef struct {
-    sharc_encode_state internal_state;
+    sharc_encode_state internal_encode_state;
+    sharc_decode_state internal_decode_state;
 } sharc_stream_state;
 
 typedef struct {
@@ -61,8 +63,8 @@ typedef struct {
 SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint_fast32_t, char*, const uint_fast32_t);
 SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const struct stat*);
 SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const SHARC_BOOL);
-SHARC_STREAM_STATE sharc_stream_decompress_continue(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);
+SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
 SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
 

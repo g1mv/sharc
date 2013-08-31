@@ -52,13 +52,14 @@ typedef uint64_t sharc_hash_encode_signature;
 
 typedef struct {
     SHARC_HASH_ENCODE_PROCESS process;
+
     uint_fast32_t shift;
     sharc_hash_encode_signature * signature;
     uint_fast32_t signaturesCount;
 } sharc_hash_encode_state;
 
 SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_encode_state*);
-SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint_fast32_t, sharc_dictionary *, sharc_hash_encode_state *, const SHARC_BOOL);
+SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint_fast32_t, sharc_dictionary *, sharc_hash_encode_state *, const sharc_bool);
 SHARC_HASH_ENCODE_STATE sharc_hash_encode_finish(sharc_hash_encode_state*);
 
 #endif

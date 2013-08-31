@@ -24,12 +24,6 @@
 
 #include "hash_encode.h"
 
-#define SHARC_HASH_ENCODE_READ_AND_PROCESS_CHUNK\
-    chunk = *(uint64_t *) (in->pointer + in->position);\
-    sharc_hash_encode_kernel(out, hash, (uint32_t)(chunk & 0xFFFFFFFF), xorMask, dictionary, state);\
-    sharc_hash_encode_kernel(out, hash, (uint32_t)(chunk >> 32), xorMask, dictionary, state);\
-    in->position += sizeof(uint64_t);\
-
 SHARC_FORCE_INLINE void sharc_hash_encode_writeToSignature(sharc_hash_encode_state *state) {
     *(state->signature) |= ((uint_fast64_t) 1) << state->shift;
 }
@@ -82,15 +76,25 @@ SHARC_FORCE_INLINE void sharc_hash_encode_kernel(sharc_byte_buffer *restrict out
         *(uint16_t *) (out->pointer + out->position) = SHARC_LITTLE_ENDIAN_16(*hash);
         out->position += sizeof(uint16_t);
     }
+
     state->shift++;
 }
 
-SHARC_FORCE_INLINE void sharc_hash_encode_process_chunk(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, uint_fast32_t *restrict hash, const uint_fast32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state) {
+// todo check big endian, reverse the order
+SHARC_FORCE_INLINE void sharc_hash_encode_process_chunk(uint64_t* chunk, sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, uint_fast32_t *restrict hash, const uint_fast32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state) {
+    *chunk = *(uint64_t *) (in->pointer + in->position);
+    sharc_hash_encode_kernel(out, hash, (uint32_t)(*chunk & 0xFFFFFFFF), xorMask, dictionary, state);
+    sharc_hash_encode_kernel(out, hash, (uint32_t)(*chunk >> 32), xorMask, dictionary, state);
+    in->position += sizeof(uint64_t);
+}
+
+SHARC_FORCE_INLINE void sharc_hash_encode_process_span(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, uint_fast32_t *restrict hash, const uint_fast32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state) {
     uint64_t chunk;
-    SHARC_HASH_ENCODE_READ_AND_PROCESS_CHUNK
-    SHARC_HASH_ENCODE_READ_AND_PROCESS_CHUNK
-    SHARC_HASH_ENCODE_READ_AND_PROCESS_CHUNK
-    SHARC_HASH_ENCODE_READ_AND_PROCESS_CHUNK
+
+    sharc_hash_encode_process_chunk(&chunk, in, out, hash, xorMask, dictionary, state);
+    sharc_hash_encode_process_chunk(&chunk, in, out, hash, xorMask, dictionary, state);
+    sharc_hash_encode_process_chunk(&chunk, in, out, hash, xorMask, dictionary, state);
+    sharc_hash_encode_process_chunk(&chunk, in, out, hash, xorMask, dictionary, state);
 }
 
 SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_encode_state *state) {
@@ -101,7 +105,7 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_enc
     return SHARC_HASH_ENCODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint_fast32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state, const SHARC_BOOL lastIn) {
+SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint_fast32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state, const sharc_bool lastIn) {
     SHARC_HASH_ENCODE_STATE returnState;
     uint_fast32_t hash;
     uint_fast32_t remaining;
@@ -122,8 +126,8 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
             break;
 
         case SHARC_HASH_ENCODE_PROCESS_DATA:
-            while (SHARC_TRUE) {
-                sharc_hash_encode_process_chunk(in, out, &hash, xorMask, dictionary, state);
+            while (true) {
+                sharc_hash_encode_process_span(in, out, &hash, xorMask, dictionary, state);
                 if (in->position == limit) {
                     if (lastIn) {
                         if (state->shift == 0)

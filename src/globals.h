@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #if defined(__INTEL_COMPILER)
 #define SHARC_FORCE_INLINE __forceinline
@@ -64,13 +65,8 @@
 #define SHARC_MINOR_VERSION               9
 #define SHARC_REVISION                    10
 
-typedef enum {
-    SHARC_FALSE = 0,
-    SHARC_TRUE = 1
-} SHARC_BOOL;
-
 typedef uint8_t sharc_byte;
-typedef uint8_t sharc_bool;
+typedef bool sharc_bool;
 
 typedef enum {
     SHARC_COMPRESSION_MODE_COPY,

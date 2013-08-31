@@ -34,8 +34,8 @@
 typedef enum {
     SHARC_ENCODE_STATE_READY = 0,
     SHARC_ENCODE_STATE_FINISHED,
-    SHARC_ENCODE_STATE_STALL_OUTPUT_BUFFER,
-    SHARC_ENCODE_STATE_STALL_INPUT_BUFFER,
+    SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER,
+    SHARC_ENCODE_STATE_STALL_ON_INPUT_BUFFER,
     SHARC_ENCODE_STATE_ERROR
 } SHARC_ENCODE_STATE;
 
@@ -78,7 +78,7 @@ typedef struct {
 
 SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_TYPE);
 SHARC_ENCODE_STATE sharc_encode_init_with_file(sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_TYPE, const struct stat*);
-SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const SHARC_BOOL);
+SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const sharc_bool);
 SHARC_ENCODE_STATE sharc_encode_finish(sharc_encode_state*);
 
 #endif

@@ -43,16 +43,16 @@
 #define SHARC_ACTION_COMPRESS         0
 #define SHARC_ACTION_DECOMPRESS       1
 
-#define SHARC_NO_PROMPTING            SHARC_FALSE
-#define SHARC_PROMPTING               SHARC_TRUE
+#define SHARC_NO_PROMPTING            false
+#define SHARC_PROMPTING               true
 
 #define SHARC_STDIN                   "stdin"
 #define SHARC_STDOUT                  "stdout"
 #define SHARC_STDIN_COMPRESSED        "stdin.sharc"
 
 #define SHARC_OUTPUT_PATH_MAX_SIZE    256
-#define SHARC_FILE_OUTPUT_PATH        SHARC_FALSE
-#define SHARC_FIXED_OUTPUT_PATH       SHARC_TRUE
+#define SHARC_FILE_OUTPUT_PATH        false
+#define SHARC_FIXED_OUTPUT_PATH       true
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define SHARC_ENDIAN_STRING           "Little"
