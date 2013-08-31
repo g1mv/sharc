@@ -104,9 +104,9 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_enc
 SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint_fast32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state, const SHARC_BOOL lastIn) {
     SHARC_HASH_ENCODE_STATE returnState;
     uint_fast32_t hash;
+    uint_fast32_t remaining;
 
-    const uint_fast32_t remaining = in->size & 31;
-    const uint_fast32_t limit = in->size - remaining;
+    const uint_fast32_t limit = in->size & ~0x1F;
 
     switch (state->process) {
         case SHARC_HASH_ENCODE_PROCESS_CHECK_STATE:
@@ -141,6 +141,7 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
             }
 
         case SHARC_HASH_ENCODE_PROCESS_FINISH:
+            remaining = in->size & 0x1F;
             if (out->position + remaining <= out->size) {
                 memcpy(out->pointer + out->position, in->pointer + in->position, remaining);
 
