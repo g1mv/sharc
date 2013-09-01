@@ -44,7 +44,7 @@
 #pragma pack(2)
 typedef struct {
     sharc_byte dictionaryFlags;
-    sharc_byte reserved[3];
+    sharc_byte reserved[7];
 } sharc_block_header;
 #pragma pack(pop)
 

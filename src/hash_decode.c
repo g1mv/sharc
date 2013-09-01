@@ -24,135 +24,120 @@
 
 #include "hash_decode.h"
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_hash_decode_byteTransfer32(sharc_byte_buffer *restrict in, uint32_t *destination, int_fast32_t count, const uint_fast32_t offset) {
-    const int_fast32_t initialCount = count;
-    while (--count >= 0) {
-        *destination |= (*(in->pointer + in->position) << ((count + offset) << 3));
-        in->position++;
-    }
-    return (uint32_t) initialCount;
-}
-
-SHARC_FORCE_INLINE uint_fast32_t sharc_hash_decode_byteTransfer64(sharc_byte_buffer *restrict in, uint64_t *destination, int_fast32_t count, const uint_fast32_t offset) {
-    const int_fast32_t initialCount = count;
-    while (--count >= 0) {
-        *destination |= (*(in->pointer + in->position) << ((count + offset) << 3));
-        in->position++;
-    }
-    return (uint32_t) initialCount;
-}
-
-SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_signatureCountIncrement(sharc_hash_decode_state *restrict state) {
-    state->signaturesCount++;
-    if (state->signaturesCount == SHARC_PREFERRED_BLOCK_SIGNATURES) {
+SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_checkSignaturesCount(sharc_hash_decode_state *restrict state) {
+    if (state->signaturesCount == (SHARC_PREFERRED_BLOCK_SIGNATURES - 1)) {
         state->signaturesCount = 0;
         return SHARC_HASH_DECODE_STATE_INFO_NEW_BLOCK;
     }
-
     return SHARC_HASH_DECODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_signature_fast(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_hash_decode_state *restrict state) {
-    SHARC_HASH_DECODE_STATE returnState;
-
-    if (out->position + SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD > out->size)
-        return SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
-
-    if ((returnState = sharc_hash_decode_signatureCountIncrement(state)))
-        return returnState;
-
+SHARC_FORCE_INLINE void sharc_hash_decode_read_signature_fast(sharc_byte_buffer *restrict in, sharc_hash_decode_state *restrict state) {
     state->signature = SHARC_LITTLE_ENDIAN_64(*(sharc_hash_decode_signature *) (in->pointer + in->position));
     in->position += sizeof(sharc_hash_decode_signature);
     state->shift = 0;
-
-    return SHARC_HASH_DECODE_STATE_READY;
+    state->signaturesCount ++;
 }
 
-SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_signature_safe(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_hash_decode_state *restrict state) {
-    SHARC_HASH_DECODE_STATE returnState;
-
-    if (out->position + SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD > out->size)
-        return SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
-
-    if ((returnState = sharc_hash_decode_signatureCountIncrement(state)))
-        return returnState;
-
+SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_signature_safe(sharc_byte_buffer *restrict in, sharc_hash_decode_state *restrict state) {
     if (state->signatureBytes) {
-        sharc_hash_decode_byteTransfer64(in, &state->signature, sizeof(sharc_hash_decode_signature) - state->signatureBytes, 0);
-        state->signature = __builtin_bswap64(state->signature);
+        memcpy(&state->partialSignature[state->signatureBytes], in->pointer + in->position, sizeof(sharc_hash_decode_signature) - state->signatureBytes);
+        state->signature = SHARC_LITTLE_ENDIAN_64(*(uint64_t*)state->partialSignature);
+        in->position += sizeof(sharc_hash_decode_signature) - state->signatureBytes;
         state->signatureBytes = 0;
         state->shift = 0;
-        state->process = SHARC_HASH_DECODE_PROCESS_DATA_SAFE;
+        state->signaturesCount ++;
     } else if (in->position + sizeof(sharc_hash_decode_signature) > in->size) {
-        const int_fast32_t available = in->size - in->position;
-        state->signatureBytes = sharc_hash_decode_byteTransfer64(in, &state->signature, available, sizeof(sharc_hash_decode_signature) - available);
+        state->signatureBytes = in->size - in->position;
+        memcpy(&state->partialSignature[0], in->pointer + in->position, state->signatureBytes);
+        in->position = in->size;
         return SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER;
     } else
-        sharc_hash_decode_read_signature_fast(in, out, state);
+        sharc_hash_decode_read_signature_fast(in, state);
 
     return SHARC_HASH_DECODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE void sharc_hash_decode_read_chunk_fast(uint32_t *chunk, sharc_byte_buffer *restrict in) {
+SHARC_FORCE_INLINE void sharc_hash_decode_read_compressed_chunk_fast(uint_fast16_t *chunk, sharc_byte_buffer *restrict in) {
+    *chunk = SHARC_LITTLE_ENDIAN_16(*(uint16_t *) (in->pointer + in->position));
+    in->position += sizeof(uint16_t);
+}
+
+SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_compressed_chunk_safe(uint_fast16_t * restrict chunk, sharc_byte_buffer *restrict in) {
+    if (in->position + sizeof(uint16_t) > in->size)
+        return SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER;
+
+    sharc_hash_decode_read_compressed_chunk_fast(chunk, in);
+
+    return SHARC_HASH_DECODE_STATE_READY;
+}
+
+SHARC_FORCE_INLINE void sharc_hash_decode_read_uncompressed_chunk_fast(uint_fast32_t *chunk, sharc_byte_buffer *restrict in) {
     *chunk = SHARC_LITTLE_ENDIAN_32(*(uint32_t *) (in->pointer + in->position));
     in->position += sizeof(uint32_t);
 }
 
-SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_chunk_safe(sharc_byte_buffer *restrict in, sharc_hash_decode_state *restrict state) {
+SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_uncompressed_chunk_safe(uint_fast32_t * restrict chunk, sharc_byte_buffer *restrict in, sharc_hash_decode_state *restrict state) {
     if (state->chunkBytes) {
-        sharc_hash_decode_byteTransfer32(in, &state->chunk, sizeof(uint32_t) - state->chunkBytes, 0);
-        state->chunk = __builtin_bswap32(state->chunk);
+        memcpy(&state->partialChunk[state->chunkBytes], in->pointer + in->position, sizeof(uint32_t) - state->chunkBytes);
+        *chunk = SHARC_LITTLE_ENDIAN_32(*(uint32_t*)state->partialChunk);
+        in->position += sizeof(uint32_t) - state->chunkBytes;
         state->chunkBytes = 0;
-        state->process = SHARC_HASH_DECODE_PROCESS_DATA_SAFE;
     } else if (in->position + sizeof(uint32_t) > in->size) {
-        const int_fast32_t available = in->size - in->position;
-        state->chunkBytes = sharc_hash_decode_byteTransfer32(in, &state->chunk, available, sizeof(uint32_t) - available);
+        state->chunkBytes = in->size - in->position;
+        memcpy(&state->partialChunk[0], in->pointer + in->position, state->chunkBytes);
+        in->position = in->size;
         return SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER;
     } else
-        sharc_hash_decode_read_chunk_fast(&state->chunk, in);
+        sharc_hash_decode_read_uncompressed_chunk_fast(chunk, in);
 
     return SHARC_HASH_DECODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE void sharc_hash_decode_process_chunk_compressed(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary) {
-    sharc_dictionary_entry *found = &dictionary->entries[SHARC_LITTLE_ENDIAN_16(*(uint16_t *) (in->pointer + in->position))];
-    *(uint32_t *) (out->pointer + out->position) = found->as_uint32_t;
-    in->position += sizeof(uint16_t);
+SHARC_FORCE_INLINE void sharc_hash_decode_compressed_chunk(const uint_fast16_t* chunk, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary) {
+    *(uint32_t *) (out->pointer + out->position) = (&dictionary->entries[*chunk])->as_uint32_t;
+    out->position += sizeof(uint32_t);
 }
 
-SHARC_FORCE_INLINE void sharc_hash_decode_process_chunk_uncompressed(const uint32_t *chunk, uint_fast32_t *hash, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint_fast32_t xorMask) {
-    SHARC_HASH_ALGORITHM(*hash, *chunk, xorMask);
-    (&dictionary->entries[*hash])->as_uint32_t = *chunk;
+SHARC_FORCE_INLINE void sharc_hash_decode_uncompressed_chunk(const uint32_t *chunk, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint_fast32_t xorMask) {
+    uint_fast32_t hash;
+    SHARC_HASH_ALGORITHM(hash, *chunk, xorMask);
+    (&dictionary->entries[hash])->as_uint32_t = *chunk;
     *(uint32_t *) (out->pointer + out->position) = *chunk;
-    //in->position += sizeof(uint32_t);
+    out->position += sizeof(uint32_t);
 }
 
 SHARC_FORCE_INLINE void sharc_hash_decode_kernel_fast(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint32_t xorMask, sharc_hash_decode_state *restrict state, const sharc_bool compressed) {
-    uint_fast32_t hash;
-
-    if (compressed)
-        sharc_hash_decode_process_chunk_compressed(in, out, dictionary);
-    else {
-        sharc_hash_decode_read_chunk_fast(&state->chunk, in);
-        sharc_hash_decode_process_chunk_uncompressed(&state->chunk, &hash, out, dictionary, xorMask);
+    if (compressed) {
+        uint_fast16_t chunk;
+        sharc_hash_decode_read_compressed_chunk_fast(&chunk, in);
+        sharc_hash_decode_compressed_chunk(&chunk, out, dictionary);
+    } else {
+        uint_fast32_t chunk;
+        sharc_hash_decode_read_uncompressed_chunk_fast(&chunk, in);
+        sharc_hash_decode_uncompressed_chunk(&chunk, out, dictionary, xorMask);
     }
-    out->position += sizeof(uint32_t);
+    state->debugCounter += sizeof(uint32_t); // todo
 }
 
 SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_kernel_safe(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint32_t xorMask, sharc_hash_decode_state *restrict state, const sharc_bool compressed) {
     SHARC_HASH_DECODE_STATE returnState;
-    uint_fast32_t hash;
+
+    if (out->position + sizeof(uint32_t) > out->size)
+        return SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
     if (compressed) {
-        if (in->position + sizeof(uint16_t) > in->size)
-            return SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER;
-        sharc_hash_decode_process_chunk_compressed(in, out, dictionary);
-    } else {
-        if ((returnState = sharc_hash_decode_read_chunk_safe(in, state)))
+        uint_fast16_t chunk;
+        if ((returnState = sharc_hash_decode_read_compressed_chunk_safe(&chunk, in)))
             return returnState;
-        sharc_hash_decode_process_chunk_uncompressed(&state->chunk, &hash, out, dictionary, xorMask);
+        sharc_hash_decode_compressed_chunk(&chunk, out, dictionary);
+    } else {
+        uint_fast32_t chunk;
+        if ((returnState = sharc_hash_decode_read_uncompressed_chunk_safe(&chunk, in, state)))
+            return returnState;
+        sharc_hash_decode_uncompressed_chunk(&chunk, out, dictionary, xorMask);
     }
-    out->position += sizeof(uint32_t);
+    state->debugCounter += sizeof(uint32_t); // todo
 
     return SHARC_HASH_DECODE_STATE_READY;
 }
@@ -161,10 +146,25 @@ SHARC_FORCE_INLINE const bool sharc_hash_decode_test_compressed(sharc_hash_decod
     return (sharc_bool const) ((state->signature >> state->shift) & 0x1);
 }
 
+SHARC_FORCE_INLINE void checkCounter(sharc_hash_decode_state* state) {
+    if(state->debugCounter > 29639164) {
+        printf("");
+    }
+}
+
+SHARC_FORCE_INLINE void sharc_hash_decode_process_data_fast(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_decode_state *restrict state) {
+    while (state->shift ^ 64) {
+        checkCounter(state);
+        sharc_hash_decode_kernel_fast(in, out, dictionary, xorMask, state, sharc_hash_decode_test_compressed(state));
+        state->shift++;
+    }
+}
+
 SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_decode_state *state) {
     state->signaturesCount = 0;
     state->signatureBytes = 0;
     state->chunkBytes = 0;
+    state->debugCounter = 0; // todo
 
     state->process = SHARC_HASH_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST;
 
@@ -174,51 +174,70 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_dec
 SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_decode_state *restrict state, const sharc_bool lastIn) {
     SHARC_HASH_DECODE_STATE returnState;
     uint_fast32_t remaining;
-    uint_fast32_t limit = 0;
+    uint_fast32_t limitIn = 0;
+    uint_fast32_t limitOut = 0;
 
-    const uint_fast32_t minimumFastLookahead = (sizeof(sharc_hash_decode_signature) - 2) + sizeof(sharc_hash_decode_signature) + 32 * sizeof(sharc_hash_decode_signature);
-    if (in->size > minimumFastLookahead)
-        limit = in->size - minimumFastLookahead;
+    if (in->size > SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD)
+        limitIn = in->size - SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD;
+    if (out->size > SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD)
+        limitOut = out->size - SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD;
 
     switch (state->process) {
         case SHARC_HASH_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST:
-            while (in->position < limit) {
-                if ((returnState = sharc_hash_decode_read_signature_fast(in, out, state)))
+            while (in->position < limitIn && out->position < limitOut) {
+                checkCounter(state);
+                if ((returnState = sharc_hash_decode_checkSignaturesCount(state)))
                     return returnState;
 
-                while (state->shift ^ 64) {
-                    sharc_hash_decode_kernel_fast(in, out, dictionary, xorMask, state, sharc_hash_decode_test_compressed(state));
-                    state->shift++;
-                }
+                sharc_hash_decode_read_signature_fast(in, state);
+                sharc_hash_decode_process_data_fast(in, out, xorMask, dictionary, state);
             }
-            if (lastIn)
-                state->process = SHARC_HASH_DECODE_PROCESS_FINISH;
-            else
-                state->process = SHARC_HASH_DECODE_PROCESS_READ_SIGNATURE_SAFE;
+            state->process = SHARC_HASH_DECODE_PROCESS_SIGNATURE_SAFE;
             break;
 
-        case SHARC_HASH_DECODE_PROCESS_READ_SIGNATURE_SAFE:
-            if ((returnState = sharc_hash_decode_read_signature_safe(in, out, state)))
+        case SHARC_HASH_DECODE_PROCESS_SIGNATURE_SAFE:
+            checkCounter(state);
+            if ((returnState = sharc_hash_decode_checkSignaturesCount(state)))
                 return returnState;
 
+            if ((returnState = sharc_hash_decode_read_signature_safe(in, state)))
+                return returnState;
+
+            if (in->position < limitIn && out->position < limitOut) {
+                state->process = SHARC_HASH_DECODE_PROCESS_DATA_FAST;
+                return SHARC_HASH_DECODE_STATE_READY;
+            }
+
             state->process = SHARC_HASH_DECODE_PROCESS_DATA_SAFE;
+
+            if (lastIn && in->position + 0x1F > in->size)
+                state->process = SHARC_HASH_DECODE_PROCESS_FINISH;
             break;
 
         case SHARC_HASH_DECODE_PROCESS_DATA_SAFE:
             while (state->shift ^ 64) {
-                if ((returnState = sharc_hash_decode_kernel_safe(in, out, dictionary, xorMask, state, sharc_hash_decode_test_compressed(state)))) {
-                    state->shift--;
+                checkCounter(state);
+                if ((returnState = sharc_hash_decode_kernel_safe(in, out, dictionary, xorMask, state, sharc_hash_decode_test_compressed(state))))
                     return returnState;
-                }
                 state->shift++;
+                if (in->position < limitIn && out->position < limitOut) {
+                    state->process = SHARC_HASH_DECODE_PROCESS_DATA_FAST;
+                    return SHARC_HASH_DECODE_STATE_READY;
+                }
             }
-            if (in->position < limit)
-                state->process = SHARC_HASH_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST;
-            else
-                state->process = SHARC_HASH_DECODE_PROCESS_READ_SIGNATURE_SAFE;
+            state->process = SHARC_HASH_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST;
+
+            if (lastIn && in->position + 0x1F > in->size)
+                state->process = SHARC_HASH_DECODE_PROCESS_FINISH;
+            break;
+
+        case SHARC_HASH_DECODE_PROCESS_DATA_FAST:
+            sharc_hash_decode_process_data_fast(in, out, xorMask, dictionary, state);
+            state->process = SHARC_HASH_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST;
             break;
 
         case SHARC_HASH_DECODE_PROCESS_FINISH:
+            checkCounter(state);
             remaining = in->size & 0x1F;
             if (out->position + remaining <= out->size) {
                 memcpy(out->pointer + out->position, in->pointer + in->position, remaining);

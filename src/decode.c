@@ -85,12 +85,8 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                     state->dictionaryData.resetCycle--;
                 else {
                     switch (state->header.genericHeader.compressionMode) {
-                        case SHARC_COMPRESSION_MODE_FASTEST:
-                            sharc_dictionary_resetDirect(&state->dictionaryData.dictionary_a);
-                            break;
-
                         default:
-                        case SHARC_COMPRESSION_MODE_COPY:
+                            sharc_dictionary_resetDirect(&state->dictionaryData.dictionary_a);
                             break;
                     }
                     state->dictionaryData.resetCycle = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE - 1;
