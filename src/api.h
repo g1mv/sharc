@@ -46,19 +46,68 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer *);
 
 /*
  * SHARC stream API functions
+ *
+ * For a simple example of how to use the stream API, please have a look at client.c lines 131 (compression) and 220 (decompression).
+ *
+ * SHARC_STREAM_STATE can have the following values :
+ * SHARC_STREAM_STATE_READY, ready to continue
+ * SHARC_STREAM_STATE_FINISHED, processing is finished
+ * SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER, input buffer has been completely read
+ * SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER, there is not enought space left in the output buffer to continue
+ * SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_NOT_PROPERLY_ALIGNED, improper alignment of input buffer
+ * SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_SIZE_NOT_MULTIPLE_OF_32, size of input buffer is no a multiple of 32
+ * SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_TOO_SMALL, output buffer size is too small
+ * SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_NOT_PROPERLY_ALIGNED, improper alignment of output buffer
+ * SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE, error during processing
  */
-SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint_fast32_t, char*, const uint_fast32_t);
-SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const struct stat*);
-SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);
-SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
+
+SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *stream, char* input_buffer, const uint_fast32_t input_size, char* output_buffer, const uint_fast32_t output_size);
+/*
+ * Prepare a stream with the encapsulated input/output buffers. This function *must* be called upon changing either buffer pointers / sizes.
+ */
+
+SHARC_STREAM_STATE sharc_stream_compress_init_with_stat(sharc_stream * stream, const SHARC_COMPRESSION_MODE compression_mode, const struct stat* file_attributes);
+/*
+ * Initialization function, using a compression mode and a struct stat either instanciated by stat() if processing a file, or NULL.
+ */
+
+SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *stream, const SHARC_COMPRESSION_MODE compression_mode);
+/*
+ * Same function as before, assuming file_attributes is NULL
+ */
+
+SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *stream);
+/*
+ * Stream decompression initialization
+ */
+
+SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *stream, const sharc_bool last_input_data);
+/*
+ * Stream compression function, has to be called repetitively.
+ * When the dataset in the input buffer is the last, last_input_data has to be true. Otherwise it should be false at all times.
+ */
+
+SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *stream, const sharc_bool last_input_data);
+/*
+ * Stream decompression function, has to be called repetitively.
+ * When the dataset in the input buffer is the last, last_input_data has to be true. Otherwise it should be false at all times.
+ */
+
 SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
+/*
+ * Call once processing is finished, to clear up the environment and release eventual memory.
+ */
+
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
+/*
+ * Call once processing is finished, to clear up the environment and release eventual memory.
+ */
+
 
 /*
  * SHARC buffers API functions
+ *
+ * To come
  */
-uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t);
-uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t);
 
 #endif

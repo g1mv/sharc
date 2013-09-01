@@ -66,8 +66,6 @@ typedef struct {
     sharc_byte partialChunk[4];
     uint_fast32_t chunkBytes;
     uint_fast32_t signatureBytes;
-
-    uint_fast32_t debugCounter; // todo
 } sharc_hash_decode_state;
 #pragma pack(pop)
 

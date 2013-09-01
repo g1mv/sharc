@@ -133,7 +133,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
         sharc_error("Unable to prepare compression");
 
-    if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, &attributes))
+    if (sharc_stream_compress_init_with_stat(&stream, SHARC_COMPRESSION_MODE_FASTEST, &attributes))
         sharc_error("Unable to initialize compression");
 
     uint_fast32_t read = reloadInputBuffer(&stream, io_in);

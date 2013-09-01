@@ -41,11 +41,15 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_check_conformity(sharc_stream
     return SHARC_STREAM_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *stream, const SHARC_COMPRESSION_MODE compressionMode, const struct stat *fileAttributes) {
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init_with_stat(sharc_stream *stream, const SHARC_COMPRESSION_MODE compressionMode, const struct stat *fileAttributes) {
     if (sharc_encode_init_with_file(&stream->internal_state.internal_encode_state, compressionMode, SHARC_ENCODE_TYPE_WITH_HEADER, fileAttributes))
         return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
 
     return SHARC_STREAM_STATE_READY;
+}
+
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *stream, const SHARC_COMPRESSION_MODE compressionMode) {
+    return sharc_stream_compress_init_with_stat(stream, compressionMode, NULL);
 }
 
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *stream, const sharc_bool lastIn) {

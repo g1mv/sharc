@@ -19,25 +19,5 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 27/08/13 15:01
+ * 01/09/13 19:43
  */
-
-#ifndef SHARC_BUFFERS_H
-#define SHARC_BUFFERS_H
-
-#include "api.h"
-#include "block_header.h"
-#include "byte_buffer.h"
-#include "header.h"
-
-typedef enum {
-    SHARC_BUFFERS_STATE_OK = 0,
-    SHARC_BUFFERS_STATE_ERROR
-} SHARC_BUFFERS_STATE;
-
-/*uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t);
-uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t);
-SHARC_BUFFERS_STATE sharc_api_buffers_compress(uint8_t*, uint64_t, uint8_t*, uint64_t*, uint32_t);
-SHARC_BUFFERS_STATE sharc_api_buffers_decompress(uint8_t*, uint64_t, uint8_t*, uint64_t*);*/
-
-#endif
