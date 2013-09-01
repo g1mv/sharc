@@ -107,7 +107,7 @@ SHARC_FORCE_INLINE void sharc_hash_decode_uncompressed_chunk(const uint32_t *chu
     out->position += sizeof(uint32_t);
 }
 
-SHARC_FORCE_INLINE void sharc_hash_decode_kernel_fast(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint32_t xorMask, sharc_hash_decode_state *restrict state, const sharc_bool compressed) {
+SHARC_FORCE_INLINE void sharc_hash_decode_kernel_fast(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint_fast32_t xorMask, sharc_hash_decode_state *restrict state, const sharc_bool compressed) {
     if (compressed) {
         uint_fast16_t chunk;
         sharc_hash_decode_read_compressed_chunk_fast(&chunk, in);
@@ -119,7 +119,7 @@ SHARC_FORCE_INLINE void sharc_hash_decode_kernel_fast(sharc_byte_buffer *restric
     }
 }
 
-SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_kernel_safe(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint32_t xorMask, sharc_hash_decode_state *restrict state, const sharc_bool compressed) {
+SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_kernel_safe(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint_fast32_t xorMask, sharc_hash_decode_state *restrict state, const sharc_bool compressed) {
     SHARC_HASH_DECODE_STATE returnState;
 
     if (out->position + sizeof(uint32_t) > out->size)
@@ -144,7 +144,7 @@ SHARC_FORCE_INLINE const bool sharc_hash_decode_test_compressed(sharc_hash_decod
     return (sharc_bool const) ((state->signature >> state->shift) & 0x1);
 }
 
-SHARC_FORCE_INLINE void sharc_hash_decode_process_data_fast(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_decode_state *restrict state) {
+SHARC_FORCE_INLINE void sharc_hash_decode_process_data_fast(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint_fast32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_decode_state *restrict state) {
     while (state->shift ^ 64) {
         sharc_hash_decode_kernel_fast(in, out, dictionary, xorMask, state, sharc_hash_decode_test_compressed(state));
         state->shift++;
