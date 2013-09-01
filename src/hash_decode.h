@@ -70,7 +70,7 @@ typedef struct {
 #pragma pack(pop)
 
 SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_decode_state*);
-SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint_fast32_t, sharc_dictionary *, sharc_hash_decode_state *, const sharc_bool);
+SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_dictionary *, sharc_hash_decode_state *, const sharc_bool);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_finish(sharc_hash_decode_state*);
 
 #endif
