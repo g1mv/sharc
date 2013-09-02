@@ -41,15 +41,15 @@ SHARC_FORCE_INLINE void sharc_hash_decode_read_signature_fast(sharc_byte_buffer 
 
 SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_signature_safe(sharc_byte_buffer *restrict in, sharc_hash_decode_state *restrict state) {
     if (state->signatureBytes) {
-        memcpy(&state->partialSignature[state->signatureBytes], in->pointer + in->position, sizeof(sharc_hash_decode_signature) - state->signatureBytes);
-        state->signature = SHARC_LITTLE_ENDIAN_64(*(uint64_t *) state->partialSignature);
+        memcpy(&state->partialSignature.as_bytes[state->signatureBytes], in->pointer + in->position, sizeof(sharc_hash_decode_signature) - state->signatureBytes);
+        state->signature = SHARC_LITTLE_ENDIAN_64(state->partialSignature.as_uint64_t);
         in->position += sizeof(sharc_hash_decode_signature) - state->signatureBytes;
         state->signatureBytes = 0;
         state->shift = 0;
         state->signaturesCount++;
     } else if (in->position + sizeof(sharc_hash_decode_signature) > in->size) {
         state->signatureBytes = in->size - in->position;
-        memcpy(&state->partialSignature[0], in->pointer + in->position, state->signatureBytes);
+        memcpy(&state->partialSignature.as_bytes[0], in->pointer + in->position, state->signatureBytes);
         in->position = in->size;
         return SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER;
     } else
@@ -79,13 +79,13 @@ SHARC_FORCE_INLINE void sharc_hash_decode_read_uncompressed_chunk_fast(uint32_t 
 
 SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_uncompressed_chunk_safe(uint32_t *restrict chunk, sharc_byte_buffer *restrict in, sharc_hash_decode_state *restrict state) {
     if (state->chunkBytes) {
-        memcpy(&state->partialChunk[state->chunkBytes], in->pointer + in->position, sizeof(uint32_t) - state->chunkBytes);
-        *chunk = SHARC_LITTLE_ENDIAN_32(*(uint32_t *) state->partialChunk);
+        memcpy(&state->partialChunk.as_bytes[state->chunkBytes], in->pointer + in->position, sizeof(uint32_t) - state->chunkBytes);
+        *chunk = SHARC_LITTLE_ENDIAN_32(state->partialChunk.as_uint32_t);
         in->position += sizeof(uint32_t) - state->chunkBytes;
         state->chunkBytes = 0;
     } else if (in->position + sizeof(uint32_t) > in->size) {
         state->chunkBytes = in->size - in->position;
-        memcpy(&state->partialChunk[0], in->pointer + in->position, state->chunkBytes);
+        memcpy(&state->partialChunk.as_bytes[0], in->pointer + in->position, state->chunkBytes);
         in->position = in->size;
         return SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER;
     } else
@@ -236,7 +236,7 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
 
         case SHARC_HASH_DECODE_PROCESS_FINISH:
             if (state->chunkBytes) {
-                if (sharc_hash_decode_attempt_copy(out, state->partialChunk, state->chunkBytes))
+                if (sharc_hash_decode_attempt_copy(out, state->partialChunk.as_bytes, state->chunkBytes))
                     return SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
                 state->chunkBytes = 0;
             }

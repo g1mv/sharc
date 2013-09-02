@@ -62,8 +62,14 @@ typedef struct {
     uint_fast32_t shift;
     uint_fast32_t signaturesCount;
 
-    sharc_byte partialSignature[8];
-    sharc_byte partialChunk[4];
+    union {
+        sharc_byte as_bytes[8];
+        uint64_t as_uint64_t;
+    } partialSignature;
+    union {
+        sharc_byte as_bytes[4];
+        uint32_t as_uint32_t;
+    } partialChunk;
     uint_fast32_t chunkBytes;
     uint_fast32_t signatureBytes;
 } sharc_hash_decode_state;
