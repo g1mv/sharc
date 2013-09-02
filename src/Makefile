@@ -24,7 +24,7 @@
 
 TARGET = sharc
 
-CFLAGS = -O4 -std=gnu99 -D_FILE_OFFSET_BITS=64
+CFLAGS = -std=gnu99 -D_FILE_OFFSET_BITS=64
 
 ifeq ($(OS),Windows_NT)
     EXTENSION = .exe
@@ -40,6 +40,14 @@ endif
 
 ifndef WARNINGS
     CFLAGS += -w
+else
+    CFLAGS += -Wall
+endif
+
+ifndef DEBUG
+    CFLAGS += -O4
+else
+    CFLAGS += -O0 -g
 endif
 
 CC = @$(CROSS-PREFIX)cc
