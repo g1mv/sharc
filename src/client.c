@@ -136,6 +136,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
         if (sharc_stream_compress_init_with_stat(&stream, SHARC_COMPRESSION_MODE_FASTEST, &attributes))
             sharc_error("Unable to initialize file compression");
+    } else {
         if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST))
             sharc_error("Unable to initialize compression");
     }
