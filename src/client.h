@@ -94,7 +94,7 @@
 typedef struct {
     const char* name;
     FILE* stream;
-    sharc_byte type;
+    sharc_byte origin_type;
 } sharc_client_io;
 
 char input_buffer[SHARC_PREFERRED_BUFFER_SIZE];
