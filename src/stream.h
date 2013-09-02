@@ -31,7 +31,7 @@
 #include "byte_buffer.h"
 #include "header.h"
 
-#define SHARC_STREAM_MINIMUM_OUT_BUFFER_SIZE            (1 << 9)
+#define SHARC_STREAM_MINIMUM_OUT_BUFFER_SIZE                        (1 << 9)
 
 typedef enum {
     SHARC_STREAM_STATE_READY = 0,

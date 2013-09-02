@@ -32,9 +32,6 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *restric
 }
 
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_check_conformity(sharc_stream *stream) {
-    if ((uint64_t) stream->in.pointer & 0x7)
-        return SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_NOT_PROPERLY_ALIGNED;
-
     if (stream->out.size < SHARC_STREAM_MINIMUM_OUT_BUFFER_SIZE)
         return SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_TOO_SMALL;
 
