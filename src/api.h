@@ -47,17 +47,15 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer *);
 /*
  * SHARC stream API functions
  *
- * For a simple example of how to use the stream API, please have a look at client.c lines 131 (compression) and 220 (decompression).
+ * For a simple example of how to use the stream API, please have a look at client.c
  *
  * SHARC_STREAM_STATE can have the following values :
  * SHARC_STREAM_STATE_READY, ready to continue
  * SHARC_STREAM_STATE_FINISHED, processing is finished
  * SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER, input buffer has been completely read
  * SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER, there is not enought space left in the output buffer to continue
- * SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_NOT_PROPERLY_ALIGNED, improper alignment of input buffer
  * SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_SIZE_NOT_MULTIPLE_OF_32, size of input buffer is no a multiple of 32
  * SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_TOO_SMALL, output buffer size is too small
- * SHARC_STREAM_STATE_ERROR_OUTPUT_BUFFER_NOT_PROPERLY_ALIGNED, improper alignment of output buffer
  * SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE, error during processing
  */
 
