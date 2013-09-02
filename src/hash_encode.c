@@ -95,6 +95,15 @@ SHARC_FORCE_INLINE void sharc_hash_encode_process_span(uint64_t *chunk, sharc_by
     sharc_hash_encode_process_chunk(chunk, in, out, hash, xorMask, dictionary, state);
 }
 
+SHARC_FORCE_INLINE sharc_bool sharc_hash_encode_attempt_copy(sharc_byte_buffer *restrict out, sharc_byte *restrict origin, const uint_fast32_t count) {
+    if (out->position + count <= out->size) {
+        memcpy(out->pointer + out->position, origin, count);
+        out->position += count;
+        return false;
+    }
+    return true;
+}
+
 SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_encode_state *state) {
     state->signaturesCount = 0;
 
@@ -125,6 +134,8 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
             break;
 
         case SHARC_HASH_ENCODE_PROCESS_DATA:
+            if (in->size == 0)
+                return SHARC_HASH_ENCODE_STATE_FINISHED;
             while (true) {
                 sharc_hash_encode_process_span(&chunk, in, out, &hash, xorMask, dictionary, state);
                 if (in->position == limit) {
@@ -142,26 +153,28 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
             }
 
         case SHARC_HASH_ENCODE_PROCESS_FINISH:
-            while (in->size - in->position >= sizeof(uint32_t)) {
-                if (out->size - out->position < sizeof(uint32_t))
-                    return SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
-                sharc_hash_encode_kernel(out, &hash, *(uint32_t *) (in->pointer + in->position), xorMask, dictionary, state);
-                in->position += sizeof(uint32_t);
-                if (state->shift == 64) {
-                    if ((returnState = sharc_hash_encode_prepareNewBlock(out, state, sizeof(sharc_hash_encode_signature))))
-                        return returnState;
+            while (true) {
+                while (state->shift ^ 64) {
+                    if (in->size - in->position < sizeof(uint32_t))
+                        goto finish;
+                    else {
+                        if (out->size - out->position < sizeof(uint32_t))
+                            return SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
+                        sharc_hash_encode_kernel(out, &hash, *(uint32_t *) (in->pointer + in->position), xorMask, dictionary, state);
+                        in->position += sizeof(uint32_t);
+                    }
                 }
+                if (in->size - in->position < sizeof(uint32_t))
+                    goto finish;
+                else if ((returnState = sharc_hash_encode_prepareNewBlock(out, state, sizeof(sharc_hash_encode_signature))))
+                    return returnState;
             }
+        finish:
             remaining = in->size - in->position;
-            if (out->position + remaining <= out->size) {
-                memcpy(out->pointer + out->position, in->pointer + in->position, remaining);
-
-                in->position += remaining;
-                out->position += remaining;
-
-                return SHARC_HASH_ENCODE_STATE_FINISHED;
-            } else
+            if (sharc_hash_encode_attempt_copy(out, in->pointer + in->position, remaining))
                 return SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
+            in->position += remaining;
+            return SHARC_HASH_ENCODE_STATE_FINISHED;
 
         default:
             return SHARC_HASH_ENCODE_STATE_ERROR;

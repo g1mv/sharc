@@ -151,6 +151,15 @@ SHARC_FORCE_INLINE void sharc_hash_decode_process_data_fast(sharc_byte_buffer *r
     }
 }
 
+SHARC_FORCE_INLINE sharc_bool sharc_hash_decode_attempt_copy(sharc_byte_buffer *restrict out, sharc_byte *restrict origin, const uint_fast32_t count) {
+    if (out->position + count <= out->size) {
+        memcpy(out->pointer + out->position, origin, count);
+        out->position += count;
+        return false;
+    }
+    return true;
+}
+
 SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_decode_state *state) {
     state->signaturesCount = 0;
     state->signatureBytes = 0;
@@ -185,6 +194,11 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
             break;
 
         case SHARC_HASH_DECODE_PROCESS_SIGNATURE_SAFE:
+            if (lastIn && (in->size - in->position < sizeof(sharc_hash_decode_signature) + sizeof(uint16_t))) {
+                state->process = SHARC_HASH_DECODE_PROCESS_FINISH;
+                return SHARC_HASH_DECODE_STATE_READY;
+            }
+
             if ((returnState = sharc_hash_decode_checkSignaturesCount(state)))
                 return returnState;
 
@@ -212,10 +226,6 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
                     return SHARC_HASH_DECODE_STATE_READY;
                 }
             }
-            if (lastIn && (in->size - in->position < sizeof(uint16_t))) {
-                state->process = SHARC_HASH_DECODE_PROCESS_FINISH;
-                return SHARC_HASH_DECODE_STATE_READY;
-            }
             state->process = SHARC_HASH_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST;
             break;
 
@@ -226,27 +236,15 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
 
         case SHARC_HASH_DECODE_PROCESS_FINISH:
             if (state->chunkBytes) {
-                if (out->position + state->chunkBytes <= out->size) {
-                    memcpy(out->pointer + out->position, state->partialChunk, state->chunkBytes);
-
-                    in->position += state->chunkBytes;
-                    out->position += state->chunkBytes;
-
-                    return SHARC_HASH_DECODE_STATE_FINISHED;
-                } else
+                if (sharc_hash_decode_attempt_copy(out, state->partialChunk, state->chunkBytes))
                     return SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
+                state->chunkBytes = 0;
             }
-
             remaining = in->size - in->position;
-            if (out->position + remaining <= out->size) {
-                memcpy(out->pointer + out->position, in->pointer + in->position, remaining);
-
-                in->position += remaining;
-                out->position += remaining;
-
-                return SHARC_HASH_DECODE_STATE_FINISHED;
-            } else
+            if (sharc_hash_decode_attempt_copy(out, in->pointer + in->position, remaining))
                 return SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
+            in->position += remaining;
+            return SHARC_HASH_DECODE_STATE_FINISHED;
 
         default:
             return SHARC_HASH_DECODE_STATE_ERROR;
