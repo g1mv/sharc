@@ -136,6 +136,8 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
         case SHARC_HASH_ENCODE_PROCESS_DATA:
             if (in->size == 0)
                 return SHARC_HASH_ENCODE_STATE_FINISHED;
+            if (in->size - in->position < 4 * sizeof(uint64_t))
+                goto finish;
             while (true) {
                 sharc_hash_encode_process_span(&chunk, in, out, &hash, xorMask, dictionary, state);
                 if (in->position == limit) {
