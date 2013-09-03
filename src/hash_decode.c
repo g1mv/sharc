@@ -59,7 +59,7 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_signature_safe
 }
 
 SHARC_FORCE_INLINE void sharc_hash_decode_read_compressed_chunk_fast(uint16_t *chunk, sharc_byte_buffer *restrict in) {
-    *chunk = SHARC_LITTLE_ENDIAN_16(*(uint16_t *) (in->pointer + in->position));
+    *chunk = *(uint16_t *) (in->pointer + in->position);
     in->position += sizeof(uint16_t);
 }
 
@@ -73,14 +73,14 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_compressed_chu
 }
 
 SHARC_FORCE_INLINE void sharc_hash_decode_read_uncompressed_chunk_fast(uint32_t *chunk, sharc_byte_buffer *restrict in) {
-    *chunk = SHARC_LITTLE_ENDIAN_32(*(uint32_t *) (in->pointer + in->position));
+    *chunk = *(uint32_t *) (in->pointer + in->position);
     in->position += sizeof(uint32_t);
 }
 
 SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_uncompressed_chunk_safe(uint32_t *restrict chunk, sharc_byte_buffer *restrict in, sharc_hash_decode_state *restrict state) {
     if (state->chunkBytes) {
         memcpy(&state->partialChunk.as_bytes[state->chunkBytes], in->pointer + in->position, sizeof(uint32_t) - state->chunkBytes);
-        *chunk = SHARC_LITTLE_ENDIAN_32(state->partialChunk.as_uint32_t);
+        *chunk = state->partialChunk.as_uint32_t;
         in->position += sizeof(uint32_t) - state->chunkBytes;
         state->chunkBytes = 0;
     } else if (in->position + sizeof(uint32_t) > in->size) {
@@ -95,13 +95,13 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_read_uncompressed_c
 }
 
 SHARC_FORCE_INLINE void sharc_hash_decode_compressed_chunk(const uint16_t *chunk, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary) {
-    *(uint32_t *) (out->pointer + out->position) = (&dictionary->entries[*chunk])->as_uint32_t;
+    *(uint32_t *) (out->pointer + out->position) = (&dictionary->entries[SHARC_LITTLE_ENDIAN_16(*chunk)])->as_uint32_t;
     out->position += sizeof(uint32_t);
 }
 
 SHARC_FORCE_INLINE void sharc_hash_decode_uncompressed_chunk(const uint32_t *chunk, sharc_byte_buffer *restrict out, sharc_dictionary *restrict dictionary, const uint32_t xorMask) {
     uint32_t hash;
-    SHARC_HASH_ALGORITHM(hash, *chunk, xorMask);
+    SHARC_HASH_ALGORITHM(hash, SHARC_LITTLE_ENDIAN_32(*chunk), xorMask);
     (&dictionary->entries[hash])->as_uint32_t = *chunk;
     *(uint32_t *) (out->pointer + out->position) = *chunk;
     out->position += sizeof(uint32_t);
