@@ -25,7 +25,11 @@
 #include "hash_encode.h"
 
 SHARC_FORCE_INLINE void sharc_hash_encode_writeToSignature(sharc_hash_encode_state *state) {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     *(state->signature) |= ((uint64_t) 1) << state->shift;
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    *(state->signature) |= ((uint64_t) 1) << ((56 - (state->shift & ~0x7)) + (state->shift & 0x7));
+#endif
 }
 
 SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_prepareNewBlock(sharc_byte_buffer *restrict out, sharc_hash_encode_state *restrict state, const uint_fast32_t minimumLookahead) {
@@ -80,11 +84,15 @@ SHARC_FORCE_INLINE void sharc_hash_encode_kernel(sharc_byte_buffer *restrict out
     state->shift++;
 }
 
-// todo check big endian, reverse the order
 SHARC_FORCE_INLINE void sharc_hash_encode_process_chunk(uint64_t *chunk, sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, uint32_t *restrict hash, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state) {
     *chunk = *(uint64_t *) (in->pointer + in->position);
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     sharc_hash_encode_kernel(out, hash, (uint32_t) (*chunk & 0xFFFFFFFF), xorMask, dictionary, state);
+#endif
     sharc_hash_encode_kernel(out, hash, (uint32_t) (*chunk >> 32), xorMask, dictionary, state);
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    sharc_hash_encode_kernel(out, hash, (uint32_t) (*chunk & 0xFFFFFFFF), xorMask, dictionary, state);
+#endif
     in->position += sizeof(uint64_t);
 }
 
