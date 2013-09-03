@@ -25,16 +25,10 @@
 #include "block_header.h"
 
 SHARC_FORCE_INLINE sharc_bool sharc_block_header_read(sharc_byte_buffer* restrict in, sharc_block_header* restrict blockHeader) {
-    blockHeader->dictionaryFlags = *(in->pointer + in->position);
-
-    in->position += sizeof(sharc_block_header);
     return true;
 }
 
 
 SHARC_FORCE_INLINE uint32_t sharc_block_header_write(sharc_byte_buffer* out, sharc_byte dictionaryFlags) {
-    *(out->pointer + out->position) = dictionaryFlags;
-
-    out->position += sizeof(sharc_block_header);
     return sizeof(sharc_block_header);
 }

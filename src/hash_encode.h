@@ -29,6 +29,7 @@
 #include "dictionary.h"
 #include "hash.h"
 #include "block_header.h"
+#include "block.h"
 
 #define SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD             (sizeof(uint64_t) + 32 * sizeof(uint64_t))
 

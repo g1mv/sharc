@@ -21,3 +21,24 @@
  *
  * 01/09/13 19:43
  */
+
+#ifndef SHARC_BLOCK_FOOTER_H
+#define SHARC_BLOCK_FOOTER_H
+
+#include <sys/stat.h>
+#include <stdio.h>
+#include <time.h>
+
+#include "globals.h"
+#include "byte_buffer.h"
+
+#pragma pack(push)
+#pragma pack(4)
+typedef struct {
+} sharc_block_footer;
+#pragma pack(pop)
+
+sharc_bool sharc_block_footer_read(sharc_byte_buffer*, sharc_block_footer*);
+uint32_t sharc_block_footer_write(sharc_byte_buffer*, const uint32_t);
+
+#endif

@@ -21,3 +21,14 @@
  *
  * 01/09/13 19:43
  */
+
+#include "block_footer.h"
+
+SHARC_FORCE_INLINE sharc_bool sharc_block_header_read(sharc_byte_buffer* restrict in, sharc_block_footer* restrict blockHeader) {
+    return true;
+}
+
+
+SHARC_FORCE_INLINE uint32_t sharc_block_header_write(sharc_byte_buffer* out, const uint32_t hashsum) {
+    return sizeof(sharc_block_footer);
+}

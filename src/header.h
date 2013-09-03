@@ -46,6 +46,7 @@
 #include "dictionary.h"
 #include "block_header.h"
 #include "byte_buffer.h"
+#include "block.h"
 
 #define SHARC_HEADER_MAGIC_NUMBER      1908011803
 
