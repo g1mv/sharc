@@ -47,15 +47,15 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *s
     return SHARC_STREAM_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *stream, const sharc_bool lastIn) {
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *stream, const sharc_bool flush) {
     SHARC_STREAM_STATE streamState = sharc_stream_check_conformity(stream);
     if (streamState)
         return streamState;
 
-    if (!lastIn) if (stream->out.size & 0x1F)
+    if (!flush) if (stream->out.size & 0x1F)
         return SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_SIZE_NOT_MULTIPLE_OF_32;
 
-    SHARC_ENCODE_STATE returnState = sharc_encode_process(&stream->in, &stream->out, &stream->internal_state.internal_encode_state, lastIn);
+    SHARC_ENCODE_STATE returnState = sharc_encode_process(&stream->in, &stream->out, &stream->internal_state.internal_encode_state, flush);
     stream->in_total_read = stream->internal_state.internal_encode_state.totalRead;
     stream->out_total_written = stream->internal_state.internal_encode_state.totalWritten;
 
@@ -90,12 +90,12 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream 
     return SHARC_STREAM_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *stream, const sharc_bool lastIn) {
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *stream, const sharc_bool flush) {
     SHARC_STREAM_STATE streamState = sharc_stream_check_conformity(stream);
     if (streamState)
         return streamState;
 
-    SHARC_DECODE_STATE returnState = sharc_decode_process(&stream->in, &stream->out, &stream->internal_state.internal_decode_state, lastIn);
+    SHARC_DECODE_STATE returnState = sharc_decode_process(&stream->in, &stream->out, &stream->internal_state.internal_decode_state, flush);
     stream->in_total_read = stream->internal_state.internal_decode_state.totalRead;
     stream->out_total_written = stream->internal_state.internal_decode_state.totalWritten;
 

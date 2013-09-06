@@ -99,28 +99,35 @@ SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *stream);
  * When the dataset in the input buffer is the last, last_input_data has to be true. Otherwise it should be false at all times.
  *
  * @param stream the stream
- * @param last_input_data set to true if the presented data is the last
+ * @param flush a boolean indicating flush behaviour
+ *      If set to true, this will ensure that every byte from the input buffer will have its counterpart in the output buffer.
+ *      flush has to be true when the presented data is the last (end of a file for example).
+ *      It can also be set to true multiple times to handle network streaming for example. In that case, please also check
+ *      the block_type parameter of sharc_stream_compress_init to enable better compression ratio.
  */
-SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *stream, const sharc_bool last_input_data);
+SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *stream, const sharc_bool flush);
 
 /*
  * Stream decompression function, has to be called repetitively.
  * When the dataset in the input buffer is the last, last_input_data has to be true. Otherwise it should be false at all times.
  *
  * @param stream the stream
- * @param last_input_data set to true if the presented data is the last
+ * @param flush a boolean indicating flush behaviour
+ *      If set to true, this will ensure that every byte from the input buffer will have its counterpart in the output buffer.
+ *      flush has to be true when the presented data is the last (end of a file for example)
+ *      It can also be set to true multiple times to handle network streaming for example.
  */
-SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *stream, const sharc_bool last_input_data);
+SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *stream, const sharc_bool flush);
 
 /*
- * Call once processing is finished, to clear up the environment and release eventual memory.
+ * Call once processing is finished, to clear up the environment and release eventual allocated memory.
  *
  * @param stream the stream
  */
 SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *stream);
 
 /*
- * Call once processing is finished, to clear up the environment and release eventual memory.
+ * Call once processing is finished, to clear up the environment and release eventual allocated memory.
  *
  * @param stream the stream
  */

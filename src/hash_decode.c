@@ -170,7 +170,7 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_dec
     return SHARC_HASH_DECODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_decode_state *restrict state, const sharc_bool lastIn) {
+SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_decode_state *restrict state, const sharc_bool flush) {
     SHARC_HASH_DECODE_STATE returnState;
     uint_fast32_t remaining;
     uint_fast32_t limitIn = 0;
@@ -194,7 +194,7 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
             break;
 
         case SHARC_HASH_DECODE_PROCESS_SIGNATURE_SAFE:
-            if (lastIn && (in->size - in->position < sizeof(sharc_hash_decode_signature) + sizeof(uint16_t))) {
+            if (flush && (in->size - in->position < sizeof(sharc_hash_decode_signature) + sizeof(uint16_t))) {
                 state->process = SHARC_HASH_DECODE_PROCESS_FINISH;
                 return SHARC_HASH_DECODE_STATE_READY;
             }
@@ -214,7 +214,7 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
 
         case SHARC_HASH_DECODE_PROCESS_DATA_SAFE:
             while (state->shift ^ 64) {
-                if (lastIn && (in->size - in->position < sizeof(uint16_t))) {
+                if (flush && (in->size - in->position < sizeof(uint16_t))) {
                     state->process = SHARC_HASH_DECODE_PROCESS_FINISH;
                     return SHARC_HASH_DECODE_STATE_READY;
                 }

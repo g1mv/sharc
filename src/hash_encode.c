@@ -120,7 +120,7 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_enc
     return SHARC_HASH_ENCODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state, const sharc_bool lastIn) {
+SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state, const sharc_bool flush) {
     SHARC_HASH_ENCODE_STATE returnState;
     uint32_t hash;
     uint_fast32_t remaining;
@@ -149,7 +149,7 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
             while (true) {
                 sharc_hash_encode_process_span(&chunk, in, out, &hash, xorMask, dictionary, state);
                 if (in->position == limit) {
-                    if (lastIn) {
+                    if (flush) {
                         state->process = SHARC_HASH_ENCODE_PROCESS_FINISH;
                         return SHARC_HASH_ENCODE_STATE_READY;
                     } else {
