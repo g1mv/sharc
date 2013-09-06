@@ -68,7 +68,7 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer *);
  * @param output_buffer a buffer of bytes
  * @param output_size the size of output_buffer, must be at least SHARC_STREAM_MINIMUM_OUT_BUFFER_SIZE
  */
-SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *stream, char* input_buffer, const uint_fast32_t input_size, char* output_buffer, const uint_fast32_t output_size);
+SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *stream, char* input_buffer, const uint_fast32_t input_size, char* output_buffer, const uint_fast32_t output_size, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
 
 /*
  * Initialize compression
@@ -84,6 +84,8 @@ SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *stream, char* input_buffer
  *      It can be useful in network streaming situations, where data integrity is already checked by the protocol (TCP/IP for example), and the flush option in sharc_stream_compress is often set,
  *      as this option will enhance compression ratio by removing the trailing block footer at the end of each encoded output.
  * @param file_attributes the file attributes if known, otherwise use NULL.
+ * @param mem_alloc a pointer to a memory allocation function. If NULL, the standard malloc(size_t) is used.
+ * @param mem_free a pointer to a memory freeing function. If NULL, the standard free(void*) is used.
  */
 SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *stream, const SHARC_COMPRESSION_MODE compression_mode, const SHARC_BLOCK_TYPE block_type, const struct stat* file_attributes);
 

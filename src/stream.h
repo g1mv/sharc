@@ -57,6 +57,9 @@ typedef enum {
 typedef struct {
     SHARC_STREAM_PROCESS process;
 
+    void *(*mem_alloc)(size_t);
+    void (*mem_free)(void *);
+
     sharc_encode_state internal_encode_state;
     sharc_decode_state internal_decode_state;
 } sharc_stream_state;
@@ -71,7 +74,7 @@ typedef struct {
     sharc_stream_state internal_state;
 } sharc_stream;
 
-SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint_fast32_t, char*, const uint_fast32_t);
+SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint_fast32_t, char*, const uint_fast32_t, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
 SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const SHARC_BLOCK_TYPE, const struct stat*);
 SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);

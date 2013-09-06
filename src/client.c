@@ -130,7 +130,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
      */
     sharc_stream stream;
     SHARC_STREAM_STATE returnState;
-    if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
+    if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_error("Unable to prepare compression");
 
     if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
@@ -224,7 +224,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
      */
     sharc_stream stream;
     SHARC_STREAM_STATE returnState;
-    if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
+    if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_error("Unable to prepare decompression");
 
     if (sharc_stream_decompress_init(&stream))

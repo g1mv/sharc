@@ -24,9 +24,19 @@
 
 #include "stream.h"
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *restrict stream, char *restrict in, const uint_fast32_t availableIn, char *restrict out, const uint_fast32_t availableOut) {
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *restrict stream, char *restrict in, const uint_fast32_t availableIn, char *restrict out, const uint_fast32_t availableOut, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
     sharc_byte_buffer_encapsulate(&stream->in, (sharc_byte *) in, availableIn);
     sharc_byte_buffer_encapsulate(&stream->out, (sharc_byte *) out, availableOut);
+
+    if(mem_alloc == NULL)
+        stream->internal_state.mem_alloc = malloc;
+    else
+        stream->internal_state.mem_alloc = mem_alloc;
+
+    if(mem_free == NULL)
+        stream->internal_state.mem_free = free;
+    else
+        stream->internal_state.mem_free = mem_free;
 
     return SHARC_STREAM_STATE_READY;
 }
