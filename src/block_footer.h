@@ -36,6 +36,6 @@ typedef struct {
 #pragma pack(pop)
 
 sharc_bool sharc_block_footer_read(sharc_byte_buffer*, sharc_block_footer*);
-uint32_t sharc_block_footer_write(sharc_byte_buffer*, const uint32_t);
+uint_fast64_t sharc_block_footer_write(sharc_byte_buffer*, const uint_fast32_t);
 
 #endif

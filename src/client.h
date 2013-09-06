@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "chrono.h"
 #include "stream.h"
@@ -97,8 +98,8 @@ typedef struct {
     sharc_byte origin_type;
 } sharc_client_io;
 
-char input_buffer[SHARC_PREFERRED_BUFFER_SIZE];
-char output_buffer[SHARC_PREFERRED_BUFFER_SIZE];
+uint8_t input_buffer[SHARC_PREFERRED_BUFFER_SIZE];
+uint8_t output_buffer[SHARC_PREFERRED_BUFFER_SIZE];
 
 FILE* sharc_client_checkOpenFile(const char*, const char*, const sharc_bool);
 void sharc_client_version();

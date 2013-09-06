@@ -43,9 +43,9 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_prepareNewBlock(sha
     state->signaturesCount++;
 
     state->shift = 0;
-    state->signature = (sharc_hash_encode_signature *) (out->pointer + out->position);
+    state->signature = (sharc_hash_signature *) (out->pointer + out->position);
     *state->signature = 0;
-    out->position += sizeof(sharc_hash_encode_signature);
+    out->position += sizeof(sharc_hash_signature);
 
     return SHARC_HASH_ENCODE_STATE_READY;
 }
@@ -123,10 +123,10 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_enc
 SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, const uint32_t xorMask, sharc_dictionary *restrict dictionary, sharc_hash_encode_state *restrict state, const sharc_bool flush) {
     SHARC_HASH_ENCODE_STATE returnState;
     uint32_t hash;
-    uint_fast32_t remaining;
+    uint_fast64_t remaining;
     uint64_t chunk;
 
-    const uint_fast32_t limit = in->size & ~0x1F;
+    const uint_fast64_t limit = in->size & ~0x1F;
 
     switch (state->process) {
         case SHARC_HASH_ENCODE_PROCESS_CHECK_STATE:
@@ -176,14 +176,16 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
                 }
                 if (in->size - in->position < sizeof(uint32_t))
                     goto finish;
-                else if ((returnState = sharc_hash_encode_prepareNewBlock(out, state, sizeof(sharc_hash_encode_signature))))
+                else if ((returnState = sharc_hash_encode_prepareNewBlock(out, state, sizeof(sharc_hash_signature))))
                     return returnState;
             }
         finish:
             remaining = in->size - in->position;
-            if (sharc_hash_encode_attempt_copy(out, in->pointer + in->position, remaining))
-                return SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
-            in->position += remaining;
+            if (remaining > 0) {
+                if (sharc_hash_encode_attempt_copy(out, in->pointer + in->position, (uint32_t) remaining))
+                    return SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
+                in->position += remaining;
+            }
             return SHARC_HASH_ENCODE_STATE_FINISHED;
 
         default:

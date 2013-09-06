@@ -33,7 +33,7 @@ SHARC_FORCE_INLINE sharc_bool sharc_block_footer_read(sharc_byte_buffer* restric
 }
 
 
-SHARC_FORCE_INLINE uint32_t sharc_block_footer_write(sharc_byte_buffer* out, const uint32_t hashsum) {
+SHARC_FORCE_INLINE uint_fast64_t sharc_block_footer_write(sharc_byte_buffer* out, const uint_fast32_t hashsum) {
     *(uint32_t*)(out->pointer + out->position) = SHARC_LITTLE_ENDIAN_32(hashsum);
 
     out->position += sizeof(sharc_block_footer);

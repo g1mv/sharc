@@ -30,7 +30,6 @@ SHARC_FORCE_INLINE sharc_bool sharc_block_header_read(sharc_byte_buffer* restric
     return true;
 }
 
-
 SHARC_FORCE_INLINE uint32_t sharc_block_header_write(sharc_byte_buffer* out, sharc_byte dictionaryFlags) {
     out->position += sizeof(sharc_block_header);
 

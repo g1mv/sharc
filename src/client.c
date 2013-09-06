@@ -69,8 +69,8 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     exit(0);
 }
 
-SHARC_FORCE_INLINE uint_fast32_t reloadInputBuffer(sharc_stream *stream, sharc_client_io *io_in) {
-    stream->in.size = (uint_fast32_t) fread(stream->in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
+SHARC_FORCE_INLINE uint_fast64_t reloadInputBuffer(sharc_stream *stream, sharc_client_io *io_in) {
+    stream->in.size = (uint_fast64_t) fread(stream->in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
     if (stream->in.size < SHARC_PREFERRED_BUFFER_SIZE) {
         if (ferror(io_in->stream))
             sharc_error("Error reading file");
@@ -79,8 +79,8 @@ SHARC_FORCE_INLINE uint_fast32_t reloadInputBuffer(sharc_stream *stream, sharc_c
     return stream->in.size;
 }
 
-SHARC_FORCE_INLINE uint_fast32_t emptyOutputBuffer(sharc_stream *stream, sharc_client_io *io_out) {
-    uint_fast32_t written = (uint_fast32_t) fwrite(stream->out.pointer, sizeof(sharc_byte), stream->out.position, io_out->stream);
+SHARC_FORCE_INLINE uint_fast64_t emptyOutputBuffer(sharc_stream *stream, sharc_client_io *io_out) {
+    uint_fast64_t written = (uint_fast64_t) fwrite(stream->out.pointer, sizeof(sharc_byte), (size_t)stream->out.position, io_out->stream);
     if (written < stream->out.position) {
         if (ferror(io_out->stream))
             sharc_error("Error writing file");
@@ -134,14 +134,14 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
         sharc_error("Unable to prepare compression");
 
     if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-        if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, SHARC_BLOCK_TYPE_DEFAULT, &attributes))
+        if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT, SHARC_BLOCK_TYPE_DEFAULT, &attributes))
             sharc_error("Unable to initialize file compression");
     } else {
-        if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, SHARC_BLOCK_TYPE_DEFAULT, NULL))
+        if (sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT, SHARC_BLOCK_TYPE_DEFAULT, NULL))
             sharc_error("Unable to initialize compression");
     }
 
-    uint_fast32_t read = reloadInputBuffer(&stream, io_in);
+    uint_fast64_t read = reloadInputBuffer(&stream, io_in);
     while ((returnState = sharc_stream_compress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)) != SHARC_STREAM_STATE_FINISHED) {
         switch (returnState) {
             case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
@@ -227,10 +227,10 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_error("Unable to prepare decompression");
 
+    uint_fast64_t read = reloadInputBuffer(&stream, io_in);
     if (sharc_stream_decompress_init(&stream))
         sharc_error("Unable to initialize decompression");
 
-    uint_fast32_t read = reloadInputBuffer(&stream, io_in);
     while ((returnState = sharc_stream_decompress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)) != SHARC_STREAM_STATE_FINISHED) {
         switch (returnState) {
             case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
@@ -262,10 +262,10 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
         fclose(io_out->stream);
 
         SHARC_STREAM_ORIGIN_TYPE originType;
-        sharc_stream_utilities_get_origin_type(&stream, &originType);
+        sharc_stream_decompress_utilities_get_origin_type(&stream, &originType);
 
         if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE)
-            sharc_stream_utilities_restore_file_attributes(&stream, io_out->name);
+            sharc_stream_decompress_utilities_restore_file_attributes(&stream, io_out->name);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
             uint64_t totalRead = (uint64_t) ftello(io_in->stream);
@@ -273,7 +273,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
 
             if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
                 uint_fast64_t originalFileSize = 0;
-                sharc_stream_utilities_get_original_file_size(&stream, &originalFileSize);
+                sharc_stream_decompress_utilities_get_original_file_size(&stream, &originalFileSize);
 
                 if (totalWritten != originalFileSize)
                     sharc_error("Input file is corrupt !");

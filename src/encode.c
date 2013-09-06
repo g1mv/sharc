@@ -88,15 +88,16 @@ SHARC_FORCE_INLINE void sharc_encode_update_totals(sharc_byte_buffer *restrict i
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *restrict state, const SHARC_COMPRESSION_MODE mode, const SHARC_ENCODE_TYPE encodeType, const SHARC_BLOCK_TYPE blockType, const struct stat *fileAttributes) {
+SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *restrict state, const SHARC_COMPRESSION_MODE mode, const SHARC_ENCODE_OUTPUT_TYPE encodeType, const SHARC_BLOCK_TYPE blockType, const struct stat *fileAttributes) {
     state->dictionaryData.resetCycle = 0;
 
     switch (encodeType) {
-        case SHARC_ENCODE_TYPE_DEFAULT:
-            state->process = SHARC_ENCODE_PROCESS_WRITE_HEADER;
-            break;
-        case SHARC_ENCODE_TYPE_WITHOUT_HEADER:
+        case SHARC_ENCODE_OUTPUT_TYPE_WITHOUT_HEADER:
+        case SHARC_ENCODE_OUTPUT_TYPE_WITHOUT_HEADER_NOR_FOOTER:
             state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
+            break;
+        default:
+            state->process = SHARC_ENCODE_PROCESS_WRITE_HEADER;
             break;
     }
     state->mode = mode;
@@ -115,7 +116,7 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *rest
     return SHARC_ENCODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_encode_state *restrict state, const sharc_bool lastIn) {
+SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_encode_state *restrict state, const sharc_bool flush) {
     SHARC_ENCODE_STATE encodeState;
     SHARC_HASH_ENCODE_STATE hashEncodeState;
     uint_fast64_t inPositionBefore;
@@ -142,7 +143,7 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
                 inPositionBefore = in->position;
                 outPositionBefore = out->position;
 
-                hashEncodeState = sharc_hash_encode_process(in, out, SHARC_HASH_XOR_MASK_DISPERSION, &state->dictionaryData.dictionary_a, &state->hashEncodeState, lastIn);
+                hashEncodeState = sharc_hash_encode_process(in, out, SHARC_HASH_XOR_MASK_DISPERSION, &state->dictionaryData.dictionary_a, &state->hashEncodeState, flush);
                 sharc_encode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
 
                 switch (hashEncodeState) {
@@ -160,6 +161,8 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
                         break;
 
                     case SHARC_HASH_ENCODE_STATE_FINISHED:
+                        if (state->blockType == SHARC_BLOCK_TYPE_DEFAULT) if ((encodeState = sharc_encode_write_block_footer(out, state)))
+                            return encodeState;
                         return SHARC_ENCODE_STATE_FINISHED;
 
                     case SHARC_HASH_ENCODE_STATE_READY:

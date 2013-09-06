@@ -25,19 +25,18 @@
 #ifndef SHARC_BUFFERS_H
 #define SHARC_BUFFERS_H
 
-#include "api.h"
-#include "block_header.h"
-#include "byte_buffer.h"
-#include "header.h"
+#include "globals.h"
+#include "stream.h"
+#include "footer.h"
 
 typedef enum {
     SHARC_BUFFERS_STATE_OK = 0,
-    SHARC_BUFFERS_STATE_ERROR
+    SHARC_BUFFERS_STATE_ERROR_OUTPUT_BUFFER_TOO_SMALL,
+    SHARC_BUFFERS_STATE_ERROR_INVALID_STATE
 } SHARC_BUFFERS_STATE;
 
-/*uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t);
-uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t);
-SHARC_BUFFERS_STATE sharc_api_buffers_compress(uint8_t*, uint64_t, uint8_t*, uint64_t*, uint32_t);
-SHARC_BUFFERS_STATE sharc_api_buffers_decompress(uint8_t*, uint64_t, uint8_t*, uint64_t*);*/
+SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_fast64_t *, uint_fast64_t, SHARC_ENCODE_OUTPUT_TYPE, SHARC_BLOCK_TYPE);
+SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t*, uint8_t *, uint_fast64_t, uint8_t *, uint_fast64_t, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
+SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t *, uint8_t *, uint_fast64_t, uint8_t *, uint_fast64_t, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
 
 #endif

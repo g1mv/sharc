@@ -48,13 +48,11 @@ typedef enum {
     SHARC_HASH_ENCODE_PROCESS_FINISH
 } SHARC_HASH_ENCODE_PROCESS;
 
-typedef uint64_t sharc_hash_encode_signature;
-
 typedef struct {
     SHARC_HASH_ENCODE_PROCESS process;
 
     uint_fast32_t shift;
-    sharc_hash_encode_signature * signature;
+    sharc_hash_signature * signature;
     uint_fast32_t signaturesCount;
 } sharc_hash_encode_state;
 

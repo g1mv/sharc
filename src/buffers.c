@@ -22,11 +22,77 @@
  * 27/08/13 15:02
  */
 
-/*
-uint64_t sharc_api_buffers_max_compressed_length_without_header(uint64_t uncompressedLength) {
-    return sizeof(sharc_block_header) * (1 + uncompressedLength / SHARC_PREFERRED_BLOCK_SIGNATURES) + uncompressedLength;
+#include "buffers.h"
+
+SHARC_FORCE_INLINE uint_fast64_t sharc_buffers_structure_size(uint_fast64_t initialLength, SHARC_ENCODE_OUTPUT_TYPE outputType, SHARC_BLOCK_TYPE blockType) {
+    uint_fast64_t result = 0;
+    switch (outputType) {
+        case SHARC_ENCODE_OUTPUT_TYPE_DEFAULT:
+            result += sizeof(sharc_header) + sizeof(sharc_footer);
+            break;
+        case SHARC_ENCODE_OUTPUT_TYPE_WITHOUT_HEADER:
+            result += sizeof(sharc_footer);
+            break;
+        case SHARC_ENCODE_OUTPUT_TYPE_WITHOUT_FOOTER:
+            result += sizeof(sharc_header);
+            break;
+        case SHARC_ENCODE_OUTPUT_TYPE_WITHOUT_HEADER_NOR_FOOTER:
+            break;
+    }
+
+    uint64_t blockOverhead = sizeof(sharc_block_header);
+    if (blockType == SHARC_BLOCK_TYPE_DEFAULT)
+        blockOverhead += sizeof(sharc_block_footer);
+
+    return result + (1 + initialLength / (SHARC_PREFERRED_BLOCK_SIGNATURES * 32 * sizeof(sharc_hash_signature))) * blockOverhead;
 }
 
-uint64_t sharc_api_buffers_max_compressed_total_length(uint64_t uncompressedLength) {
-    return sizeof(sharc_header) + sharc_api_buffers_max_compressed_length_without_header(uncompressedLength);
-} */
+SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_fast64_t *result, uint_fast64_t initialLength, SHARC_ENCODE_OUTPUT_TYPE outputType, SHARC_BLOCK_TYPE blockType) {
+    *result = initialLength + sharc_buffers_structure_size(initialLength, outputType, blockType);
+
+    return SHARC_BUFFERS_STATE_OK;
+}
+
+SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t *written, uint8_t *in, uint_fast64_t inSize, uint8_t *out, uint_fast64_t outSize, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
+    uint_fast64_t minimumOutSize;
+
+    sharc_buffers_max_compressed_length(&minimumOutSize, inSize, outputType, blockType);
+    if (outSize < minimumOutSize)
+        return SHARC_BUFFERS_STATE_ERROR_OUTPUT_BUFFER_TOO_SMALL;
+
+    sharc_stream stream;
+    if (sharc_stream_prepare(&stream, in, inSize, out, outSize, mem_alloc, mem_free))
+        return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
+
+    if (sharc_stream_compress_init(&stream, compressionMode, outputType, blockType, NULL))
+        return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
+
+    if (sharc_stream_compress(&stream, true))
+        return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
+
+    if (sharc_stream_compress_finish(&stream))
+        return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
+
+    *written = stream.out_total_written;
+
+    return SHARC_BUFFERS_STATE_OK;
+}
+
+SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t *written, uint8_t *in, uint_fast64_t inSize, uint8_t *out, uint_fast64_t outSize, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
+    sharc_stream stream;
+    if (sharc_stream_prepare(&stream, in, inSize, out, outSize, mem_alloc, mem_free))
+        return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
+
+    if (sharc_stream_decompress_init(&stream))
+        return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
+
+    if (sharc_stream_decompress(&stream, true))
+        return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
+
+    if (sharc_stream_decompress_finish(&stream))
+        return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
+
+    *written = stream.out_total_written;
+
+    return SHARC_BUFFERS_STATE_OK;
+}

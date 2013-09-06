@@ -45,6 +45,8 @@ typedef enum {
 } SHARC_STREAM_STATE;
 
 typedef enum {
+    SHARC_STREAM_PROCESS_ENCODING_INIT,
+    SHARC_STREAM_PROCESS_DECODING_INIT,
     SHARC_STREAM_PROCESS_ENCODING,
     SHARC_STREAM_PROCESS_DECODING
 } SHARC_STREAM_PROCESS;
@@ -74,16 +76,18 @@ typedef struct {
     sharc_stream_state internal_state;
 } sharc_stream;
 
-SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint_fast32_t, char*, const uint_fast32_t, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
-SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const SHARC_BLOCK_TYPE, const struct stat*);
-SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);
-SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
-SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, uint8_t*, const uint_fast64_t, uint8_t*, const uint_fast64_t, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
 
-SHARC_STREAM_STATE sharc_stream_utilities_get_origin_type(sharc_stream*, SHARC_STREAM_ORIGIN_TYPE *);
-SHARC_STREAM_STATE sharc_stream_utilities_get_original_file_size(sharc_stream*, uint_fast64_t*);
-SHARC_STREAM_STATE sharc_stream_utilities_restore_file_attributes(sharc_stream*, const char*);
+SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat*);
+SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);
+SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
+
+SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
+SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_header(sharc_stream*, sharc_header*);
+SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_origin_type(sharc_stream*, SHARC_STREAM_ORIGIN_TYPE *);
+SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_original_file_size(sharc_stream*, uint_fast64_t*);
+SHARC_STREAM_STATE sharc_stream_decompress_utilities_restore_file_attributes(sharc_stream*, const char*);
 
 #endif

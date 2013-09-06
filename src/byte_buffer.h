@@ -31,11 +31,11 @@
 
 typedef struct {
     sharc_byte* pointer;
-    uint_fast32_t position;
-    uint_fast32_t size;
+    uint_fast64_t position;
+    uint_fast64_t size;
 } sharc_byte_buffer;
 
-void sharc_byte_buffer_encapsulate(sharc_byte_buffer *, sharc_byte*, const uint32_t);
+void sharc_byte_buffer_encapsulate(sharc_byte_buffer *, sharc_byte*, const uint_fast64_t);
 void sharc_byte_buffer_rewind(sharc_byte_buffer *);
 
 #endif

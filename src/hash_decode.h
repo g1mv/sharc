@@ -30,7 +30,7 @@
 #include "hash.h"
 #include "block.h"
 
-#define SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD               (sizeof(sharc_hash_decode_signature) + 32 * sizeof(sharc_hash_decode_signature))
+#define SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD               (sizeof(sharc_hash_signature) + 32 * sizeof(sharc_hash_signature))
 #define SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD              (32 * sizeof(uint64_t))
 
 typedef enum {
@@ -50,16 +50,16 @@ typedef enum {
     SHARC_HASH_DECODE_PROCESS_FINISH
 } SHARC_HASH_DECODE_PROCESS;
 
-typedef uint64_t sharc_hash_decode_signature;
-
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
     SHARC_HASH_DECODE_PROCESS process;
 
-    sharc_hash_decode_signature signature;
+    sharc_hash_signature signature;
     uint_fast32_t shift;
     uint_fast32_t signaturesCount;
+
+    uint_fast64_t finishLookAhead;
 
     union {
         sharc_byte as_bytes[8];
@@ -69,11 +69,12 @@ typedef struct {
         sharc_byte as_bytes[4];
         uint32_t as_uint32_t;
     } partialChunk;
-    uint_fast32_t chunkBytes;
-    uint_fast32_t signatureBytes;
+    uint_fast64_t chunkBytes;
+    uint_fast64_t signatureBytes;
 } sharc_hash_decode_state;
 #pragma pack(pop)
 
+void sharc_hash_decode_set_lookahead(sharc_hash_decode_state *, const uint_fast32_t);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_decode_state*);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_dictionary *, sharc_hash_decode_state *, const sharc_bool);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_finish(sharc_hash_decode_state*);

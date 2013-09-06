@@ -26,6 +26,6 @@
 #define SHARC_FOOTER_H
 
 typedef struct {
-} SHARC_FOOTER;
+} sharc_footer;
 
 #endif

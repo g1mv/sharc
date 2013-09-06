@@ -44,6 +44,7 @@ typedef enum {
     SHARC_DECODE_PROCESS_READ_HEADER,
     SHARC_DECODE_PROCESS_READ_BLOCK_HEADER,
     SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER,
+    SHARC_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER,
     SHARC_DECODE_PROCESS_WRITE_DATA
 } SHARC_DECODE_PROCESS;
 
@@ -61,6 +62,7 @@ typedef struct {
 
     sharc_header header;
     sharc_block_header lastBlockHeader;
+    sharc_block_footer lastBlockFooter;
 
     sharc_hash_decode_state hashDecodeState;
     sharc_decode_dictionary_data dictionaryData;
