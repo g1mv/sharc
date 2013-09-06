@@ -44,7 +44,6 @@
 
 #include "globals.h"
 #include "dictionary.h"
-#include "block_header.h"
 #include "byte_buffer.h"
 #include "block.h"
 
@@ -62,9 +61,10 @@ typedef struct {
     sharc_byte version[3];
     sharc_byte blockSignaturesShift;
     sharc_byte resetCycleSizeShift;
-    sharc_byte type;
+    sharc_byte originType;
     sharc_byte compressionMode;
-    sharc_byte reserved;
+    sharc_byte blockType;
+    sharc_byte reserved[4];
 } sharc_header_generic;
 
 typedef struct {
@@ -82,7 +82,7 @@ typedef struct {
 
 sharc_bool sharc_header_checkValidity(sharc_header*);
 sharc_bool sharc_header_read(sharc_byte_buffer*, sharc_header*);
-uint32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const struct stat*);
+uint32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const SHARC_BLOCK_TYPE, const struct stat*);
 sharc_bool sharc_header_restoreFileAttributes(sharc_header_file_information *, const char*);
 
 #endif

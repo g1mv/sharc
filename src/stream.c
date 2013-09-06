@@ -38,17 +38,13 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_check_conformity(sharc_stream
     return SHARC_STREAM_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init_with_stat(sharc_stream *stream, const SHARC_COMPRESSION_MODE compressionMode, const struct stat *fileAttributes) {
-    if (sharc_encode_init_with_file(&stream->internal_state.internal_encode_state, compressionMode, SHARC_ENCODE_TYPE_WITH_HEADER, fileAttributes))
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *stream, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_BLOCK_TYPE blockType, const struct stat *fileAttributes) {
+    if(sharc_encode_init(&stream->internal_state.internal_encode_state, compressionMode, SHARC_ENCODE_TYPE_DEFAULT, blockType, fileAttributes))
         return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
 
     stream->internal_state.process = SHARC_STREAM_PROCESS_ENCODING;
 
     return SHARC_STREAM_STATE_READY;
-}
-
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *stream, const SHARC_COMPRESSION_MODE compressionMode) {
-    return sharc_stream_compress_init_with_stat(stream, compressionMode, NULL);
 }
 
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *stream, const sharc_bool lastIn) {
@@ -127,7 +123,7 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_strea
 
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_utilities_get_origin_type(sharc_stream *stream, SHARC_STREAM_ORIGIN_TYPE *originType) {
     if (stream->internal_state.process == SHARC_STREAM_PROCESS_DECODING) {
-        switch (stream->internal_state.internal_decode_state.header.genericHeader.type) {
+        switch (stream->internal_state.internal_decode_state.header.genericHeader.originType) {
             case SHARC_HEADER_ORIGIN_TYPE_FILE:
                 *originType = SHARC_STREAM_ORIGIN_TYPE_FILE;
                 break;

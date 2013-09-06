@@ -24,11 +24,19 @@
 
 #include "block_footer.h"
 
-SHARC_FORCE_INLINE sharc_bool sharc_block_header_read(sharc_byte_buffer* restrict in, sharc_block_footer* restrict blockHeader) {
+SHARC_FORCE_INLINE sharc_bool sharc_block_footer_read(sharc_byte_buffer* restrict in, sharc_block_footer* restrict blockFooter) {
+    blockFooter->hashsum = *(uint32_t*)(in->pointer + in->position);
+
+    in->position += sizeof(sharc_block_footer);
+
     return true;
 }
 
 
-SHARC_FORCE_INLINE uint32_t sharc_block_header_write(sharc_byte_buffer* out, const uint32_t hashsum) {
+SHARC_FORCE_INLINE uint32_t sharc_block_footer_write(sharc_byte_buffer* out, const uint32_t hashsum) {
+    *(uint32_t*)(out->pointer + out->position) = SHARC_LITTLE_ENDIAN_32(hashsum);
+
+    out->position += sizeof(sharc_block_footer);
+
     return sizeof(sharc_block_footer);
 }

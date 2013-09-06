@@ -26,6 +26,7 @@
 #define SHARC_DECODE_H
 
 #include "block_header.h"
+#include "block_footer.h"
 #include "byte_buffer.h"
 #include "dictionary.h"
 #include "hash_decode.h"
@@ -42,6 +43,7 @@ typedef enum {
 typedef enum {
     SHARC_DECODE_PROCESS_READ_HEADER,
     SHARC_DECODE_PROCESS_READ_BLOCK_HEADER,
+    SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER,
     SHARC_DECODE_PROCESS_WRITE_DATA
 } SHARC_DECODE_PROCESS;
 

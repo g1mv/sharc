@@ -42,12 +42,14 @@ SHARC_FORCE_INLINE sharc_bool sharc_header_read(sharc_byte_buffer* restrict in, 
     in->position += sizeof(sharc_byte);
     header->genericHeader.resetCycleSizeShift = *(in->pointer + in->position);
     in->position += sizeof(sharc_byte);
-    header->genericHeader.type = *(in->pointer + in->position);
+    header->genericHeader.originType = *(in->pointer + in->position);
     in->position += sizeof(sharc_byte);
     header->genericHeader.compressionMode = *(in->pointer + in->position);
-    in->position += 2 * sizeof(sharc_byte);
+    in->position += sizeof(sharc_byte);
+    header->genericHeader.blockType = *(in->pointer + in->position);
+    in->position += 5 * sizeof(sharc_byte);
 
-    switch(header->genericHeader.type) {
+    switch(header->genericHeader.originType) {
         case SHARC_HEADER_ORIGIN_TYPE_FILE:
             header->fileInformationHeader.originalFileSize = SHARC_LITTLE_ENDIAN_64(*(uint64_t*)(in->pointer + in->position));
             in->position += sizeof(uint64_t);
@@ -64,7 +66,7 @@ SHARC_FORCE_INLINE sharc_bool sharc_header_read(sharc_byte_buffer* restrict in, 
     return sharc_header_checkValidity(header);
 }
 
-SHARC_FORCE_INLINE uint32_t sharc_header_write(sharc_byte_buffer* restrict out, const SHARC_HEADER_ORIGIN_TYPE originType, const SHARC_COMPRESSION_MODE compressionMode, const struct stat* restrict fileAttributes) {
+SHARC_FORCE_INLINE uint32_t sharc_header_write(sharc_byte_buffer* restrict out, const SHARC_HEADER_ORIGIN_TYPE originType, const SHARC_COMPRESSION_MODE compressionMode, SHARC_BLOCK_TYPE blockType, const struct stat* restrict fileAttributes) {
     uint32_t written;
     sharc_byte* pointer = out->pointer + out->position;
     *(uint32_t*) pointer = SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER);
@@ -75,13 +77,14 @@ SHARC_FORCE_INLINE uint32_t sharc_header_write(sharc_byte_buffer* restrict out, 
     *(pointer + 8) = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT;
     *(pointer + 9) = originType;
     *(pointer + 10) = compressionMode;
-    *(pointer + 11) = 0;
+    *(pointer + 11) = blockType;
+    *(uint32_t*)(pointer + 12) = 0;
     switch(originType) {
         case SHARC_HEADER_ORIGIN_TYPE_FILE:
-            *(uint64_t*)(pointer + 12) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_size);
-            *(uint32_t*)(pointer + 20) = SHARC_LITTLE_ENDIAN_32(fileAttributes->st_mode);
-            *(uint64_t*)(pointer + 24) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_atime);
-            *(uint64_t*)(pointer + 32) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_mtime);
+            *(uint64_t*)(pointer + 16) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_size);
+            *(uint32_t*)(pointer + 24) = SHARC_LITTLE_ENDIAN_32(fileAttributes->st_mode);
+            *(uint64_t*)(pointer + 28) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_atime);
+            *(uint64_t*)(pointer + 36) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_mtime);
             written = sizeof(sharc_header_generic) + sizeof(sharc_header_file_information);
             break;
 

@@ -25,16 +25,13 @@
 #ifndef SHARC_BLOCK_FOOTER_H
 #define SHARC_BLOCK_FOOTER_H
 
-#include <sys/stat.h>
-#include <stdio.h>
-#include <time.h>
-
 #include "globals.h"
 #include "byte_buffer.h"
 
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
+    uint32_t hashsum;
 } sharc_block_footer;
 #pragma pack(pop)
 

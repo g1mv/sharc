@@ -25,11 +25,9 @@
 #ifndef SHARC_HASH_DECODE_H
 #define SHARC_HASH_DECODE_H
 
-#include <stdint.h>
 #include "byte_buffer.h"
 #include "dictionary.h"
 #include "hash.h"
-#include "block_header.h"
 #include "block.h"
 
 #define SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD               (sizeof(sharc_hash_decode_signature) + 32 * sizeof(sharc_hash_decode_signature))

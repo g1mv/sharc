@@ -46,6 +46,17 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_read_block_header(sharc_byte_
     return SHARC_DECODE_STATE_READY;
 }
 
+SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_read_block_footer(sharc_byte_buffer *restrict in, sharc_decode_state *restrict state) {
+    if (in->position + sizeof(sharc_block_footer) > in->size)
+        return SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER;
+
+    sharc_block_header_read(in, &state->lastBlockHeader);
+
+    state->process = SHARC_DECODE_PROCESS_READ_BLOCK_HEADER;
+
+    return SHARC_DECODE_STATE_READY;
+}
+
 SHARC_FORCE_INLINE void sharc_decode_update_totals(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_decode_state *restrict state, const uint_fast64_t inPositionBefore, const uint_fast64_t outPositionBefore) {
     state->totalRead += in->position - inPositionBefore;
     state->totalWritten += out->position - outPositionBefore;
@@ -93,6 +104,11 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                 }
                 break;
 
+            case SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER:
+                if ((decodeState = sharc_decode_read_block_footer(in, state)))
+                    return decodeState;
+                break;
+
             case SHARC_DECODE_PROCESS_WRITE_DATA:
                 inPositionBefore = in->position;
                 outPositionBefore = out->position;
@@ -108,7 +124,10 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                         return SHARC_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
                     case SHARC_HASH_DECODE_STATE_INFO_NEW_BLOCK:
-                        state->process = SHARC_DECODE_PROCESS_READ_BLOCK_HEADER;
+                        if (state->header.genericHeader.originType == SHARC_BLOCK_TYPE_DEFAULT)
+                            state->process = SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER;
+                        else
+                            state->process = SHARC_DECODE_PROCESS_READ_BLOCK_HEADER;
                         break;
 
                     case SHARC_HASH_DECODE_STATE_FINISHED:

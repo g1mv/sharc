@@ -30,6 +30,7 @@
 #include "decode.h"
 #include "byte_buffer.h"
 #include "header.h"
+#include "block.h"
 
 #define SHARC_STREAM_MINIMUM_OUT_BUFFER_SIZE                        (1 << 9)
 
@@ -71,13 +72,13 @@ typedef struct {
 } sharc_stream;
 
 SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, char*, const uint_fast32_t, char*, const uint_fast32_t);
-SHARC_STREAM_STATE sharc_stream_compress_init_with_stat(sharc_stream *, const SHARC_COMPRESSION_MODE, const struct stat*);
-SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE);
+SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const SHARC_BLOCK_TYPE, const struct stat*);
 SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);
 SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
 SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
+
 SHARC_STREAM_STATE sharc_stream_utilities_get_origin_type(sharc_stream*, SHARC_STREAM_ORIGIN_TYPE *);
 SHARC_STREAM_STATE sharc_stream_utilities_get_original_file_size(sharc_stream*, uint_fast64_t*);
 SHARC_STREAM_STATE sharc_stream_utilities_restore_file_attributes(sharc_stream*, const char*);
