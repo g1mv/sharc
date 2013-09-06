@@ -43,7 +43,19 @@ typedef enum {
     SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE
 } SHARC_STREAM_STATE;
 
+typedef enum {
+    SHARC_STREAM_PROCESS_ENCODING,
+    SHARC_STREAM_PROCESS_DECODING
+} SHARC_STREAM_PROCESS;
+
+typedef enum {
+    SHARC_STREAM_ORIGIN_TYPE_STREAM,
+    SHARC_STREAM_ORIGIN_TYPE_FILE
+} SHARC_STREAM_ORIGIN_TYPE;
+
 typedef struct {
+    SHARC_STREAM_PROCESS process;
+
     sharc_encode_state internal_encode_state;
     sharc_decode_state internal_decode_state;
 } sharc_stream_state;
@@ -66,5 +78,8 @@ SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);
 SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
 SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_utilities_get_origin_type(sharc_stream*, SHARC_STREAM_ORIGIN_TYPE *);
+SHARC_STREAM_STATE sharc_stream_utilities_get_original_file_size(sharc_stream*, uint_fast64_t*);
+SHARC_STREAM_STATE sharc_stream_utilities_restore_file_attributes(sharc_stream*, const char*);
 
 #endif

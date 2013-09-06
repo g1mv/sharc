@@ -101,6 +101,8 @@ SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
  * Call once processing is finished, to clear up the environment and release eventual memory.
  */
 
+SHARC_STREAM_STATE sharc_stream_utilities_restore_file_attributes(sharc_stream*, const char*);
+
 
 /*
  * SHARC buffers API functions

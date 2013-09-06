@@ -256,21 +256,28 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     sharc_chrono_stop(&chrono);
 
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-        //const sharc_byte originType = header.genericHeader.origin_type;
         const double elapsed = sharc_chrono_elapsed(&chrono);
 
-        uint64_t totalWritten = ftello(io_out->stream);
+        uint64_t totalWritten = (uint64_t) ftello(io_out->stream);
         fclose(io_out->stream);
 
-        //if (originType == SHARC_HEADER_ORIGIN_TYPE_FILE)
-        //    sharc_header_restoreFileAttributes(&(header.fileInformationHeader), io_out->name);
+        SHARC_STREAM_ORIGIN_TYPE originType;
+        sharc_stream_utilities_get_origin_type(&stream, &originType);
+
+        if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE)
+            sharc_stream_utilities_restore_file_attributes(&stream, io_out->name);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            uint64_t totalRead = ftello(io_in->stream);
+            uint64_t totalRead = (uint64_t) ftello(io_in->stream);
             fclose(io_in->stream);
 
-            //if (originType == SHARC_HEADER_ORIGIN_TYPE_FILE) if (totalWritten != header.fileInformationHeader.originalFileSize)
-            //    sharc_error("Input file is corrupt !");
+            if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
+                uint_fast64_t originalFileSize = 0;
+                sharc_stream_utilities_get_original_file_size(&stream, &originalFileSize);
+
+                if (totalWritten != originalFileSize)
+                    sharc_error("Input file is corrupt !");
+            }
 
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
             printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, io_out->name, totalRead, totalWritten);
@@ -407,6 +414,9 @@ int main(int argc, char *argv[]) {
                             default:
                                 sharc_client_usage();
                         }
+                        break;
+
+                    default:
                         break;
                 }
                 break;
