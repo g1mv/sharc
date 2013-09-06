@@ -91,18 +91,30 @@ SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *stream, const sharc_boo
  * When the dataset in the input buffer is the last, last_input_data has to be true. Otherwise it should be false at all times.
  */
 
-SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *stream);
 /*
  * Call once processing is finished, to clear up the environment and release eventual memory.
  */
 
-SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
+SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *stream);
 /*
  * Call once processing is finished, to clear up the environment and release eventual memory.
  */
 
-SHARC_STREAM_STATE sharc_stream_utilities_restore_file_attributes(sharc_stream*, const char*);
+SHARC_STREAM_STATE sharc_stream_utilities_get_origin_type(sharc_stream* stream, SHARC_STREAM_ORIGIN_TYPE * origin_type);
+/*
+ * Returns the origin type (file, stream) of the decoded file
+ */
 
+SHARC_STREAM_STATE sharc_stream_utilities_get_original_file_size(sharc_stream* stream, uint_fast64_t* original_file_size);
+/*
+ * Returns the original file size of the decoded file
+ */
+
+SHARC_STREAM_STATE sharc_stream_utilities_restore_file_attributes(sharc_stream* stream, const char* file_name);
+/*
+ * Restores the decoded file's attributes (if any available) to the file named file_name.
+ */
 
 /*
  * SHARC buffers API functions
