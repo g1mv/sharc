@@ -183,8 +183,8 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
     uint_fast64_t limitIn = 0;
     uint_fast64_t limitOut = 0;
 
-    if (in->size > SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD)
-        limitIn = in->size - SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD;
+    if (in->size > SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD + state->finishLookAhead)
+        limitIn = in->size - SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD - state->finishLookAhead;
     if (out->size > SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD)
         limitOut = out->size - SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD;
 
@@ -221,7 +221,7 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
 
         case SHARC_HASH_DECODE_PROCESS_DATA_SAFE:
             while (state->shift ^ 64) {
-                if (flush && (in->size - in->position < sizeof(uint16_t) + state->finishLookAhead)) {
+                if (flush && (in->size - in->position < sizeof(uint16_t) + state->finishLookAhead + (sharc_hash_decode_test_compressed(state) ? 0 : 2))) {
                     state->process = SHARC_HASH_DECODE_PROCESS_FINISH;
                     return SHARC_HASH_DECODE_STATE_READY;
                 }
