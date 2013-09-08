@@ -29,9 +29,9 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_header(sharc_byte_buffe
         return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
     if (!state->fileAttributes)
-        state->totalWritten += sharc_header_write(out, SHARC_HEADER_ORIGIN_TYPE_STREAM, state->mode, state->blockType, NULL);
+        state->totalWritten += sharc_header_write(out, SHARC_HEADER_ORIGIN_TYPE_STREAM, state->targetCompressionMode, state->blockType, NULL);
     else
-        state->totalWritten += sharc_header_write(out, SHARC_HEADER_ORIGIN_TYPE_FILE, state->mode, state->blockType, state->fileAttributes);
+        state->totalWritten += sharc_header_write(out, SHARC_HEADER_ORIGIN_TYPE_FILE, state->targetCompressionMode, state->blockType, state->fileAttributes);
 
     state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
 
@@ -42,18 +42,17 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_block_header(sharc_byte
     if (out->position + sizeof(sharc_block_header) > out->size)
         return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
-    sharc_byte dictionaryFlags = 0;
+    state->currentCompressionMode = state->targetCompressionMode;
+
     if (state->dictionaryData.resetCycle)
         state->dictionaryData.resetCycle--;
     else {
-        switch (state->mode) {
+        switch (state->targetCompressionMode) {
             case SHARC_COMPRESSION_MODE_DUAL_PASS:
                 sharc_dictionary_resetCompressed(&state->dictionaryData.dictionary_b);
-                dictionaryFlags |= SHARC_BLOCK_HEADER_COMPRESSED_DICTIONARY_RESET_MASK;
 
             case SHARC_COMPRESSION_MODE_FASTEST:
                 sharc_dictionary_resetDirect(&state->dictionaryData.dictionary_a);
-                dictionaryFlags |= SHARC_BLOCK_HEADER_DIRECT_DICTIONARY_RESET_MASK;
                 break;
 
             case SHARC_COMPRESSION_MODE_COPY:
@@ -62,10 +61,10 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_block_header(sharc_byte
         state->dictionaryData.resetCycle = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE - 1;
     }
 
-    state->blockData.inStart = state->totalRead;
-    state->blockData.outStart = state->totalWritten;
+    state->efficiencyData.inStart = state->totalRead;
+    state->efficiencyData.outStart = state->totalWritten;
 
-    state->totalWritten += sharc_block_header_write(out, dictionaryFlags);
+    state->totalWritten += sharc_block_header_write(out);
 
     state->process = SHARC_ENCODE_PROCESS_WRITE_DATA;
 
@@ -79,6 +78,17 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_block_footer(sharc_byte
     state->totalWritten += sharc_block_footer_write(out, 0);
 
     state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
+
+    return SHARC_ENCODE_STATE_READY;
+}
+
+SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_mode_marker(sharc_byte_buffer *restrict out, sharc_encode_state *restrict state) {
+    if (out->position + sizeof(sharc_mode_marker) > out->size)
+        return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
+
+    state->totalWritten += sharc_mode_marker_write(out, state->targetCompressionMode);
+
+    state->process = SHARC_ENCODE_PROCESS_WRITE_DATA;
 
     return SHARC_ENCODE_STATE_READY;
 }
@@ -100,7 +110,8 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *rest
             state->process = SHARC_ENCODE_PROCESS_WRITE_HEADER;
             break;
     }
-    state->mode = mode;
+    state->targetCompressionMode = mode;
+    state->currentCompressionMode = mode;
     state->blockType = blockType;
     state->fileAttributes = fileAttributes;
 
@@ -139,6 +150,11 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
                     return encodeState;
                 break;
 
+            case SHARC_ENCODE_PROCESS_WRITE_MODE_MARKER:
+                if ((encodeState = sharc_encode_write_mode_marker(out, state)))
+                    return encodeState;
+                break;
+
             case SHARC_ENCODE_PROCESS_WRITE_DATA:
                 inPositionBefore = in->position;
                 outPositionBefore = out->position;
@@ -158,6 +174,10 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
                             state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_FOOTER;
                         else
                             state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
+                        break;
+
+                    case SHARC_HASH_ENCODE_STATE_INFO_EFFICIENCY_CHECK:
+                        state->process = SHARC_ENCODE_PROCESS_WRITE_MODE_MARKER;
                         break;
 
                     case SHARC_HASH_ENCODE_STATE_FINISHED:

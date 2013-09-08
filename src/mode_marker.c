@@ -19,19 +19,23 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 17/06/13 19:34
+ * 08/09/13 02:05
  */
 
-#include "block_header.h"
+#include "mode_marker.h"
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_block_header_read(sharc_byte_buffer* restrict in, sharc_block_header* restrict blockHeader) {
-    in->position += sizeof(sharc_block_header);
+SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_read(sharc_byte_buffer* restrict in, sharc_mode_marker * restrict modeMarker) {
+    modeMarker->activeCompressionMode = *(in->pointer + in->position);
 
-    return sizeof(sharc_block_header);
+    in->position += sizeof(sharc_mode_marker);
+
+    return sizeof(sharc_mode_marker);
 }
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_block_header_write(sharc_byte_buffer* out) {
-    out->position += sizeof(sharc_block_header);
+SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_write(sharc_byte_buffer* out, SHARC_COMPRESSION_MODE compressionMode) {
+    *(out->pointer + out->position) = (sharc_byte)compressionMode;
 
-    return sizeof(sharc_block_header);
+    out->position += sizeof(sharc_mode_marker);
+
+    return sizeof(sharc_mode_marker);
 }

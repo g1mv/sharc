@@ -30,12 +30,16 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_read_header(sharc_byte_buffer
 
     state->totalRead += sharc_header_read(in, &state->header);
 
-    if(state->header.genericHeader.blockType == SHARC_BLOCK_TYPE_DEFAULT)
-        sharc_hash_decode_set_lookahead(&state->hashDecodeState, sizeof(sharc_block_footer));
+    if(!sharc_header_checkValidity(&state->header))
+        return SHARC_DECODE_STATE_ERROR;
+
+    if (state->header.genericHeader.blockType == SHARC_BLOCK_TYPE_DEFAULT)
+        sharc_hash_decode_set_end_data_size(&state->hashDecodeState, sizeof(sharc_block_footer));
     else
-        sharc_hash_decode_set_lookahead(&state->hashDecodeState, 0);
+        sharc_hash_decode_set_end_data_size(&state->hashDecodeState, 0);
 
     state->process = SHARC_DECODE_PROCESS_READ_BLOCK_HEADER;
+    state->currentCompressionMode = (SHARC_COMPRESSION_MODE) state->header.genericHeader.compressionMode;
 
     return SHARC_DECODE_STATE_READY;
 }
@@ -62,12 +66,23 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_read_block_footer(sharc_byte_
     return SHARC_DECODE_STATE_READY;
 }
 
+SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_read_mode_marker(sharc_byte_buffer *restrict in, sharc_decode_state *restrict state) {
+    if (in->position + sizeof(sharc_mode_marker) > in->size)
+        return SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER;
+
+    state->totalRead += sharc_mode_marker_read(in, &state->lastModeMarker);
+
+    state->process = SHARC_DECODE_PROCESS_WRITE_DATA;
+
+    return SHARC_DECODE_STATE_READY;
+}
+
 SHARC_FORCE_INLINE void sharc_decode_update_totals(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_decode_state *restrict state, const uint_fast64_t inPositionBefore, const uint_fast64_t outPositionBefore) {
     state->totalRead += in->position - inPositionBefore;
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_DECODE_STATE sharc_decode_init(sharc_decode_state *restrict state) {
+SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_decode_state *restrict state) {
     state->process = SHARC_DECODE_PROCESS_READ_HEADER;
 
     state->totalRead = 0;
@@ -100,13 +115,18 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                 if (state->dictionaryData.resetCycle)
                     state->dictionaryData.resetCycle--;
                 else {
-                    switch (state->header.genericHeader.compressionMode) {
+                    switch (state->currentCompressionMode) {
                         default:
                             sharc_dictionary_resetDirect(&state->dictionaryData.dictionary_a);
                             break;
                     }
                     state->dictionaryData.resetCycle = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE - 1;
                 }
+                break;
+
+            case SHARC_DECODE_PROCESS_READ_MODE_MARKER:
+                if ((decodeState = sharc_decode_read_mode_marker(in, state)))
+                    return decodeState;
                 break;
 
             case SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER:
@@ -138,6 +158,10 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                             state->process = SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER;
                         else
                             state->process = SHARC_DECODE_PROCESS_READ_BLOCK_HEADER;
+                        break;
+
+                    case SHARC_HASH_DECODE_STATE_INFO_EFFICIENCY_CHECK:
+                        state->process = SHARC_DECODE_PROCESS_READ_MODE_MARKER;
                         break;
 
                     case SHARC_HASH_DECODE_STATE_FINISHED:

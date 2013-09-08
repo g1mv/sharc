@@ -30,6 +30,7 @@
 #include "dictionary.h"
 #include "hash_encode.h"
 #include "header.h"
+#include "mode_marker.h"
 
 typedef enum {
     SHARC_ENCODE_STATE_READY = 0,
@@ -43,6 +44,7 @@ typedef enum {
     SHARC_ENCODE_PROCESS_WRITE_HEADER,
     SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER,
     SHARC_ENCODE_PROCESS_WRITE_BLOCK_FOOTER,
+    SHARC_ENCODE_PROCESS_WRITE_MODE_MARKER,
     SHARC_ENCODE_PROCESS_WRITE_DATA
 } SHARC_ENCODE_PROCESS;
 
@@ -56,7 +58,7 @@ typedef enum {
 typedef struct {
     uint_fast64_t inStart;
     uint_fast64_t outStart;
-} sharc_encode_block_data;
+} sharc_encode_efficiency_data;
 
 typedef struct {
     sharc_dictionary dictionary_a;
@@ -66,7 +68,8 @@ typedef struct {
 
 typedef struct {
     SHARC_ENCODE_PROCESS process;
-    SHARC_COMPRESSION_MODE mode;
+    SHARC_COMPRESSION_MODE targetCompressionMode;
+    SHARC_COMPRESSION_MODE currentCompressionMode;
     SHARC_BLOCK_TYPE blockType;
     const struct stat* fileAttributes;
 
@@ -74,7 +77,7 @@ typedef struct {
     uint_fast64_t totalWritten;
 
     sharc_hash_encode_state hashEncodeState;
-    sharc_encode_block_data blockData;
+    sharc_encode_efficiency_data efficiencyData;
     sharc_encode_dictionary_data dictionaryData;
 
     sharc_byte_buffer workBuffer;

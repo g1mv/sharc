@@ -61,10 +61,11 @@ typedef struct {
     sharc_byte version[3];
     sharc_byte blockSignaturesShift;
     sharc_byte resetCycleSizeShift;
+    sharc_byte efficiencyCheckSignaturesShift;
     sharc_byte originType;
     sharc_byte compressionMode;
     sharc_byte blockType;
-    sharc_byte reserved[4];
+    sharc_byte reserved[3];
 } sharc_header_generic;
 
 typedef struct {
@@ -81,8 +82,8 @@ typedef struct {
 #pragma pack(pop)
 
 sharc_bool sharc_header_checkValidity(sharc_header*);
-sharc_bool sharc_header_read(sharc_byte_buffer*, sharc_header*);
-uint32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const SHARC_BLOCK_TYPE, const struct stat*);
+uint_fast32_t sharc_header_read(sharc_byte_buffer*, sharc_header*);
+uint_fast32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const SHARC_BLOCK_TYPE, const struct stat*);
 sharc_bool sharc_header_restoreFileAttributes(sharc_header_file_information *, const char*);
 
 #endif

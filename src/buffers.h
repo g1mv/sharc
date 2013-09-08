@@ -36,7 +36,7 @@ typedef enum {
 } SHARC_BUFFERS_STATE;
 
 SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_fast64_t *, uint_fast64_t, SHARC_ENCODE_OUTPUT_TYPE, SHARC_BLOCK_TYPE);
-SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t*, uint8_t *, uint_fast64_t, uint8_t *, uint_fast64_t, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
+SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t*, uint8_t *, uint_fast64_t, uint8_t *, uint_fast64_t, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat *fileAttributes, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
 SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t *, uint8_t *, uint_fast64_t, uint8_t *, uint_fast64_t, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
 
 #endif

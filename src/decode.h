@@ -31,6 +31,7 @@
 #include "dictionary.h"
 #include "hash_decode.h"
 #include "header.h"
+#include "mode_marker.h"
 
 typedef enum {
     SHARC_DECODE_STATE_READY = 0,
@@ -45,6 +46,7 @@ typedef enum {
     SHARC_DECODE_PROCESS_READ_BLOCK_HEADER,
     SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER,
     SHARC_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER,
+    SHARC_DECODE_PROCESS_READ_MODE_MARKER,
     SHARC_DECODE_PROCESS_WRITE_DATA
 } SHARC_DECODE_PROCESS;
 
@@ -56,12 +58,14 @@ typedef struct {
 
 typedef struct {
     SHARC_DECODE_PROCESS process;
+    SHARC_COMPRESSION_MODE currentCompressionMode;
 
     uint_fast64_t totalRead;
     uint_fast64_t totalWritten;
 
     sharc_header header;
     sharc_block_header lastBlockHeader;
+    sharc_mode_marker lastModeMarker;
     sharc_block_footer lastBlockFooter;
 
     sharc_hash_decode_state hashDecodeState;

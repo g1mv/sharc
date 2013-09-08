@@ -85,7 +85,6 @@ SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
-SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_header(sharc_stream*, sharc_header*);
 SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_origin_type(sharc_stream*, SHARC_STREAM_ORIGIN_TYPE *);
 SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_original_file_size(sharc_stream*, uint_fast64_t*);
 SHARC_STREAM_STATE sharc_stream_decompress_utilities_restore_file_attributes(sharc_stream*, const char*);

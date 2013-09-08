@@ -36,6 +36,7 @@
 typedef enum {
     SHARC_HASH_DECODE_STATE_READY = 0,
     SHARC_HASH_DECODE_STATE_INFO_NEW_BLOCK,
+    SHARC_HASH_DECODE_STATE_INFO_EFFICIENCY_CHECK,
     SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER,
     SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER,
     SHARC_HASH_DECODE_STATE_FINISHED,
@@ -58,8 +59,9 @@ typedef struct {
     sharc_hash_signature signature;
     uint_fast32_t shift;
     uint_fast32_t signaturesCount;
+    uint_fast8_t efficiencyChecked;
 
-    uint_fast64_t finishLookAhead;
+    uint_fast64_t endDataSize;
 
     union {
         sharc_byte as_bytes[8];
@@ -68,13 +70,14 @@ typedef struct {
     union {
         sharc_byte as_bytes[4];
         uint32_t as_uint32_t;
-    } partialChunk;
-    uint_fast64_t chunkBytes;
+    } partialUncompressedChunk;
+
     uint_fast64_t signatureBytes;
+    uint_fast64_t uncompressedChunkBytes;
 } sharc_hash_decode_state;
 #pragma pack(pop)
 
-void sharc_hash_decode_set_lookahead(sharc_hash_decode_state *, const uint_fast32_t);
+void sharc_hash_decode_set_end_data_size(sharc_hash_decode_state *, const uint_fast32_t);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_decode_state*);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_dictionary *, sharc_hash_decode_state *, const sharc_bool);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_finish(sharc_hash_decode_state*);

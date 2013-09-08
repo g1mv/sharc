@@ -36,9 +36,19 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_prepareNewBlock(sha
     if (out->position + minimumLookahead > out->size)
         return SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
-    if (state->signaturesCount == (SHARC_PREFERRED_BLOCK_SIGNATURES - 1)) {
-        state->signaturesCount = 0;
-        return SHARC_HASH_ENCODE_STATE_INFO_NEW_BLOCK;
+    switch (state->signaturesCount) {
+        case SHARC_PREFERRED_EFFICIENCY_CHECK_SIGNATURES:
+            if (state->efficiencyChecked ^ 0x1) {
+                state->efficiencyChecked = 1;
+                return SHARC_HASH_ENCODE_STATE_INFO_EFFICIENCY_CHECK;
+            }
+            break;
+        case SHARC_PREFERRED_BLOCK_SIGNATURES:
+            state->signaturesCount = 0;
+            state->efficiencyChecked = 0;
+            return SHARC_HASH_ENCODE_STATE_INFO_NEW_BLOCK;
+        default:
+            break;
     }
     state->signaturesCount++;
 
@@ -114,6 +124,7 @@ SHARC_FORCE_INLINE sharc_bool sharc_hash_encode_attempt_copy(sharc_byte_buffer *
 
 SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_encode_state *state) {
     state->signaturesCount = 0;
+    state->efficiencyChecked = 0;
 
     state->process = SHARC_HASH_ENCODE_PROCESS_PREPARE_NEW_BLOCK;
 

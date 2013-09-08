@@ -40,7 +40,7 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_buffers_structure_size(uint_fast64_t init
             break;
     }
 
-    uint64_t blockOverhead = sizeof(sharc_block_header);
+    uint64_t blockOverhead = sizeof(sharc_block_header) + sizeof(sharc_mode_marker);
     if (blockType == SHARC_BLOCK_TYPE_DEFAULT)
         blockOverhead += sizeof(sharc_block_footer);
 
@@ -53,7 +53,7 @@ SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_
     return SHARC_BUFFERS_STATE_OK;
 }
 
-SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t *written, uint8_t *in, uint_fast64_t inSize, uint8_t *out, uint_fast64_t outSize, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
+SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t *written, uint8_t *in, uint_fast64_t inSize, uint8_t *out, uint_fast64_t outSize, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, const struct stat *fileAttributes, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
     uint_fast64_t minimumOutSize;
 
     sharc_buffers_max_compressed_length(&minimumOutSize, inSize, outputType, blockType);
@@ -64,7 +64,7 @@ SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t *wri
     if (sharc_stream_prepare(&stream, in, inSize, out, outSize, mem_alloc, mem_free))
         return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
 
-    if (sharc_stream_compress_init(&stream, compressionMode, outputType, blockType, NULL))
+    if (sharc_stream_compress_init(&stream, compressionMode, outputType, blockType, fileAttributes))
         return SHARC_BUFFERS_STATE_ERROR_INVALID_STATE;
 
     if (sharc_stream_compress(&stream, true))

@@ -135,14 +135,6 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_strea
     return SHARC_STREAM_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_header(sharc_stream *stream, sharc_header *header) {
-    if (stream->internal_state.process == SHARC_STREAM_PROCESS_DECODING) {
-        *header = stream->internal_state.internal_decode_state.header;
-        return SHARC_STREAM_STATE_READY;
-    } else
-        return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
-}
-
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_origin_type(sharc_stream *stream, SHARC_STREAM_ORIGIN_TYPE *originType) {
     if (stream->internal_state.process == SHARC_STREAM_PROCESS_DECODING) {
         switch (stream->internal_state.internal_decode_state.header.genericHeader.originType) {

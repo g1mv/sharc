@@ -32,16 +32,13 @@
 #include "globals.h"
 #include "byte_buffer.h"
 
-#define SHARC_BLOCK_HEADER_DIRECT_DICTIONARY_RESET_MASK         0x1
-#define SHARC_BLOCK_HEADER_COMPRESSED_DICTIONARY_RESET_MASK     0x2
-
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
 } sharc_block_header;
 #pragma pack(pop)
 
-sharc_bool sharc_block_header_read(sharc_byte_buffer*, sharc_block_header*);
-uint32_t sharc_block_header_write(sharc_byte_buffer*, sharc_byte);
+uint_fast32_t sharc_block_header_read(sharc_byte_buffer*, sharc_block_header*);
+uint_fast32_t sharc_block_header_write(sharc_byte_buffer*);
 
 #endif

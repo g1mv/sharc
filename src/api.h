@@ -161,14 +161,6 @@ SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *stream);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *stream);
 
 /*
- * Returns the file header struct, or SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE if it has not been read
- *
- * @param stream the stream
- * @param header the file header struct if read
- */
-SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_header(sharc_stream *stream, sharc_header *header);
-
-/*
  * Returns the origin type (file, stream) of the decoded data
  *
  * @param stream the stream
@@ -228,10 +220,11 @@ SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_fast64_t * result, 
  * @param compression_mode the compression mode to use
  * @param output_type the output type to use (if unsure, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT), see the sharc_stream_compress documentation
  * @param block_type the block type to use (if unsure, SHARC_BLOCK_TYPE_DEFAULT), see the sharc_stream_compress documentation
+ * @param file_attributes the file attributes if known, otherwise use NULL.
  * @param mem_alloc a pointer to a memory allocation function. If NULL, the standard malloc(size_t) is used.
  * @param mem_free a pointer to a memory freeing function. If NULL, the standard free(void*) is used.
  */
-SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t* total_written, uint8_t *in, uint_fast64_t in_size, uint8_t *out, uint_fast64_t out_size, const SHARC_COMPRESSION_MODE compression_mode, const SHARC_ENCODE_OUTPUT_TYPE output_type, const SHARC_BLOCK_TYPE block_type, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
+SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t* total_written, uint8_t *in, uint_fast64_t in_size, uint8_t *out, uint_fast64_t out_size, const SHARC_COMPRESSION_MODE compression_mode, const SHARC_ENCODE_OUTPUT_TYPE output_type, const SHARC_BLOCK_TYPE block_type, const struct stat *file_attributes, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
 
 /*
  * Buffers decompression function
