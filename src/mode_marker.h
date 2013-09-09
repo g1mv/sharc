@@ -32,7 +32,7 @@
 #pragma pack(4)
 typedef struct {
     sharc_byte activeCompressionMode;
-    sharc_byte reserved;
+    sharc_byte reserved;    // To ensure 2-byte-wise length of output data
 } sharc_mode_marker;
 #pragma pack(pop)
 

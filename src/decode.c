@@ -82,15 +82,16 @@ SHARC_FORCE_INLINE void sharc_decode_update_totals(sharc_byte_buffer *restrict i
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_decode_state *restrict state) {
+SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer* workBuffer, sharc_decode_state *restrict state) {
     state->process = SHARC_DECODE_PROCESS_READ_HEADER;
 
     state->totalRead = 0;
     state->totalWritten = 0;
 
     sharc_hash_decode_init(&state->hashDecodeState);
-
     state->dictionaryData.resetCycle = 0;
+
+    state->workBuffer = workBuffer;
 
     return SHARC_DECODE_STATE_READY;
 }

@@ -51,8 +51,14 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_check_conformity(sharc_stream
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *stream, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, const struct stat *fileAttributes) {
     stream->internal_state.process = SHARC_STREAM_PROCESS_ENCODING_INIT;
 
-    if (sharc_encode_init(&stream->internal_state.internal_encode_state, compressionMode, outputType, blockType, fileAttributes))
+    if (sharc_encode_init(&stream->internal_state.workBuffer, &stream->internal_state.internal_encode_state, compressionMode, outputType, blockType, fileAttributes))
         return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
+
+    uint_fast64_t workSize = stream->in.size + (stream->in.size >> 1);          // Max output size for compression
+    if (stream->internal_state.workBuffer.size != workSize) {
+        stream->internal_state.mem_free(stream->internal_state.workBuffer.pointer);
+        sharc_byte_buffer_encapsulate(&stream->internal_state.workBuffer, stream->internal_state.mem_alloc((size_t) workSize), workSize);
+    }
 
     stream->internal_state.process = SHARC_STREAM_PROCESS_ENCODING;
 
@@ -90,13 +96,22 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream 
     if (sharc_encode_finish(&stream->internal_state.internal_encode_state))
         return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
 
+    stream->internal_state.mem_free(stream->internal_state.workBuffer.pointer);
+    stream->internal_state.workBuffer.pointer = NULL;
+
     return SHARC_STREAM_STATE_READY;
 }
 
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *stream) {
     stream->internal_state.process = SHARC_STREAM_PROCESS_DECODING_INIT;
 
-    if (sharc_decode_init(&stream->internal_state.internal_decode_state))
+    uint_fast64_t workSize = stream->in.size << 1;                              // Max output size for decompression
+    if (stream->internal_state.workBuffer.size != workSize) {
+        stream->internal_state.mem_free(stream->internal_state.workBuffer.pointer);
+        sharc_byte_buffer_encapsulate(&stream->internal_state.workBuffer, stream->internal_state.mem_alloc((size_t) workSize), workSize);
+    }
+
+    if (sharc_decode_init(&stream->internal_state.workBuffer, &stream->internal_state.internal_decode_state))
         return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
 
     stream->internal_state.process = SHARC_STREAM_PROCESS_DECODING;
@@ -131,6 +146,9 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *stre
 SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *stream) {
     if (sharc_decode_finish(&stream->internal_state.internal_decode_state))
         return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
+
+    stream->internal_state.mem_free(stream->internal_state.workBuffer.pointer);
+    stream->internal_state.workBuffer.pointer = NULL;
 
     return SHARC_STREAM_STATE_READY;
 }

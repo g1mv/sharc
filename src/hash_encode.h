@@ -30,7 +30,7 @@
 #include "hash.h"
 #include "block.h"
 
-#define SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD             (sizeof(sharc_hash_signature) + 32 * sizeof(uint64_t))
+#define SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD             (sizeof(sharc_hash_signature) + sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
 
 typedef enum {
     SHARC_HASH_ENCODE_STATE_READY = 0,
@@ -49,6 +49,8 @@ typedef enum {
     SHARC_HASH_ENCODE_PROCESS_FINISH
 } SHARC_HASH_ENCODE_PROCESS;
 
+#pragma pack(push)
+#pragma pack(4)
 typedef struct {
     SHARC_HASH_ENCODE_PROCESS process;
 
@@ -57,6 +59,7 @@ typedef struct {
     uint_fast32_t signaturesCount;
     uint_fast8_t efficiencyChecked;
 } sharc_hash_encode_state;
+#pragma pack(pop)
 
 SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_encode_state*);
 SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_dictionary *, sharc_hash_encode_state *, const sharc_bool);

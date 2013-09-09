@@ -59,8 +59,10 @@ typedef enum {
 typedef struct {
     SHARC_STREAM_PROCESS process;
 
+    sharc_byte_buffer workBuffer;
+
     void *(*mem_alloc)(size_t);
-    void (*mem_free)(void *);
+    void (*mem_free)(void *);;
 
     sharc_encode_state internal_encode_state;
     sharc_decode_state internal_decode_state;

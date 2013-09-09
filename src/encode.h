@@ -55,6 +55,8 @@ typedef enum {
     SHARC_ENCODE_OUTPUT_TYPE_WITHOUT_HEADER_NOR_FOOTER = 3
 } SHARC_ENCODE_OUTPUT_TYPE;
 
+#pragma pack(push)
+#pragma pack(4)
 typedef struct {
     uint_fast64_t inStart;
     uint_fast64_t outStart;
@@ -80,10 +82,11 @@ typedef struct {
     sharc_encode_efficiency_data efficiencyData;
     sharc_encode_dictionary_data dictionaryData;
 
-    sharc_byte_buffer workBuffer;
+    sharc_byte_buffer* workBuffer;
 } sharc_encode_state;
+#pragma pack(pop)
 
-SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat*);
+SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *, sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat*);
 SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const sharc_bool);
 SHARC_ENCODE_STATE sharc_encode_finish(sharc_encode_state*);
 

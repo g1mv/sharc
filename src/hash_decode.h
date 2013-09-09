@@ -30,8 +30,8 @@
 #include "hash.h"
 #include "block.h"
 
-#define SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD               (sizeof(sharc_hash_signature) + 32 * sizeof(sharc_hash_signature))
-#define SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD              (32 * sizeof(uint64_t))
+#define SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD               (sizeof(sharc_hash_signature) + sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
+#define SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD              (sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
 
 typedef enum {
     SHARC_HASH_DECODE_STATE_READY = 0,

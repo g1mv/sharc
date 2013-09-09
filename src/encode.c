@@ -98,9 +98,7 @@ SHARC_FORCE_INLINE void sharc_encode_update_totals(sharc_byte_buffer *restrict i
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *restrict state, const SHARC_COMPRESSION_MODE mode, const SHARC_ENCODE_OUTPUT_TYPE encodeType, const SHARC_BLOCK_TYPE blockType, const struct stat *fileAttributes) {
-    state->dictionaryData.resetCycle = 0;
-
+SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer* workBuffer, sharc_encode_state *restrict state, const SHARC_COMPRESSION_MODE mode, const SHARC_ENCODE_OUTPUT_TYPE encodeType, const SHARC_BLOCK_TYPE blockType, const struct stat *fileAttributes) {
     switch (encodeType) {
         case SHARC_ENCODE_OUTPUT_TYPE_WITHOUT_HEADER:
         case SHARC_ENCODE_OUTPUT_TYPE_WITHOUT_HEADER_NOR_FOOTER:
@@ -119,10 +117,9 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_encode_state *rest
     state->totalWritten = 0;
 
     sharc_hash_encode_init(&state->hashEncodeState);
-
     state->dictionaryData.resetCycle = 0;
 
-    // todo dual pass workbuffer
+    state->workBuffer = workBuffer;
 
     return SHARC_ENCODE_STATE_READY;
 }

@@ -50,6 +50,8 @@ typedef enum {
     SHARC_DECODE_PROCESS_WRITE_DATA
 } SHARC_DECODE_PROCESS;
 
+#pragma pack(push)
+#pragma pack(4)
 typedef struct {
     sharc_dictionary dictionary_a;
     sharc_dictionary dictionary_b;
@@ -70,9 +72,12 @@ typedef struct {
 
     sharc_hash_decode_state hashDecodeState;
     sharc_decode_dictionary_data dictionaryData;
-} sharc_decode_state;
 
-SHARC_DECODE_STATE sharc_decode_init(sharc_decode_state *);
+    sharc_byte_buffer* workBuffer;
+} sharc_decode_state;
+#pragma pack(pop)
+
+SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer*, sharc_decode_state *);
 SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_decode_state *, const sharc_bool);
 SHARC_DECODE_STATE sharc_decode_finish(sharc_decode_state*);
 
