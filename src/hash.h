@@ -36,8 +36,8 @@
 
 typedef uint64_t                                    sharc_hash_signature;
 
-#define SHARC_HASH_ALGORITHM(hash, value, xorMask)  hash = SHARC_HASH_OFFSET_BASIS;\
-                                                    hash ^= (value ^ xorMask);\
+#define SHARC_HASH_ALGORITHM(hash, value, xorMask)  hash = SHARC_HASH_OFFSET_BASIS ^ xorMask;\
+                                                    hash ^= value;\
                                                     hash *= SHARC_HASH_PRIME;\
                                                     hash = (hash >> (32 - SHARC_HASH_BITS)) ^ (hash & ((1 << SHARC_HASH_BITS) - 1));
 
