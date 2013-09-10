@@ -27,6 +27,7 @@
 
 #include "stream.h"
 #include "buffers.h"
+#include "globals.h"
 
 #define SHARC_YES    1
 #define SHARC_NO     0
@@ -72,7 +73,7 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer* byte_buffer);
  * SHARC_STREAM_STATE can have the following values :                                                                  *
  *                                                                                                                     *
  * SHARC_STREAM_STATE_READY, ready to continue                                                                         *
- * SHARC_STREAM_STATE_FINISHED, processing is finished                                                                 *
+ * SHARC_STREAM_STATE_FINISHED_ENCODING, processing is finished                                                                 *
  * SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER, input buffer has been completely read                                     *
  * SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER, there is not enought space left in the output buffer to continue         *
  * SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_SIZE_NOT_MULTIPLE_OF_32, size of input buffer is no a multiple of 32          *
@@ -204,10 +205,9 @@ SHARC_STREAM_STATE sharc_stream_decompress_utilities_restore_file_attributes(sha
  *
  * @param result the resulting length
  * @param in_length, the length of the input data to compress
- * @param output_type, the encode output type to be used
- * @param block_type the block type to be used
+ * @param compression_mode the compression mode to be used
  */
-SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_fast64_t * result, uint_fast64_t in_length, SHARC_ENCODE_OUTPUT_TYPE output_type, SHARC_BLOCK_TYPE block_type);
+SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_fast64_t * result, uint_fast64_t in_length, SHARC_COMPRESSION_MODE compression_mode);
 
 /*
  * Buffers compression function

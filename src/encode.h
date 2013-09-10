@@ -30,22 +30,25 @@
 #include "dictionary.h"
 #include "hash_encode.h"
 #include "header.h"
-#include "mode_marker.h"
+#include "footer.h"
+#include "block_mode_marker.h"
 
 typedef enum {
     SHARC_ENCODE_STATE_READY = 0,
-    SHARC_ENCODE_STATE_FINISHED,
     SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER,
     SHARC_ENCODE_STATE_STALL_ON_INPUT_BUFFER,
+    //SHARC_ENCODE_STATE_FINISHED_ENCODING,
+    //SHARC_ENCODE_STATE_FINISHED,
     SHARC_ENCODE_STATE_ERROR
 } SHARC_ENCODE_STATE;
 
 typedef enum {
-    SHARC_ENCODE_PROCESS_WRITE_HEADER,
     SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER,
+    SHARC_ENCODE_PROCESS_WRITE_BLOCK_MODE_MARKER,
     SHARC_ENCODE_PROCESS_WRITE_BLOCK_FOOTER,
-    SHARC_ENCODE_PROCESS_WRITE_MODE_MARKER,
-    SHARC_ENCODE_PROCESS_WRITE_DATA
+    SHARC_ENCODE_PROCESS_WRITE_DATA,
+    SHARC_ENCODE_PROCESS_WRITE_FOOTER,
+    SHARC_ENCODE_PROCESS_FINISHED
 } SHARC_ENCODE_PROCESS;
 
 typedef enum {
@@ -86,8 +89,8 @@ typedef struct {
 } sharc_encode_state;
 #pragma pack(pop)
 
-SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *, sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat*);
+SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat*);
 SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const sharc_bool);
-SHARC_ENCODE_STATE sharc_encode_finish(sharc_encode_state*);
+SHARC_ENCODE_STATE sharc_encode_finish(sharc_byte_buffer *, sharc_encode_state*);
 
 #endif

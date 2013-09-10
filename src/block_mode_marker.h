@@ -22,8 +22,8 @@
  * 08/09/13 02:04
  */
 
-#ifndef SHARC_MODE_MARKER_H
-#define SHARC_MODE_MARKER_H
+#ifndef SHARC_BLOCK_MODE_MARKER_H
+#define SHARC_BLOCK_MODE_MARKER_H
 
 #include "globals.h"
 #include "byte_buffer.h"

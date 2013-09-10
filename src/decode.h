@@ -31,23 +31,26 @@
 #include "dictionary.h"
 #include "hash_decode.h"
 #include "header.h"
-#include "mode_marker.h"
+#include "footer.h"
+#include "block_mode_marker.h"
 
 typedef enum {
     SHARC_DECODE_STATE_READY = 0,
-    SHARC_DECODE_STATE_FINISHED,
     SHARC_DECODE_STATE_STALL_ON_OUTPUT_BUFFER,
     SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER,
+    //SHARC_DECODE_STATE_FINISHED_DECODING,
+    //SHARC_DECODE_STATE_FINISHED,
     SHARC_DECODE_STATE_ERROR
 } SHARC_DECODE_STATE;
 
 typedef enum {
-    SHARC_DECODE_PROCESS_READ_HEADER,
     SHARC_DECODE_PROCESS_READ_BLOCK_HEADER,
+    SHARC_DECODE_PROCESS_READ_BLOCK_MODE_MARKER,
     SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER,
     SHARC_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER,
-    SHARC_DECODE_PROCESS_READ_MODE_MARKER,
-    SHARC_DECODE_PROCESS_WRITE_DATA
+    SHARC_DECODE_PROCESS_READ_DATA,
+    SHARC_DECODE_PROCESS_READ_FOOTER,
+    SHARC_DECODE_PROCESS_FINISHED
 } SHARC_DECODE_PROCESS;
 
 #pragma pack(push)
@@ -66,6 +69,7 @@ typedef struct {
     uint_fast64_t totalWritten;
 
     sharc_header header;
+    sharc_footer footer;
     sharc_block_header lastBlockHeader;
     sharc_mode_marker lastModeMarker;
     sharc_block_footer lastBlockFooter;
@@ -77,8 +81,8 @@ typedef struct {
 } sharc_decode_state;
 #pragma pack(pop)
 
-SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer*, sharc_decode_state *);
+SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer*, sharc_byte_buffer*, sharc_decode_state *);
 SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_decode_state *, const sharc_bool);
-SHARC_DECODE_STATE sharc_decode_finish(sharc_decode_state*);
+SHARC_DECODE_STATE sharc_decode_finish(sharc_byte_buffer *, sharc_decode_state*);
 
 #endif

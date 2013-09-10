@@ -22,7 +22,7 @@
  * 08/09/13 02:05
  */
 
-#include "mode_marker.h"
+#include "block_mode_marker.h"
 
 SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_read(sharc_byte_buffer* restrict in, sharc_mode_marker * restrict modeMarker) {
     modeMarker->activeCompressionMode = *(in->pointer + in->position);

@@ -25,7 +25,13 @@
 #ifndef SHARC_FOOTER_H
 #define SHARC_FOOTER_H
 
+#include "globals.h"
+#include "byte_buffer.h"
+
 typedef struct {
 } sharc_footer;
+
+uint_fast32_t sharc_footer_read(sharc_byte_buffer*, sharc_footer*);
+uint_fast32_t sharc_footer_write(sharc_byte_buffer*);
 
 #endif

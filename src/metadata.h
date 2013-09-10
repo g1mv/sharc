@@ -19,20 +19,22 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 28/08/13 17:19
+ * 09/09/13 12:12
  */
 
+#ifndef SHARC_METADATA_H
+#define SHARC_METADATA_H
+
+#include "globals.h"
+#include "header.h"
 #include "footer.h"
+#include "block_header.h"
+#include "block_mode_marker.h"
+#include "block_footer.h"
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_footer_read(sharc_byte_buffer *restrict in, sharc_footer *restrict footer) {
-    in->position += sizeof(sharc_footer);
+uint_fast64_t sharc_metadata_structure_overhead();
+uint_fast64_t sharc_metadata_block_structure_overhead(const uint_fast64_t);
+uint_fast64_t sharc_metadata_max_compressed_length(const uint_fast64_t, const SHARC_COMPRESSION_MODE, const bool);
+uint_fast64_t sharc_metadata_max_decompressed_length(const uint_fast64_t, const SHARC_COMPRESSION_MODE, const bool);
 
-    return sizeof(sharc_footer);
-}
-
-SHARC_FORCE_INLINE uint_fast32_t sharc_footer_write(sharc_byte_buffer *out) {
-    out->position += sizeof(sharc_footer);
-
-    return sizeof(sharc_footer);
-}
-
+#endif
