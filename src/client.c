@@ -69,7 +69,7 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     exit(0);
 }
 
-SHARC_FORCE_INLINE uint_fast64_t reloadInputBuffer(sharc_stream *restrict stream, const sharc_client_io *restrict io_in) {
+SHARC_FORCE_INLINE uint_fast64_t sharc_client_reloadInputBuffer(sharc_stream *restrict stream, const sharc_client_io *restrict io_in) {
     stream->in.size = (uint_fast64_t) fread(stream->in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
     if (stream->in.size < SHARC_PREFERRED_BUFFER_SIZE) {
         if (ferror(io_in->stream))
@@ -79,7 +79,7 @@ SHARC_FORCE_INLINE uint_fast64_t reloadInputBuffer(sharc_stream *restrict stream
     return stream->in.size;
 }
 
-SHARC_FORCE_INLINE uint_fast64_t emptyOutputBuffer(sharc_stream *restrict stream, const sharc_client_io *restrict io_out) {
+SHARC_FORCE_INLINE uint_fast64_t sharc_client_emptyOutputBuffer(sharc_stream *restrict stream, const sharc_client_io *restrict io_out) {
     uint_fast64_t written = (uint_fast64_t) fwrite(stream->out.pointer, sizeof(sharc_byte), (size_t) stream->out.position, io_out->stream);
     if (written < stream->out.position) {
         if (ferror(io_out->stream))
@@ -89,13 +89,13 @@ SHARC_FORCE_INLINE uint_fast64_t emptyOutputBuffer(sharc_stream *restrict stream
     return written;
 }
 
-SHARC_FORCE_INLINE void actionRequired(uint_fast64_t *read, uint_fast64_t *written, const sharc_client_io *restrict io_in, const sharc_client_io *restrict io_out, sharc_stream *restrict stream, const SHARC_STREAM_STATE streamState, const char *errorMessage) {
+SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fast64_t *written, const sharc_client_io *restrict io_in, const sharc_client_io *restrict io_out, sharc_stream *restrict stream, const SHARC_STREAM_STATE streamState, const char *errorMessage) {
     switch (streamState) {
         case SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
-            *written = emptyOutputBuffer(stream, io_out);
+            *written = sharc_client_emptyOutputBuffer(stream, io_out);
             break;
         case SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER:
-            *read = reloadInputBuffer(stream, io_in);
+            *read = sharc_client_reloadInputBuffer(stream, io_in);
             break;
         default:
             sharc_error(errorMessage);
@@ -146,14 +146,14 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     uint_fast64_t read = 0, written = 0;
     if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_error("Unable to prepare compression");
-    read = reloadInputBuffer(&stream, io_in);
+    read = sharc_client_reloadInputBuffer(&stream, io_in);
     while ((streamState = sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT, SHARC_BLOCK_TYPE_DEFAULT, io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE ? &attributes : NULL)))
-        actionRequired(&read, &written, io_in, io_out, &stream, streamState, "Unable to initialize compression");
+        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "Unable to initialize compression");
     while ((streamState = sharc_stream_compress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
-        actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured during compression");
+        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured during compression");
     while ((streamState = sharc_stream_compress_finish(&stream)))
-        actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured while finishing compression");
-    emptyOutputBuffer(&stream, io_out);
+        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured while finishing compression");
+    sharc_client_emptyOutputBuffer(&stream, io_out);
     /*
      * That's it !
      */
@@ -221,14 +221,14 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     uint_fast64_t read = 0, written = 0;
     if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_error("Unable to prepare decompression");
-    read = reloadInputBuffer(&stream, io_in);
+    read = sharc_client_reloadInputBuffer(&stream, io_in);
     while ((streamState = sharc_stream_decompress_init(&stream)))
-        actionRequired(&read, &written, io_in, io_out, &stream, streamState, "Unable to initialize decompression");
+        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "Unable to initialize decompression");
     while ((streamState = sharc_stream_decompress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
-        actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured during decompression");
+        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured during decompression");
     while ((streamState = sharc_stream_decompress_finish(&stream)))
-        actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured while finishing decompression");
-    emptyOutputBuffer(&stream, io_out);
+        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured while finishing decompression");
+    sharc_client_emptyOutputBuffer(&stream, io_out);
     /*
      * That's it !
      */
