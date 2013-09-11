@@ -264,6 +264,7 @@ SHARC_FORCE_INLINE SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_
                     return SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
                 in->position += (remaining - state->endDataSize);
             }
+            state->process = SHARC_HASH_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST;
             return SHARC_HASH_DECODE_STATE_FINISHED;
 
         default:

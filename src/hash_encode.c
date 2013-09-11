@@ -197,6 +197,7 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
                     return SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
                 in->position += remaining;
             }
+            state->process = SHARC_HASH_ENCODE_PROCESS_PREPARE_NEW_BLOCK;
             return SHARC_HASH_ENCODE_STATE_FINISHED;
 
         default:

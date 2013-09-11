@@ -131,7 +131,9 @@ SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *stream);
  *      If set to true, this will ensure that every byte from the input buffer will have its counterpart in the output buffer.
  *      flush has to be true when the presented data is the last (end of a file for example).
  *      It can also be set to true multiple times to handle network streaming for example. In that case, please also check
- *      the block_type parameter of sharc_stream_compress_init to enable better compression ratio.
+ *      the block_type parameter of sharc_stream_compress_init to enable a better compression ratio. It is also worth noting that
+ *      the *best* input buffer size for compression ratio matters should be a multiple of 256, any other size will also work but will
+ *      incur a less than optimal compression ratio.
  */
 SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *stream, const sharc_bool flush);
 
