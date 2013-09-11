@@ -22,7 +22,6 @@
  * 17/06/13 18:14
  */
 
-
 #include "header.h"
 
 SHARC_FORCE_INLINE sharc_bool sharc_header_checkValidity(sharc_header* restrict header) {

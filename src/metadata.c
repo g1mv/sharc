@@ -54,11 +54,11 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_metadata_max_decompressed_length(const ui
             return length - headerFooterLength;
 
         case SHARC_COMPRESSION_MODE_FASTEST:
-            return (length - sharc_metadata_block_structure_overhead(length)) << 1 - headerFooterLength;
+            return (length - sharc_metadata_block_structure_overhead(length)) << (1 - headerFooterLength);
 
         case SHARC_COMPRESSION_MODE_DUAL_PASS:
             intermediate = (length - sharc_metadata_block_structure_overhead(length)) << 1;
-            return (intermediate - sharc_metadata_block_structure_overhead(intermediate)) << 1 - headerFooterLength;
+            return (intermediate - sharc_metadata_block_structure_overhead(intermediate)) << (1 - headerFooterLength);
     }
 }
 
