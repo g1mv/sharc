@@ -172,10 +172,10 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 
             double ratio = (100.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
-            printf("Compressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, io_out->name, totalRead, totalWritten);
+            printf("Compressed %s to %s, %"PRIu64" bytes in, %"PRIu64" bytes out, ", inFilePath, io_out->name, totalRead, totalWritten);
             printf("Ratio out / in = %.1lf%%, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
         } else
-            printf("Compressed %s to %s, %llu bytes written.\n", io_in->name, io_out->name, totalWritten);
+            printf("Compressed %s to %s, %"PRIu64" bytes written.\n", io_in->name, io_out->name, totalWritten);
     }
 }
 
@@ -260,10 +260,10 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
             }
 
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
-            printf("Decompressed %s to %s, %llu bytes in, %llu bytes out, ", inFilePath, io_out->name, totalRead, totalWritten);
+            printf("Decompressed %s to %s, %"PRIu64" bytes in, %"PRIu64" bytes out, ", inFilePath, io_out->name, totalRead, totalWritten);
             printf("Time = %.3lf s, Speed = %.0lf MB/s\n", elapsed, speed);
         } else
-            printf("Decompressed %s to %s, %llu bytes written.\n", io_in->name, io_out->name, totalWritten);
+            printf("Decompressed %s to %s, %"PRIu64" bytes written.\n", io_in->name, io_out->name, totalWritten);
     }
 }
 

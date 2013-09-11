@@ -33,9 +33,11 @@
 #include <fcntl.h>
 #endif
 
+#include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include "chrono.h"
 #include "stream.h"
