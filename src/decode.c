@@ -59,6 +59,9 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_read_block_header(sharc_byte_
     if (in->position + sizeof(sharc_block_header) > in->size)
         return SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER;
 
+    state->currentBlockData.inStart = state->totalRead;
+    state->currentBlockData.outStart = state->totalWritten;
+
     state->totalRead += sharc_block_header_read(in, &state->lastBlockHeader);
 
     state->process = SHARC_DECODE_PROCESS_READ_DATA;
@@ -92,6 +95,8 @@ SHARC_FORCE_INLINE void sharc_decode_update_totals(sharc_byte_buffer *restrict i
 }
 
 SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer *in, sharc_byte_buffer *workBuffer, sharc_decode_state *restrict state) {
+    SHARC_DECODE_STATE decodeState;
+
     state->totalRead = 0;
     state->totalWritten = 0;
 
@@ -100,7 +105,11 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer *in, s
 
     state->workBuffer = workBuffer;
 
-    return sharc_decode_read_header(in, state);
+    if((decodeState = sharc_decode_read_header(in, state)))
+        return decodeState;
+
+    state->endDataOverhead = (state->header.genericHeader.blockType == SHARC_BLOCK_TYPE_DEFAULT ? sizeof(sharc_block_footer) : 0) + sizeof(sharc_footer);
+    return SHARC_DECODE_STATE_READY;
 }
 
 SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_decode_state *restrict state, const sharc_bool flush) {
@@ -108,6 +117,10 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
     SHARC_HASH_DECODE_STATE hashDecodeState;
     uint_fast64_t inPositionBefore;
     uint_fast64_t outPositionBefore;
+    uint_fast64_t blockRemaining;
+    uint_fast64_t inRemaining;
+    uint_fast64_t positionIncrement;
+    uint_fast64_t outRemaining;
 
     while (true) {
         switch (state->process) {
@@ -119,8 +132,10 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                     state->dictionaryData.resetCycle--;
                 else {
                     switch (state->currentCompressionMode) {
-                        default:
+                        case SHARC_COMPRESSION_MODE_FASTEST:
                             sharc_dictionary_resetDirect(&state->dictionaryData.dictionary_a);
+                            break;
+                        default:
                             break;
                     }
                     state->dictionaryData.resetCycle = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE - 1;
@@ -133,60 +148,101 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                 break;
 
             case SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER:
-                if ((decodeState = sharc_decode_read_block_footer(in, state)))
+                if (state->header.genericHeader.blockType == SHARC_BLOCK_TYPE_DEFAULT) if ((decodeState = sharc_decode_read_block_footer(in, state)))
                     return decodeState;
-
                 state->process = SHARC_DECODE_PROCESS_READ_BLOCK_HEADER;
-
                 break;
 
             case SHARC_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER:
-                if ((decodeState = sharc_decode_read_block_footer(in, state)))
+                if (state->header.genericHeader.blockType == SHARC_BLOCK_TYPE_DEFAULT) if ((decodeState = sharc_decode_read_block_footer(in, state)))
                     return decodeState;
-
                 state->process = SHARC_DECODE_PROCESS_READ_FOOTER;
-
                 return SHARC_DECODE_STATE_READY;
 
             case SHARC_DECODE_PROCESS_READ_DATA:
                 inPositionBefore = in->position;
                 outPositionBefore = out->position;
 
-                hashDecodeState = sharc_hash_decode_process(in, out, SHARC_HASH_XOR_MASK_DISPERSION, &state->dictionaryData.dictionary_a, &state->hashDecodeState, flush);
-                sharc_decode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+                switch (state->currentCompressionMode) {
+                    case SHARC_COMPRESSION_MODE_COPY:
+                        blockRemaining = SHARC_PREFERRED_BLOCK_SIGNATURES * sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature) - (state->totalWritten - state->currentBlockData.outStart);
+                        inRemaining = in->size - in->position;
+                        outRemaining = out->size - out->position;
 
-                switch (hashDecodeState) {
-                    case SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER:
-                        return SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER;
+                        if (inRemaining <= outRemaining) {
+                            if (blockRemaining <= inRemaining)
+                                goto copy_until_end_of_block;
+                            else {
+                                if (flush && inRemaining <= state->endDataOverhead) {
+                                    state->process = SHARC_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER;
+                                } else if (!inRemaining) {
+                                    return SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER;
+                                } else {
+                                    positionIncrement = inRemaining - (flush ? state->endDataOverhead : 0);
+                                    memcpy(out->pointer + out->position, in->pointer + in->position, (size_t) positionIncrement);
+                                    in->position += positionIncrement;
+                                    out->position += positionIncrement;
+                                    sharc_decode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+                                }
+                            }
+                        } else {
+                            if (blockRemaining <= outRemaining)
+                                goto copy_until_end_of_block;
+                            else {
+                                if (outRemaining) {
+                                    memcpy(out->pointer + out->position, in->pointer + in->position, (size_t) outRemaining);
+                                    in->position += outRemaining;
+                                    out->position += outRemaining;
+                                    sharc_decode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+                                } else
+                                    return SHARC_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
+                            }
+                        }
+                        goto exit;
 
-                    case SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER:
-                        return SHARC_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
+                    copy_until_end_of_block:
+                        memcpy(out->pointer + out->position, in->pointer + in->position, (size_t) blockRemaining);
+                        in->position += blockRemaining;
+                        out->position += blockRemaining;
+                        sharc_decode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+                        state->process = SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER;
 
-                    case SHARC_HASH_DECODE_STATE_INFO_NEW_BLOCK:
-                        if (state->header.genericHeader.blockType == SHARC_BLOCK_TYPE_DEFAULT)
-                            state->process = SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER;
-                        else
-                            state->process = SHARC_DECODE_PROCESS_READ_BLOCK_HEADER;
+                    exit:
                         break;
 
-                    case SHARC_HASH_DECODE_STATE_INFO_EFFICIENCY_CHECK:
-                        state->process = SHARC_DECODE_PROCESS_READ_BLOCK_MODE_MARKER;
-                        break;
+                    case SHARC_COMPRESSION_MODE_FASTEST:
+                        hashDecodeState = sharc_hash_decode_process(in, out, SHARC_HASH_XOR_MASK_DISPERSION, &state->dictionaryData.dictionary_a, &state->hashDecodeState, flush);
+                        sharc_decode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
 
-                    case SHARC_HASH_DECODE_STATE_FINISHED:
-                        if (state->header.genericHeader.blockType == SHARC_BLOCK_TYPE_DEFAULT)
-                            state->process = SHARC_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER;
-                        else {
-                            state->process = SHARC_DECODE_PROCESS_READ_FOOTER;
-                            return SHARC_DECODE_STATE_READY;
+                        switch (hashDecodeState) {
+                            case SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER:
+                                return SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER;
+
+                            case SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER:
+                                return SHARC_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
+
+                            case SHARC_HASH_DECODE_STATE_INFO_NEW_BLOCK:
+                                state->process = SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER;
+                                break;
+
+                            case SHARC_HASH_DECODE_STATE_INFO_EFFICIENCY_CHECK:
+                                state->process = SHARC_DECODE_PROCESS_READ_BLOCK_MODE_MARKER;
+                                break;
+
+                            case SHARC_HASH_DECODE_STATE_FINISHED:
+                                state->process = SHARC_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER;
+                                break;
+
+                            case SHARC_HASH_DECODE_STATE_READY:
+                                break;
+
+                            default:
+                                return SHARC_DECODE_STATE_ERROR;
                         }
                         break;
 
-                    case SHARC_HASH_DECODE_STATE_READY:
+                    case SHARC_COMPRESSION_MODE_DUAL_PASS:
                         break;
-
-                    default:
-                        return SHARC_DECODE_STATE_ERROR;
                 }
                 break;
 

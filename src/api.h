@@ -73,7 +73,7 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer* byte_buffer);
  * SHARC_STREAM_STATE can have the following values :                                                                  *
  *                                                                                                                     *
  * SHARC_STREAM_STATE_READY, ready to continue                                                                         *
- * SHARC_STREAM_STATE_FINISHED_ENCODING, processing is finished                                                                 *
+ * SHARC_STREAM_STATE_FINISHED_ENCODING, processing is finished                                                        *
  * SHARC_STREAM_STATE_STALL_ON_INPUT_BUFFER, input buffer has been completely read                                     *
  * SHARC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER, there is not enought space left in the output buffer to continue         *
  * SHARC_STREAM_STATE_ERROR_INPUT_BUFFER_SIZE_NOT_MULTIPLE_OF_32, size of input buffer is no a multiple of 32          *
@@ -127,6 +127,7 @@ SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *stream);
  * When the dataset in the input buffer is the last, last_input_data has to be true. Otherwise it should be false at all times.
  *
  * @param stream the stream
+ *      Please note that the input buffer size, if flush is false, *must* be a multiple of 32 otherwise an error will be returned.
  * @param flush a boolean indicating flush behaviour
  *      If set to true, this will ensure that every byte from the input buffer will have its counterpart in the output buffer.
  *      flush has to be true when the presented data is the last (end of a file for example).

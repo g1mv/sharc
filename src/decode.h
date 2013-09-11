@@ -38,8 +38,6 @@ typedef enum {
     SHARC_DECODE_STATE_READY = 0,
     SHARC_DECODE_STATE_STALL_ON_OUTPUT_BUFFER,
     SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER,
-    //SHARC_DECODE_STATE_FINISHED_DECODING,
-    //SHARC_DECODE_STATE_FINISHED,
     SHARC_DECODE_STATE_ERROR
 } SHARC_DECODE_STATE;
 
@@ -56,6 +54,11 @@ typedef enum {
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
+    uint_fast64_t inStart;
+    uint_fast64_t outStart;
+} sharc_decode_current_block_data;
+
+typedef struct {
     sharc_dictionary dictionary_a;
     sharc_dictionary dictionary_b;
     uint_fast32_t resetCycle;
@@ -67,6 +70,7 @@ typedef struct {
 
     uint_fast64_t totalRead;
     uint_fast64_t totalWritten;
+    uint_fast64_t endDataOverhead;
 
     sharc_header header;
     sharc_footer footer;
@@ -75,6 +79,7 @@ typedef struct {
     sharc_block_footer lastBlockFooter;
 
     sharc_hash_decode_state hashDecodeState;
+    sharc_decode_current_block_data currentBlockData;
     sharc_decode_dictionary_data dictionaryData;
 
     sharc_byte_buffer* workBuffer;

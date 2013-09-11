@@ -37,8 +37,6 @@ typedef enum {
     SHARC_ENCODE_STATE_READY = 0,
     SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER,
     SHARC_ENCODE_STATE_STALL_ON_INPUT_BUFFER,
-    //SHARC_ENCODE_STATE_FINISHED_ENCODING,
-    //SHARC_ENCODE_STATE_FINISHED,
     SHARC_ENCODE_STATE_ERROR
 } SHARC_ENCODE_STATE;
 
@@ -46,6 +44,7 @@ typedef enum {
     SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER,
     SHARC_ENCODE_PROCESS_WRITE_BLOCK_MODE_MARKER,
     SHARC_ENCODE_PROCESS_WRITE_BLOCK_FOOTER,
+    SHARC_ENCODE_PROCESS_WRITE_LAST_BLOCK_FOOTER,
     SHARC_ENCODE_PROCESS_WRITE_DATA,
     SHARC_ENCODE_PROCESS_WRITE_FOOTER,
     SHARC_ENCODE_PROCESS_FINISHED
@@ -63,7 +62,7 @@ typedef enum {
 typedef struct {
     uint_fast64_t inStart;
     uint_fast64_t outStart;
-} sharc_encode_efficiency_data;
+} sharc_encode_current_block_data;
 
 typedef struct {
     sharc_dictionary dictionary_a;
@@ -82,7 +81,7 @@ typedef struct {
     uint_fast64_t totalWritten;
 
     sharc_hash_encode_state hashEncodeState;
-    sharc_encode_efficiency_data efficiencyData;
+    sharc_encode_current_block_data currentBlockData;
     sharc_encode_dictionary_data dictionaryData;
 
     sharc_byte_buffer* workBuffer;

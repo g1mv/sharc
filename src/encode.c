@@ -72,8 +72,8 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_block_header(sharc_byte
         state->dictionaryData.resetCycle = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE - 1;
     }
 
-    state->efficiencyData.inStart = state->totalRead;
-    state->efficiencyData.outStart = state->totalWritten;
+    state->currentBlockData.inStart = state->totalRead;
+    state->currentBlockData.outStart = state->totalWritten;
 
     state->totalWritten += sharc_block_header_write(out);
 
@@ -87,8 +87,6 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_write_block_footer(sharc_byte
         return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
     state->totalWritten += sharc_block_footer_write(out, 0);
-
-    state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
 
     return SHARC_ENCODE_STATE_READY;
 }
@@ -138,6 +136,9 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
     SHARC_HASH_ENCODE_STATE hashEncodeState;
     uint_fast64_t inPositionBefore;
     uint_fast64_t outPositionBefore;
+    uint_fast64_t blockRemaining;
+    uint_fast64_t inRemaining;
+    uint_fast64_t outRemaining;
 
     while (true) {
         switch (state->process) {
@@ -147,9 +148,16 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
                 break;
 
             case SHARC_ENCODE_PROCESS_WRITE_BLOCK_FOOTER:
-                if ((encodeState = sharc_encode_write_block_footer(out, state)))
+                if (state->blockType == SHARC_BLOCK_TYPE_DEFAULT) if ((encodeState = sharc_encode_write_block_footer(out, state)))
                     return encodeState;
+                state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
                 break;
+
+            case SHARC_ENCODE_PROCESS_WRITE_LAST_BLOCK_FOOTER:
+                if (state->blockType == SHARC_BLOCK_TYPE_DEFAULT) if ((encodeState = sharc_encode_write_block_footer(out, state)))
+                    return encodeState;
+                state->process = SHARC_ENCODE_PROCESS_WRITE_FOOTER;
+                return SHARC_ENCODE_STATE_READY;
 
             case SHARC_ENCODE_PROCESS_WRITE_BLOCK_MODE_MARKER:
                 if ((encodeState = sharc_encode_write_mode_marker(out, state)))
@@ -160,38 +168,84 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
                 inPositionBefore = in->position;
                 outPositionBefore = out->position;
 
-                hashEncodeState = sharc_hash_encode_process(in, out, SHARC_HASH_XOR_MASK_DISPERSION, &state->dictionaryData.dictionary_a, &state->hashEncodeState, flush);
-                sharc_encode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+                switch (state->currentCompressionMode) {
+                    case SHARC_COMPRESSION_MODE_COPY:
+                        blockRemaining = SHARC_PREFERRED_BLOCK_SIGNATURES * sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature) - (state->totalRead - state->currentBlockData.inStart);
+                        inRemaining = in->size - in->position;
+                        outRemaining = out->size - out->position;
 
-                switch (hashEncodeState) {
-                    case SHARC_HASH_ENCODE_STATE_STALL_ON_INPUT_BUFFER:
-                        return SHARC_ENCODE_STATE_STALL_ON_INPUT_BUFFER;
+                        if (inRemaining <= outRemaining) {
+                            if (blockRemaining <= inRemaining)
+                                goto copy_until_end_of_block;
+                            else {
+                                memcpy(out->pointer + out->position, in->pointer + in->position, (size_t) inRemaining);
+                                in->position += inRemaining;
+                                out->position += inRemaining;
+                                sharc_encode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+                                if (flush)
+                                    state->process = SHARC_ENCODE_PROCESS_WRITE_LAST_BLOCK_FOOTER;
+                                else
+                                    return SHARC_ENCODE_STATE_STALL_ON_INPUT_BUFFER;
+                            }
+                        } else {
+                            if (blockRemaining <= outRemaining)
+                                goto copy_until_end_of_block;
+                            else {
+                                memcpy(out->pointer + out->position, in->pointer + in->position, (size_t) outRemaining);
+                                in->position += outRemaining;
+                                out->position += outRemaining;
+                                sharc_encode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+                                return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
+                            }
+                        }
+                        goto exit;
 
-                    case SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER:
-                        return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
-
-                    case SHARC_HASH_ENCODE_STATE_INFO_NEW_BLOCK:
-                        if (state->blockType == SHARC_BLOCK_TYPE_DEFAULT)
-                            state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_FOOTER;
+                    copy_until_end_of_block:
+                        memcpy(out->pointer + out->position, in->pointer + in->position, (size_t) blockRemaining);
+                        in->position += blockRemaining;
+                        out->position += blockRemaining;
+                        sharc_encode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+                        if (flush && inRemaining == blockRemaining)
+                            state->process = SHARC_ENCODE_PROCESS_WRITE_LAST_BLOCK_FOOTER;
                         else
-                            state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
+                            state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_FOOTER;
+
+                    exit:
                         break;
 
-                    case SHARC_HASH_ENCODE_STATE_INFO_EFFICIENCY_CHECK:
-                        state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_MODE_MARKER;
+                    case SHARC_COMPRESSION_MODE_FASTEST:
+                        hashEncodeState = sharc_hash_encode_process(in, out, SHARC_HASH_XOR_MASK_DISPERSION, &state->dictionaryData.dictionary_a, &state->hashEncodeState, flush);
+                        sharc_encode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
+
+                        switch (hashEncodeState) {
+                            case SHARC_HASH_ENCODE_STATE_STALL_ON_INPUT_BUFFER:
+                                return SHARC_ENCODE_STATE_STALL_ON_INPUT_BUFFER;
+
+                            case SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER:
+                                return SHARC_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
+
+                            case SHARC_HASH_ENCODE_STATE_INFO_NEW_BLOCK:
+                                state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_FOOTER;
+                                break;
+
+                            case SHARC_HASH_ENCODE_STATE_INFO_EFFICIENCY_CHECK:
+                                state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCK_MODE_MARKER;
+                                break;
+
+                            case SHARC_HASH_ENCODE_STATE_FINISHED:
+                                state->process = SHARC_ENCODE_PROCESS_WRITE_LAST_BLOCK_FOOTER;
+                                break;
+
+                            case SHARC_HASH_ENCODE_STATE_READY:
+                                break;
+
+                            default:
+                                return SHARC_ENCODE_STATE_ERROR;
+                        }
                         break;
 
-                    case SHARC_HASH_ENCODE_STATE_FINISHED:
-                        if (state->blockType == SHARC_BLOCK_TYPE_DEFAULT) if ((encodeState = sharc_encode_write_block_footer(out, state)))
-                            return encodeState;
-                        state->process = SHARC_ENCODE_PROCESS_WRITE_FOOTER;
-                        return SHARC_ENCODE_STATE_READY;
-
-                    case SHARC_HASH_ENCODE_STATE_READY:
+                    case SHARC_COMPRESSION_MODE_DUAL_PASS:
                         break;
-
-                    default:
-                        return SHARC_ENCODE_STATE_ERROR;
                 }
                 break;
 
@@ -202,7 +256,7 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
 }
 
 SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_finish(sharc_byte_buffer *restrict out, sharc_encode_state *restrict state) {
-    if(state->process ^ SHARC_ENCODE_PROCESS_WRITE_FOOTER)
+    if (state->process ^ SHARC_ENCODE_PROCESS_WRITE_FOOTER)
         return SHARC_ENCODE_STATE_ERROR;
 
     sharc_hash_encode_finish(&state->hashEncodeState);
