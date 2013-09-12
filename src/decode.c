@@ -152,7 +152,7 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                 break;
 
             case SHARC_DECODE_PROCESS_READ_BLOCKS_WORKBUFFER_TO_OUT:
-                blockDecodeState = sharc_block_decode_process(state->workBuffer, out, &state->blockDecodeStateB, flush, SHARC_HASH_XOR_MASK_DISPERSION);
+                blockDecodeState = sharc_block_decode_process(state->workBuffer, out, &state->blockDecodeStateB, flush && in->position == in->size, SHARC_HASH_XOR_MASK_DISPERSION);
                 state->totalWritten += out->position - outPositionBefore;
                 switch (blockDecodeState) {
                     case SHARC_BLOCK_DECODE_STATE_READY:

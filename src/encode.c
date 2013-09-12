@@ -153,7 +153,7 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
                 break;
 
             case SHARC_ENCODE_PROCESS_WRITE_BLOCKS_WORKBUFFER_TO_OUT:
-                blockEncodeState = sharc_block_encode_process(state->workBuffer, out, &state->blockEncodeStateB, flush, SHARC_HASH_XOR_MASK_DIRECT);
+                blockEncodeState = sharc_block_encode_process(state->workBuffer, out, &state->blockEncodeStateB, flush && in->position == in->size, SHARC_HASH_XOR_MASK_DIRECT);
                 state->totalWritten += out->position - outPositionBefore;
                 switch (blockEncodeState) {
                     case SHARC_BLOCK_ENCODE_STATE_READY:
