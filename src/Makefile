@@ -24,7 +24,7 @@
 
 TARGET = sharc
 
-CFLAGS = -std=gnu99 -D_FILE_OFFSET_BITS=64
+CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64
 
 ifeq ($(OS),Windows_NT)
     EXTENSION = .exe

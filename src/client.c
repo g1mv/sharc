@@ -238,7 +238,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
         const double elapsed = sharc_chrono_elapsed(&chrono);
 
-        uint64_t totalWritten = (uint64_t) ftello(io_out->stream);
+        uint64_t totalWritten = *stream.out_total_written;
         fclose(io_out->stream);
 
         SHARC_STREAM_ORIGIN_TYPE originType;
@@ -248,7 +248,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
             sharc_stream_decompress_utilities_restore_file_attributes(&stream, io_out->name);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            uint64_t totalRead = (uint64_t) ftello(io_in->stream);
+            uint64_t totalRead = *stream.in_total_read;
             fclose(io_in->stream);
 
             if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
