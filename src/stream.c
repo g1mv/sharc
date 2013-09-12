@@ -71,7 +71,7 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *s
     if (streamState)
         return streamState;
 
-    uint_fast64_t workBufferSize = 0x20 + sharc_metadata_max_compressed_length(stream->in.size, SHARC_COMPRESSION_MODE_FASTEST, false);
+    uint_fast64_t workBufferSize = SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD + 0x20 + sharc_metadata_max_compressed_length(stream->in.size, SHARC_COMPRESSION_MODE_FASTEST, false);
     SHARC_ENCODE_STATE encodeState = sharc_encode_init(&stream->out, &stream->internal_state.workBuffer, workBufferSize, &stream->internal_state.internal_encode_state, compressionMode, outputType, blockType, fileAttributes);
     switch (encodeState) {
         case SHARC_ENCODE_STATE_READY:
