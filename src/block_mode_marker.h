@@ -27,6 +27,7 @@
 
 #include "globals.h"
 #include "byte_buffer.h"
+#include "block.h"
 
 #pragma pack(push)
 #pragma pack(4)
@@ -37,6 +38,6 @@ typedef struct {
 #pragma pack(pop)
 
 uint_fast32_t sharc_mode_marker_read(sharc_byte_buffer*, sharc_mode_marker *);
-uint_fast32_t sharc_mode_marker_write(sharc_byte_buffer*, SHARC_COMPRESSION_MODE);
+uint_fast32_t sharc_mode_marker_write(sharc_byte_buffer*, SHARC_BLOCK_MODE);
 
 #endif

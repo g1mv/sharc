@@ -32,8 +32,8 @@ SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_read(sharc_byte_buffer* restr
     return sizeof(sharc_mode_marker);
 }
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_write(sharc_byte_buffer* out, SHARC_COMPRESSION_MODE compressionMode) {
-    *(out->pointer + out->position) = (sharc_byte)compressionMode;
+SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_write(sharc_byte_buffer* out, SHARC_BLOCK_MODE mode) {
+    *(out->pointer + out->position) = (sharc_byte)mode;
 
     out->position += sizeof(sharc_mode_marker);
 

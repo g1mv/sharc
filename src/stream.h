@@ -25,13 +25,18 @@
 #ifndef SHARC_API_STREAM_H
 #define SHARC_API_STREAM_H
 
+#include <stdint.h>
+
 #include "hash_encode.h"
-#include "encode.h"
-#include "decode.h"
+#include "block_encode.h"
+#include "block_decode.h"
 #include "byte_buffer.h"
 #include "header.h"
 #include "block.h"
 #include "metadata.h"
+#include "globals.h"
+#include "encode.h"
+#include "decode.h"
 
 #define SHARC_STREAM_MINIMUM_OUT_BUFFER_SIZE                        (1 << 9)
 
@@ -63,9 +68,10 @@ typedef struct {
     SHARC_STREAM_PROCESS process;
 
     sharc_byte_buffer workBuffer;
+    uint_fast64_t workBufferMemorySize;
 
     void *(*mem_alloc)(size_t);
-    void (*mem_free)(void *);;
+    void (*mem_free)(void *);
 
     sharc_encode_state internal_encode_state;
     sharc_decode_state internal_decode_state;
@@ -73,10 +79,10 @@ typedef struct {
 
 typedef struct {
     sharc_byte_buffer in;
-    uint_fast64_t in_total_read;
+    uint_fast64_t* in_total_read;
 
     sharc_byte_buffer out;
-    uint_fast64_t out_total_written;
+    uint_fast64_t* out_total_written;
 
     sharc_stream_state internal_state;
 } sharc_stream;
@@ -90,6 +96,7 @@ SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream *);
 SHARC_STREAM_STATE sharc_stream_decompress(sharc_stream *, const sharc_bool);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *);
+
 SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_origin_type(sharc_stream*, SHARC_STREAM_ORIGIN_TYPE *);
 SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_original_file_size(sharc_stream*, uint_fast64_t*);
 SHARC_STREAM_STATE sharc_stream_decompress_utilities_restore_file_attributes(sharc_stream*, const char*);

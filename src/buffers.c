@@ -57,7 +57,7 @@ SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t *wri
     if ((returnState = sharc_stream_compress_finish(&stream)))
         return sharc_buffers_translate_state(returnState);
 
-    *written = stream.out_total_written;
+    *written = *stream.out_total_written;
 
     return SHARC_BUFFERS_STATE_OK;
 }
@@ -78,7 +78,7 @@ SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t *written, uint8_t *in
     if ((returnState = sharc_stream_decompress_finish(&stream)))
         return sharc_buffers_translate_state(returnState);
 
-    *written = stream.out_total_written;
+    *written = *stream.out_total_written;
 
     return SHARC_BUFFERS_STATE_OK;
 }

@@ -19,7 +19,7 @@
  * license, see http://www.centaurean.com/sharc for more
  * information.
  *
- * 31/08/13 13:45
+ * 12/09/13 11:04
  */
 
 #ifndef SHARC_DECODE_H
@@ -33,6 +33,7 @@
 #include "header.h"
 #include "footer.h"
 #include "block_mode_marker.h"
+#include "block_decode.h"
 
 typedef enum {
     SHARC_DECODE_STATE_READY = 0,
@@ -42,11 +43,7 @@ typedef enum {
 } SHARC_DECODE_STATE;
 
 typedef enum {
-    SHARC_DECODE_PROCESS_READ_BLOCK_HEADER,
-    SHARC_DECODE_PROCESS_READ_BLOCK_MODE_MARKER,
-    SHARC_DECODE_PROCESS_READ_BLOCK_FOOTER,
-    SHARC_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER,
-    SHARC_DECODE_PROCESS_READ_DATA,
+    SHARC_DECODE_PROCESS_READ_BLOCKS,
     SHARC_DECODE_PROCESS_READ_FOOTER,
     SHARC_DECODE_PROCESS_FINISHED
 } SHARC_DECODE_PROCESS;
@@ -54,33 +51,15 @@ typedef enum {
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
-    uint_fast64_t inStart;
-    uint_fast64_t outStart;
-} sharc_decode_current_block_data;
-
-typedef struct {
-    sharc_dictionary dictionary_a;
-    sharc_dictionary dictionary_b;
-    uint_fast32_t resetCycle;
-} sharc_decode_dictionary_data;
-
-typedef struct {
     SHARC_DECODE_PROCESS process;
-    SHARC_COMPRESSION_MODE currentCompressionMode;
 
     uint_fast64_t totalRead;
     uint_fast64_t totalWritten;
-    uint_fast64_t endDataOverhead;
 
     sharc_header header;
     sharc_footer footer;
-    sharc_block_header lastBlockHeader;
-    sharc_mode_marker lastModeMarker;
-    sharc_block_footer lastBlockFooter;
 
-    sharc_hash_decode_state hashDecodeState;
-    sharc_decode_current_block_data currentBlockData;
-    sharc_decode_dictionary_data dictionaryData;
+    sharc_block_decode_state blockDecodeState;
 
     sharc_byte_buffer* workBuffer;
 } sharc_decode_state;

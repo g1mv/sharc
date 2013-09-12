@@ -61,7 +61,7 @@ typedef struct {
     uint_fast32_t signaturesCount;
     uint_fast8_t efficiencyChecked;
 
-    uint_fast64_t endDataSize;
+    uint_fast64_t endDataOverhead;
 
     union {
         sharc_byte as_bytes[8];
@@ -77,8 +77,7 @@ typedef struct {
 } sharc_hash_decode_state;
 #pragma pack(pop)
 
-void sharc_hash_decode_set_end_data_size(sharc_hash_decode_state *, const uint_fast32_t);
-SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_decode_state*);
+SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_decode_state*, const uint_fast32_t);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_dictionary *, sharc_hash_decode_state *, const sharc_bool);
 SHARC_HASH_DECODE_STATE sharc_hash_decode_finish(sharc_hash_decode_state*);
 
