@@ -137,6 +137,9 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
     uint_fast64_t remaining;
     uint64_t chunk;
 
+    if (in->size == 0)
+        goto exit;
+
     const uint_fast64_t limit = in->size & ~0x1F;
 
     switch (state->process) {
@@ -147,16 +150,12 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
             break;
 
         case SHARC_HASH_ENCODE_PROCESS_PREPARE_NEW_BLOCK:
-            if (in->size == 0)
-                return SHARC_HASH_ENCODE_STATE_FINISHED;
             if ((returnState = sharc_hash_encode_prepareNewBlock(out, state, SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD)))
                 return returnState;
             state->process = SHARC_HASH_ENCODE_PROCESS_DATA;
             break;
 
         case SHARC_HASH_ENCODE_PROCESS_DATA:
-            if (in->size == 0)
-                return SHARC_HASH_ENCODE_STATE_FINISHED;
             if (in->size - in->position < 4 * sizeof(uint64_t))
                 goto finish;
             while (true) {
@@ -199,6 +198,7 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
                     return SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
                 in->position += remaining;
             }
+        exit:
             state->process = SHARC_HASH_ENCODE_PROCESS_PREPARE_NEW_BLOCK;
             return SHARC_HASH_ENCODE_STATE_FINISHED;
 
