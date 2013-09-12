@@ -68,7 +68,6 @@ typedef struct {
     SHARC_STREAM_PROCESS process;
 
     sharc_byte_buffer workBuffer;
-    uint_fast64_t workBufferMemorySize;
 
     void *(*mem_alloc)(size_t);
     void (*mem_free)(void *);
@@ -87,7 +86,7 @@ typedef struct {
     sharc_stream_state internal_state;
 } sharc_stream;
 
-SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, uint8_t*, const uint_fast64_t, uint8_t*, const uint_fast64_t, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
+SHARC_STREAM_STATE sharc_stream_prepare(sharc_stream *, uint8_t*, const uint_fast64_t, uint8_t*, const uint_fast64_t, void *(*)(size_t), void (*)(void *));
 
 SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat*);
 SHARC_STREAM_STATE sharc_stream_compress(sharc_stream *, const sharc_bool);

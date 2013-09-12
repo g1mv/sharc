@@ -33,7 +33,7 @@ SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_decode_read_block_header(sharc
     else {
         switch (state->mode) {
             case SHARC_BLOCK_MODE_HASH:
-                sharc_dictionary_resetDirect(&state->dictionaryData.dictionary);
+                state->dictionaryData.dictionary_reset(&state->dictionaryData.dictionary);
                 break;
 
             default:
@@ -77,7 +77,7 @@ SHARC_FORCE_INLINE void sharc_decode_update_totals(sharc_byte_buffer *restrict i
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *restrict state, const SHARC_BLOCK_MODE mode, const SHARC_BLOCK_TYPE blockType, const uint_fast32_t endDataOverhead) {
+SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *restrict state, const SHARC_BLOCK_MODE mode, const SHARC_BLOCK_TYPE blockType, const uint_fast32_t endDataOverhead, void (*dictionary_reset)(sharc_dictionary *)) {
     state->mode = mode;
     state->blockType = blockType;
 
@@ -88,6 +88,7 @@ SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_
     sharc_hash_decode_init(&state->hashDecodeState, state->endDataOverhead);
 
     state->dictionaryData.resetCycle = 0;
+    state->dictionaryData.dictionary_reset = dictionary_reset;
 
     return SHARC_BLOCK_DECODE_STATE_READY;
 }

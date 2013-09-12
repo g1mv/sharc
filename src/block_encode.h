@@ -59,6 +59,7 @@ typedef struct {
 typedef struct {
     sharc_dictionary dictionary;
     uint_fast32_t resetCycle;
+    void (*dictionary_reset)(sharc_dictionary *);
 } sharc_block_encode_dictionary_data;
 
 typedef struct {
@@ -76,7 +77,7 @@ typedef struct {
 } sharc_block_encode_state;
 #pragma pack(pop)
 
-SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_encode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE);
+SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_encode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, void (*)(sharc_dictionary *));
 SHARC_BLOCK_ENCODE_STATE sharc_block_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_block_encode_state *, const sharc_bool, const uint32_t);
 SHARC_BLOCK_ENCODE_STATE sharc_block_encode_finish(sharc_block_encode_state *);
 

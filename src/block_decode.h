@@ -47,7 +47,6 @@ typedef enum {
     SHARC_BLOCK_DECODE_PROCESS_READ_BLOCK_FOOTER,
     SHARC_BLOCK_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER,
     SHARC_BLOCK_DECODE_PROCESS_READ_DATA,
-    SHARC_BLOCK_DECODE_PROCESS_READ_FOOTER,
     SHARC_BLOCK_DECODE_PROCESS_FINISHED
 } SHARC_BLOCK_DECODE_PROCESS;
 
@@ -61,6 +60,7 @@ typedef struct {
 typedef struct {
     sharc_dictionary dictionary;
     uint_fast32_t resetCycle;
+    void (*dictionary_reset)(sharc_dictionary *);
 } sharc_block_decode_dictionary_data;
 
 typedef struct {
@@ -82,7 +82,7 @@ typedef struct {
 } sharc_block_decode_state;
 #pragma pack(pop)
 
-SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, const uint_fast32_t);
+SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, const uint_fast32_t, void (*)(sharc_dictionary *));
 SHARC_BLOCK_DECODE_STATE sharc_block_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_block_decode_state *, const sharc_bool, const uint32_t);
 SHARC_BLOCK_DECODE_STATE sharc_block_decode_finish(sharc_block_decode_state *);
 

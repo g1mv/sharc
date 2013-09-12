@@ -25,7 +25,7 @@
 #include "dictionary.h"
 
 const sharc_dictionary sharc_dictionary_chameleon = {.entries = SHARC_DICTIONARY_CHAMELEON};
-const sharc_dictionary sharc_dictionary_compressed = {.entries = SHARC_DICTIONARY_COMPRESSED};
+const sharc_dictionary sharc_dictionary_compressed = {.entries = SHARC_DICTIONARY_COMPRESSED};  // todo update with SHARC_HASH_XOR_MASK_DIRECT
 
 SHARC_FORCE_INLINE void sharc_dictionary_resetDirect(sharc_dictionary * dictionary) {
     memcpy(dictionary, &sharc_dictionary_chameleon, sizeof(sharc_dictionary));

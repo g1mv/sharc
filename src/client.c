@@ -102,7 +102,7 @@ SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fa
     }
 }
 
-SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *io_out, const sharc_byte attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
+SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *io_out, const SHARC_COMPRESSION_MODE attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
     struct stat attributes;
 
     const size_t inFileNameLength = strlen(io_in->name);
@@ -147,7 +147,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_error("Unable to prepare compression");
     read = sharc_client_reloadInputBuffer(&stream, io_in);
-    while ((streamState = sharc_stream_compress_init(&stream, SHARC_COMPRESSION_MODE_FASTEST, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT, SHARC_BLOCK_TYPE_DEFAULT, io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE ? &attributes : NULL)))
+    while ((streamState = sharc_stream_compress_init(&stream, attemptMode, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT, SHARC_BLOCK_TYPE_DEFAULT, io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE ? &attributes : NULL)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "Unable to initialize compression");
     while ((streamState = sharc_stream_compress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured during compression");

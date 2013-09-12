@@ -35,7 +35,7 @@ SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_encode_write_block_header(shar
     else {
         switch (state->targetMode) {
             case SHARC_BLOCK_MODE_HASH:
-                sharc_dictionary_resetDirect(&state->dictionaryData.dictionary);
+                state->dictionaryData.dictionary_reset(&state->dictionaryData.dictionary);
                 break;
 
             case SHARC_BLOCK_MODE_COPY:
@@ -79,7 +79,7 @@ SHARC_FORCE_INLINE void sharc_encode_update_totals(sharc_byte_buffer *restrict i
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_encode_state *restrict state, const SHARC_BLOCK_MODE mode, const SHARC_BLOCK_TYPE blockType) {
+SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_encode_state *restrict state, const SHARC_BLOCK_MODE mode, const SHARC_BLOCK_TYPE blockType, void (*dictionary_reset)(sharc_dictionary *)) {
     state->process = SHARC_BLOCK_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
     state->targetMode = mode;
     state->currentMode = mode;
@@ -89,7 +89,9 @@ SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_
     state->totalWritten = 0;
 
     sharc_hash_encode_init(&state->hashEncodeState);
+
     state->dictionaryData.resetCycle = 0;
+    state->dictionaryData.dictionary_reset = dictionary_reset;
 
     return SHARC_BLOCK_ENCODE_STATE_READY;
 }

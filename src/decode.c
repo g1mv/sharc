@@ -54,7 +54,7 @@ SHARC_FORCE_INLINE void sharc_decode_update_totals(sharc_byte_buffer *restrict i
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer *in, sharc_byte_buffer *workBuffer, sharc_decode_state *restrict state) {
+SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer *in, sharc_byte_buffer *workBuffer, const uint_fast64_t workBufferSize, sharc_decode_state *restrict state) {
     SHARC_DECODE_STATE decodeState;
 
     state->totalRead = 0;
@@ -63,9 +63,26 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer *in, s
     if((decodeState = sharc_decode_read_header(in, state)))
         return decodeState;
 
-    sharc_block_decode_init(&state->blockDecodeState, state->header.genericHeader.compressionMode ? SHARC_BLOCK_MODE_HASH : SHARC_BLOCK_MODE_COPY, (SHARC_BLOCK_TYPE)state->header.genericHeader.blockType, sizeof(sharc_footer));
+    switch(state->header.genericHeader.compressionMode) {
+        case SHARC_COMPRESSION_MODE_COPY:
+            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_COPY, (SHARC_BLOCK_TYPE)state->header.genericHeader.blockType, sizeof(sharc_footer), NULL);
+            break;
+
+        case SHARC_COMPRESSION_MODE_FASTEST:
+            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE)state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_resetDirect);
+            break;
+
+        case SHARC_COMPRESSION_MODE_DUAL_PASS:
+            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE)state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_resetCompressed);
+            sharc_block_decode_init(&state->blockDecodeStateB, SHARC_BLOCK_MODE_HASH, SHARC_BLOCK_TYPE_NO_HASHSUM_INTEGRITY_CHECK, 0, sharc_dictionary_resetDirect);
+            break;
+
+        default:
+            return SHARC_DECODE_STATE_ERROR;
+    }
 
     state->workBuffer = workBuffer;
+    state->workBufferData.memorySize = workBufferSize;
 
     return SHARC_DECODE_STATE_READY;
 }
@@ -76,15 +93,15 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
     uint_fast64_t outPositionBefore;
 
     while (true) {
+        inPositionBefore = in->position;
+        outPositionBefore = out->position;
+
         switch (state->process) {
             case SHARC_DECODE_PROCESS_READ_BLOCKS:
-                inPositionBefore = in->position;
-                outPositionBefore = out->position;
-
                 switch (state->header.genericHeader.compressionMode) {
                     case SHARC_COMPRESSION_MODE_COPY:
                     case SHARC_COMPRESSION_MODE_FASTEST:
-                        blockDecodeState = sharc_block_decode_process(in, out, &state->blockDecodeState, flush, SHARC_HASH_XOR_MASK_DISPERSION);
+                        blockDecodeState = sharc_block_decode_process(in, out, &state->blockDecodeStateA, flush, SHARC_HASH_XOR_MASK_DISPERSION);
                         sharc_decode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
 
                         switch (blockDecodeState) {
@@ -104,11 +121,56 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                         break;
 
                     case SHARC_COMPRESSION_MODE_DUAL_PASS:
+                        state->process = SHARC_DECODE_PROCESS_READ_BLOCKS_IN_TO_WORKBUFFER;
                         break;
 
                     default:
                         return SHARC_DECODE_STATE_ERROR;
                 }
+                break;
+
+            case SHARC_DECODE_PROCESS_READ_BLOCKS_IN_TO_WORKBUFFER:
+                state->workBuffer->size = state->workBufferData.memorySize;
+                blockDecodeState = sharc_block_decode_process(in, state->workBuffer, &state->blockDecodeStateA, flush, SHARC_HASH_XOR_MASK_DIRECT);
+                state->totalRead += in->position - inPositionBefore;
+                switch (blockDecodeState) {
+                    case SHARC_BLOCK_DECODE_STATE_READY:
+                    case SHARC_BLOCK_DECODE_STATE_STALL_ON_OUTPUT_BUFFER:
+                        break;
+
+                    case SHARC_BLOCK_DECODE_STATE_STALL_ON_INPUT_BUFFER:
+                        return SHARC_DECODE_STATE_STALL_ON_INPUT_BUFFER;
+
+                    default:
+                        return SHARC_DECODE_STATE_ERROR;
+                }
+
+                state->workBuffer->size = state->workBuffer->position;
+                sharc_byte_buffer_rewind(state->workBuffer);
+
+                state->process = SHARC_DECODE_PROCESS_READ_BLOCKS_WORKBUFFER_TO_OUT;
+                break;
+
+            case SHARC_DECODE_PROCESS_READ_BLOCKS_WORKBUFFER_TO_OUT:
+                blockDecodeState = sharc_block_decode_process(state->workBuffer, out, &state->blockDecodeStateB, flush, SHARC_HASH_XOR_MASK_DISPERSION);
+                state->totalWritten += out->position - outPositionBefore;
+                switch (blockDecodeState) {
+                    case SHARC_BLOCK_DECODE_STATE_READY:
+                        state->process = SHARC_DECODE_PROCESS_READ_FOOTER;
+                        return SHARC_DECODE_STATE_READY;
+
+                    case SHARC_BLOCK_DECODE_STATE_STALL_ON_OUTPUT_BUFFER:
+                        return SHARC_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
+
+                    case SHARC_BLOCK_DECODE_STATE_STALL_ON_INPUT_BUFFER:
+                        break;
+
+                    default:
+                        return SHARC_DECODE_STATE_ERROR;
+                }
+                sharc_byte_buffer_rewind(state->workBuffer);
+
+                state->process = SHARC_DECODE_PROCESS_READ_BLOCKS_IN_TO_WORKBUFFER;
                 break;
 
             default:
@@ -121,7 +183,7 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_finish(sharc_byte_buffer *in,
     if (state->process ^ SHARC_DECODE_PROCESS_READ_FOOTER)
         return SHARC_DECODE_STATE_ERROR;
 
-    sharc_block_decode_finish(&state->blockDecodeState);
+    sharc_block_decode_finish(&state->blockDecodeStateA);
 
     return sharc_decode_read_footer(in, state);
 }

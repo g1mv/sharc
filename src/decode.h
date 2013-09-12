@@ -44,12 +44,18 @@ typedef enum {
 
 typedef enum {
     SHARC_DECODE_PROCESS_READ_BLOCKS,
+    SHARC_DECODE_PROCESS_READ_BLOCKS_IN_TO_WORKBUFFER,
+    SHARC_DECODE_PROCESS_READ_BLOCKS_WORKBUFFER_TO_OUT,
     SHARC_DECODE_PROCESS_READ_FOOTER,
     SHARC_DECODE_PROCESS_FINISHED
 } SHARC_DECODE_PROCESS;
 
 #pragma pack(push)
 #pragma pack(4)
+typedef struct {
+    uint_fast64_t memorySize;
+} sharc_decode_work_buffer_data;
+
 typedef struct {
     SHARC_DECODE_PROCESS process;
 
@@ -59,13 +65,15 @@ typedef struct {
     sharc_header header;
     sharc_footer footer;
 
-    sharc_block_decode_state blockDecodeState;
+    sharc_block_decode_state blockDecodeStateA;
+    sharc_block_decode_state blockDecodeStateB;
 
     sharc_byte_buffer* workBuffer;
+    sharc_decode_work_buffer_data workBufferData;
 } sharc_decode_state;
 #pragma pack(pop)
 
-SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer*, sharc_byte_buffer*, sharc_decode_state *);
+SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer*, sharc_byte_buffer*, const uint_fast64_t, sharc_decode_state *);
 SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_decode_state *, const sharc_bool);
 SHARC_DECODE_STATE sharc_decode_finish(sharc_byte_buffer *, sharc_decode_state*);
 

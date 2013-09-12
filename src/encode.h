@@ -43,6 +43,8 @@ typedef enum {
 
 typedef enum {
     SHARC_ENCODE_PROCESS_WRITE_BLOCKS,
+    SHARC_ENCODE_PROCESS_WRITE_BLOCKS_IN_TO_WORKBUFFER,
+    SHARC_ENCODE_PROCESS_WRITE_BLOCKS_WORKBUFFER_TO_OUT,
     SHARC_ENCODE_PROCESS_WRITE_FOOTER,
     SHARC_ENCODE_PROCESS_FINISHED
 } SHARC_ENCODE_PROCESS;
@@ -58,6 +60,11 @@ typedef enum {
 #pragma pack(4)
 
 typedef struct {
+    uint_fast64_t memorySize;
+    uint_fast64_t outstandingBytes;
+} sharc_encode_work_buffer_data;
+
+typedef struct {
     SHARC_ENCODE_PROCESS process;
     SHARC_COMPRESSION_MODE compressionMode;
     SHARC_BLOCK_TYPE blockType;
@@ -66,14 +73,16 @@ typedef struct {
     uint_fast64_t totalRead;
     uint_fast64_t totalWritten;
 
-    sharc_block_encode_state blockEncodeState;
+    sharc_block_encode_state blockEncodeStateA;
+    sharc_block_encode_state blockEncodeStateB;
 
     sharc_byte_buffer* workBuffer;
+    sharc_encode_work_buffer_data workBufferData;
 } sharc_encode_state;
 #pragma pack(pop)
 
-SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat *);
-SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const sharc_bool, const uint32_t);
+SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *, sharc_byte_buffer *, const uint_fast64_t, sharc_encode_state *, const SHARC_COMPRESSION_MODE, const SHARC_ENCODE_OUTPUT_TYPE, const SHARC_BLOCK_TYPE, const struct stat *);
+SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_encode_state *, const sharc_bool);
 SHARC_ENCODE_STATE sharc_encode_finish(sharc_byte_buffer *, sharc_encode_state *);
 
 #endif
