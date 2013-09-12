@@ -147,6 +147,8 @@ SHARC_FORCE_INLINE SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_
             break;
 
         case SHARC_HASH_ENCODE_PROCESS_PREPARE_NEW_BLOCK:
+            if (in->size == 0)
+                return SHARC_HASH_ENCODE_STATE_FINISHED;
             if ((returnState = sharc_hash_encode_prepareNewBlock(out, state, SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD)))
                 return returnState;
             state->process = SHARC_HASH_ENCODE_PROCESS_DATA;
