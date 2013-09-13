@@ -39,5 +39,3 @@ The <b>buffers API</b> is a simpler buffer to buffer compression/decompression t
 More information
 -----------------
 For more information please refer to <a href="www.centaurean.com/sharc">www.centaurean.com/sharc</a>
-
-<img src="http://www.centaurean.com/images/logo_appcode.png" width="70" align="right" title="Developped with an opensource license of Jetbrains AppCode"/>
