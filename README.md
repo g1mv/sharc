@@ -21,14 +21,14 @@ To decompress 'test.sharc'
 It is of course possible to choose the compression algorithm. The fastest (default) can be specified like this :
 > sharc -c0 test
 
-There also is a slightly slower algorithm (20 % slower), with a better compression ratio (5 to 25 % better) :
+There is also a slightly slower algorithm (20 % slower), with a better compression ratio (5 to 25 % better) :
 > sharc -c1 test
 
 For more help and the full list of options :
 > sharc -h
 
-Applications programming interface
------------------------------------
+Applications programming interfaces
+------------------------------------
 
 SHARC is equipped with a <b>stream API</b> very similar to bzip's and a <b>buffers API</b>. Please see <a href="https://github.com/centaurean/sharc/blob/master/src/api.h">api.h</a> for specifications and examples.
 
