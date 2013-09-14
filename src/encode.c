@@ -62,7 +62,7 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *restr
     state->totalRead = 0;
     state->totalWritten = 0;
 
-    switch(mode) {
+    switch (mode) {
         case SHARC_COMPRESSION_MODE_COPY:
             sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_COPY, blockType, NULL);
             break;
@@ -171,7 +171,7 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_process(sharc_byte_buffer *re
                 }
 
                 if (state->workBuffer->size & ~0x1F)
-                    memcpy(state->workBuffer->pointer, state->workBuffer->pointer + (state->workBuffer->size & ~0x1F), (size_t) state->workBufferData.outstandingBytes);
+                memcpy(state->workBuffer->pointer, state->workBuffer->pointer + (state->workBuffer->size & ~0x1F), (size_t) state->workBufferData.outstandingBytes);
                 state->workBuffer->position = state->workBufferData.outstandingBytes;
 
                 state->process = SHARC_ENCODE_PROCESS_WRITE_BLOCKS_IN_TO_WORKBUFFER;
@@ -188,6 +188,8 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_finish(sharc_byte_buffer *res
         return SHARC_ENCODE_STATE_ERROR;
 
     sharc_block_encode_finish(&state->blockEncodeStateA);
+    if (state->compressionMode == SHARC_COMPRESSION_MODE_DUAL_PASS)
+        sharc_block_encode_finish(&state->blockEncodeStateB);
 
     return sharc_encode_write_footer(out, state);
 }

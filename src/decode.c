@@ -60,20 +60,20 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer *in, s
     state->totalRead = 0;
     state->totalWritten = 0;
 
-    if((decodeState = sharc_decode_read_header(in, state)))
+    if ((decodeState = sharc_decode_read_header(in, state)))
         return decodeState;
 
-    switch(state->header.genericHeader.compressionMode) {
+    switch (state->header.genericHeader.compressionMode) {
         case SHARC_COMPRESSION_MODE_COPY:
-            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_COPY, (SHARC_BLOCK_TYPE)state->header.genericHeader.blockType, sizeof(sharc_footer), NULL);
+            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_COPY, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), NULL);
             break;
 
         case SHARC_COMPRESSION_MODE_FASTEST:
-            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE)state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_resetDirect);
+            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_resetDirect);
             break;
 
         case SHARC_COMPRESSION_MODE_DUAL_PASS:
-            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE)state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_resetCompressed);
+            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_resetCompressed);
             sharc_block_decode_init(&state->blockDecodeStateB, SHARC_BLOCK_MODE_HASH, SHARC_BLOCK_TYPE_NO_HASHSUM_INTEGRITY_CHECK, 0, sharc_dictionary_resetDirect);
             break;
 
@@ -184,6 +184,8 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_finish(sharc_byte_buffer *in,
         return SHARC_DECODE_STATE_ERROR;
 
     sharc_block_decode_finish(&state->blockDecodeStateA);
+    if (state->header.genericHeader.compressionMode == SHARC_COMPRESSION_MODE_DUAL_PASS)
+        sharc_block_decode_finish(&state->blockDecodeStateB);
 
     return sharc_decode_read_footer(in, state);
 }
