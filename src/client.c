@@ -245,7 +245,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
         sharc_stream_decompress_utilities_get_header(&stream, &header);
 
         if (header.genericHeader.originType == SHARC_STREAM_ORIGIN_TYPE_FILE)
-            sharc_api_utilities_restore_file_attributes(&header, io_out->name);
+            sharc_header_restore_file_attributes(&header, io_out->name);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
             uint64_t totalRead = *stream.in_total_read;

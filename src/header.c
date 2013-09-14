@@ -24,7 +24,7 @@
 
 #include "header.h"
 
-SHARC_FORCE_INLINE sharc_bool sharc_header_checkValidity(sharc_header *restrict header) {
+SHARC_FORCE_INLINE sharc_bool sharc_header_check_validity(sharc_header *restrict header) {
     return (header->genericHeader.magicNumber == SHARC_HEADER_MAGIC_NUMBER);
 }
 
@@ -99,15 +99,18 @@ SHARC_FORCE_INLINE uint_fast32_t sharc_header_write(sharc_byte_buffer *restrict 
     return written;
 }
 
-SHARC_FORCE_INLINE sharc_bool sharc_header_restoreFileAttributes(sharc_header_file_information *restrict fileInformationHeader, const char *restrict fileName) {
-    struct utimbuf ubuf;
-    ubuf.actime = (time_t) fileInformationHeader->fileAccessed;
-    ubuf.modtime = (time_t) fileInformationHeader->fileModified;
-    if (utime(fileName, &ubuf))
-        return false;
+SHARC_FORCE_INLINE sharc_bool sharc_header_restore_file_attributes(sharc_header *restrict header, const char *restrict fileName) {
+    if (header->genericHeader.originType == SHARC_HEADER_ORIGIN_TYPE_FILE) {
+        struct utimbuf ubuf;
+        ubuf.actime = (time_t) header->fileInformationHeader.fileAccessed;
+        ubuf.modtime = (time_t) header->fileInformationHeader.fileModified;
+        if (utime(fileName, &ubuf))
+            return false;
 
-    if (chmod(fileName, (mode_t) fileInformationHeader->fileMode))
-        return false;
+        if (chmod(fileName, (mode_t) header->fileInformationHeader.fileMode))
+            return false;
 
-    return true;
+        return true;
+    } else
+        return false;
 }

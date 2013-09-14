@@ -82,9 +82,9 @@ typedef struct {
 } sharc_header;
 #pragma pack(pop)
 
-sharc_bool sharc_header_checkValidity(sharc_header*);
+sharc_bool sharc_header_check_validity(sharc_header*);
 uint_fast32_t sharc_header_read(sharc_byte_buffer*, sharc_header*);
 uint_fast32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const SHARC_BLOCK_TYPE, const struct stat*);
-sharc_bool sharc_header_restoreFileAttributes(sharc_header_file_information *, const char*);
+sharc_bool sharc_header_restore_file_attributes(sharc_header *, const char*);
 
 #endif

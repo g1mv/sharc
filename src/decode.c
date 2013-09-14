@@ -30,7 +30,7 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_read_header(sharc_byte_buffer
 
     state->totalRead += sharc_header_read(in, &state->header);
 
-    if (!sharc_header_checkValidity(&state->header))
+    if (!sharc_header_check_validity(&state->header))
         return SHARC_DECODE_STATE_ERROR;
 
     state->process = SHARC_DECODE_PROCESS_READ_BLOCKS;

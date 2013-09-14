@@ -57,7 +57,7 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer* byte_buffer);
 
 /***********************************************************************************************************************
  *                                                                                                                     *
- * SHARC general API utilities                                                                                         *
+ * SHARC header utilities                                                                                              *
  *                                                                                                                     *
  ***********************************************************************************************************************/
 
@@ -68,7 +68,7 @@ void sharc_byte_buffer_rewind(sharc_byte_buffer* byte_buffer);
  * @param header a pointer to a SHARC header
  * @param file_name the file name to restore the attributes to
  */
-bool sharc_api_utilities_restore_file_attributes(sharc_header *header, const char *file_name);
+bool sharc_header_restore_file_attributes(sharc_header *header, const char *file_name);
 
 
 
