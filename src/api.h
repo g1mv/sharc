@@ -197,7 +197,7 @@ SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_header(sharc_stream* st
 /*
  * Returns the max compressed length possible (with incompressible data)
  *
- * @param result the resulting length
+ * @param result a pointer to return the resulting length to
  * @param in_length, the length of the input data to compress
  * @param compression_mode the compression mode to be used
  */
@@ -206,7 +206,7 @@ SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_fast64_t * result, 
 /*
  * Buffers compression function
  *
- * @param total_written returns the total bytes written
+ * @param total_written a pointer to return the total bytes written to, can be NULL for no return
  * @param in the input buffer to compress
  * @param in_size the size of the input buffer in bytes
  * @param out the output buffer
@@ -223,8 +223,8 @@ SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t* total_written, uint8_t
 /*
  * Buffers decompression function
  *
- * @param total_written returns the total bytes written
- * @param header returns the header read
+ * @param total_written a pointer to return the total bytes written to, can be NULL for no return
+ * @param header a pointer to return the header read to, can be NULL for no return
  * @param in the input buffer to decompress
  * @param in_size the size of the input buffer in bytes
  * @param out the output buffer

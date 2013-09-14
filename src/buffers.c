@@ -41,7 +41,7 @@ SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_
     return SHARC_BUFFERS_STATE_OK;
 }
 
-SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t * restrict written, uint8_t *restrict in, uint_fast64_t inSize, uint8_t *restrict out, uint_fast64_t outSize, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, const struct stat *restrict fileAttributes, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
+SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t *restrict written, uint8_t *restrict in, uint_fast64_t inSize, uint8_t *restrict out, uint_fast64_t outSize, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, const struct stat *restrict fileAttributes, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
     SHARC_STREAM_STATE returnState;
 
     sharc_stream stream = {};
@@ -57,7 +57,8 @@ SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t * re
     if ((returnState = sharc_stream_compress_finish(&stream)))
         return sharc_buffers_translate_state(returnState);
 
-    *written = *stream.out_total_written;
+    if (written)
+        *written = *stream.out_total_written;
 
     return SHARC_BUFFERS_STATE_OK;
 }
@@ -71,7 +72,9 @@ SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t *restrict written, sh
 
     if ((returnState = sharc_stream_decompress_init(&stream)))
         return sharc_buffers_translate_state(returnState);
-    *header = stream.internal_state.internal_decode_state.header;
+
+    if (header)
+        *header = stream.internal_state.internal_decode_state.header;
 
     if ((returnState = sharc_stream_decompress(&stream, true)))
         return sharc_buffers_translate_state(returnState);
@@ -79,7 +82,8 @@ SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t *restrict written, sh
     if ((returnState = sharc_stream_decompress_finish(&stream)))
         return sharc_buffers_translate_state(returnState);
 
-    *written = *stream.out_total_written;
+    if (written)
+        *written = *stream.out_total_written;
 
     return SHARC_BUFFERS_STATE_OK;
 }
