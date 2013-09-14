@@ -34,7 +34,7 @@ SHARC is equipped with a <b>stream API</b> very similar to bzip's and a <b>buffe
 
 The <b>stream API</b> provides fine-grained control on the encoding/decoding process and enables extremely versatile uses (very fast large files compression, on-the-fly compression for networks, etc.).
 
-The <b>buffers API</b> is a simpler buffer to buffer compression/decompression tool and will fit more typical uses.
+The <b>buffers API</b> is a buffer to buffer compression/decompression tool and will fit more typical uses.
 
 More information
 -----------------
