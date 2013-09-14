@@ -63,7 +63,7 @@ SHARC_FORCE_INLINE void sharc_stream_free_work_buffer(sharc_stream *stream) {
     stream->internal_state.workBuffer.pointer = NULL;
 }
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *stream, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, const struct stat *fileAttributes) {
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *restrict stream, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, const struct stat *restrict fileAttributes) {
     if (stream->internal_state.process ^ SHARC_STREAM_PROCESS_PREPARED)
         return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
 
@@ -240,45 +240,14 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_strea
     return SHARC_STREAM_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_origin_type(sharc_stream *stream, SHARC_STREAM_ORIGIN_TYPE *originType) {
-    if (stream->internal_state.process == SHARC_STREAM_PROCESS_DECOMPRESSION_INITED) {
-        switch (stream->internal_state.internal_decode_state.header.genericHeader.originType) {
-            case SHARC_HEADER_ORIGIN_TYPE_FILE:
-                *originType = SHARC_STREAM_ORIGIN_TYPE_FILE;
-                break;
-            default:
-                *originType = SHARC_STREAM_ORIGIN_TYPE_STREAM;
-                break;
-        }
-        return SHARC_STREAM_STATE_READY;
-    } else
-        return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
-}
-
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_original_file_size(sharc_stream *stream, uint_fast64_t *size) {
-    SHARC_STREAM_ORIGIN_TYPE originType;
-    SHARC_STREAM_STATE returnState;
-
-    if ((returnState = sharc_stream_decompress_utilities_get_origin_type(stream, &originType)))
-        return returnState;
-
-    if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
-        *size = stream->internal_state.internal_decode_state.header.fileInformationHeader.originalFileSize;
-        return SHARC_STREAM_STATE_READY;
-    } else
-        return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
-}
-
-SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_utilities_restore_file_attributes(sharc_stream *stream, const char *fileName) {
-    SHARC_STREAM_ORIGIN_TYPE originType;
-    SHARC_STREAM_STATE returnState;
-
-    if ((returnState = sharc_stream_decompress_utilities_get_origin_type(stream, &originType)))
-        return returnState;
-
-    if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
-        sharc_header_restoreFileAttributes(&stream->internal_state.internal_decode_state.header.fileInformationHeader, fileName);
-        return SHARC_STREAM_STATE_READY;
-    } else
-        return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
+SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_header(sharc_stream *restrict stream, sharc_header *restrict header) {
+    switch (stream->internal_state.process) {
+        case  SHARC_STREAM_PROCESS_DECOMPRESSION_INITED:
+        case SHARC_STREAM_PROCESS_DECOMPRESSION_DATA_FINISHED:
+        case SHARC_STREAM_PROCESS_DECOMPRESSION_FINISHED:
+            *header = stream->internal_state.internal_decode_state.header;
+            return SHARC_STREAM_STATE_READY;
+        default:
+            return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
+    }
 }

@@ -46,7 +46,7 @@ SHARC_FORCE_INLINE FILE *sharc_client_checkOpenFile(const char *fileName, const 
 
 SHARC_FORCE_INLINE void sharc_client_version() {
     printf("Centaurean Sharc %i.%i.%i\n", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
-    printf("Built for %s (%s endian system, %u bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, (unsigned int)(8 * sizeof(void *)), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
+    printf("Built for %s (%s endian system, %u bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, (unsigned int) (8 * sizeof(void *)), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
 }
 
 SHARC_FORCE_INLINE void sharc_client_usage() {
@@ -241,21 +241,18 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
         uint64_t totalWritten = *stream.out_total_written;
         fclose(io_out->stream);
 
-        SHARC_STREAM_ORIGIN_TYPE originType;
-        sharc_stream_decompress_utilities_get_origin_type(&stream, &originType);
+        sharc_header header;
+        sharc_stream_decompress_utilities_get_header(&stream, &header);
 
-        if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE)
-            sharc_stream_decompress_utilities_restore_file_attributes(&stream, io_out->name);
+        if (header.genericHeader.originType == SHARC_STREAM_ORIGIN_TYPE_FILE)
+            sharc_api_utilities_restore_file_attributes(&header, io_out->name);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
             uint64_t totalRead = *stream.in_total_read;
             fclose(io_in->stream);
 
-            if (originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
-                uint_fast64_t originalFileSize = 0;
-                sharc_stream_decompress_utilities_get_original_file_size(&stream, &originalFileSize);
-
-                if (totalWritten != originalFileSize)
+            if (header.genericHeader.originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
+                if (totalWritten != header.fileInformationHeader.originalFileSize)
                     sharc_error("Input file is corrupt !");
             }
 

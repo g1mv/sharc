@@ -47,20 +47,28 @@
  ***********************************************************************************************************************/
 
 /*
- * Encapsulate a standard byte buffer into a SHARC byte buffer
- *
- * @param byte_buffer the resulting sharc_byte_buffer
- * @param buffer the byte buffer (type uint8_t*)
- * @param size the size of buffer in bytes
- */
-void sharc_byte_buffer_encapsulate(sharc_byte_buffer* byte_buffer, sharc_byte* buffer, uint64_t size);
-
-/*
  * Rewind a SHARC byte buffer
  *
  * @param byte_buffer the SHARC byte buffer to rewind (its position is set to zero)
  */
 void sharc_byte_buffer_rewind(sharc_byte_buffer* byte_buffer);
+
+
+
+/***********************************************************************************************************************
+ *                                                                                                                     *
+ * SHARC general API utilities                                                                                         *
+ *                                                                                                                     *
+ ***********************************************************************************************************************/
+
+/*
+ * Restore file attributes if any were stored in the SHARC header.
+ * Returns true if attributes were properly restored, or false if restoring failed or there were no attributes stored in the header.
+ *
+ * @param header a pointer to a SHARC header
+ * @param file_name the file name to restore the attributes to
+ */
+bool sharc_api_utilities_restore_file_attributes(sharc_header *header, const char *file_name);
 
 
 
@@ -165,29 +173,12 @@ SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream *stream);
 SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_stream *stream);
 
 /*
- * Returns the origin type (file, stream) of the decoded data
+ * Returns the header that was read during sharc_stream_decompress_init.
  *
  * @param stream the stream
- * @param origin_type a SHARC_STREAM_ORIGIN_TYPE where the result will be stored
+ * @param header the header returned
  */
-SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_origin_type(sharc_stream* stream, SHARC_STREAM_ORIGIN_TYPE * origin_type);
-
-/*
- * Returns the original file size of the decoded file, if known. Otherwise returns SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE
- *
- * @param stream the stream
- * @param origin_type an uint_fast64_t where the result will be stored
- */
-SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_original_file_size(sharc_stream* stream, uint_fast64_t* original_file_size);
-
-/*
- * Restores the decoded file's attributes (if any available) to the file named file_name.
- * If that is not possible (file attributes were not known at compression time for example), returns SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE
- *
- * @param stream the stream
- * @param file_name the name of the file whose attributes will be restored (usually the name of the decompressed file)
- */
-SHARC_STREAM_STATE sharc_stream_decompress_utilities_restore_file_attributes(sharc_stream* stream, const char* file_name);
+SHARC_STREAM_STATE sharc_stream_decompress_utilities_get_header(sharc_stream* stream, sharc_header* header);
 
 
 
@@ -215,7 +206,7 @@ SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_fast64_t * result, 
 /*
  * Buffers compression function
  *
- * @param total_written the total bytes written returned
+ * @param total_written returns the total bytes written
  * @param in the input buffer to compress
  * @param in_size the size of the input buffer in bytes
  * @param out the output buffer
@@ -232,7 +223,8 @@ SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t* total_written, uint8_t
 /*
  * Buffers decompression function
  *
- * @param total_written the total bytes written returned
+ * @param total_written returns the total bytes written
+ * @param header returns the header read
  * @param in the input buffer to decompress
  * @param in_size the size of the input buffer in bytes
  * @param out the output buffer
@@ -240,6 +232,6 @@ SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t* total_written, uint8_t
  * @param mem_alloc a pointer to a memory allocation function. If NULL, the standard malloc(size_t) is used.
  * @param mem_free a pointer to a memory freeing function. If NULL, the standard free(void*) is used.
  */
-SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t * total_written, uint8_t *in, uint_fast64_t in_size, uint8_t *out, uint_fast64_t out_size, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
+SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t * total_written, sharc_header* header, uint8_t *in, uint_fast64_t in_size, uint8_t *out, uint_fast64_t out_size, void *(*mem_alloc)(size_t), void (*mem_free)(void *));
 
 #endif
