@@ -63,7 +63,7 @@
 
 #define SHARC_MAJOR_VERSION               0
 #define SHARC_MINOR_VERSION               9
-#define SHARC_REVISION                    10
+#define SHARC_REVISION                    11
 
 typedef uint8_t sharc_byte;
 typedef bool sharc_bool;
