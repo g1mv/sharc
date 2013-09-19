@@ -24,7 +24,7 @@
 
 #include "block_mode_marker.h"
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_read(sharc_byte_buffer* restrict in, sharc_mode_marker * restrict modeMarker) {
+SHARC_FORCE_INLINE uint_fast32_t sharc_block_mode_marker_read(sharc_byte_buffer* restrict in, sharc_mode_marker * restrict modeMarker) {
     modeMarker->activeCompressionMode = *(in->pointer + in->position);
 
     in->position += sizeof(sharc_mode_marker);
@@ -32,7 +32,7 @@ SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_read(sharc_byte_buffer* restr
     return sizeof(sharc_mode_marker);
 }
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_mode_marker_write(sharc_byte_buffer* out, SHARC_BLOCK_MODE mode) {
+SHARC_FORCE_INLINE uint_fast32_t sharc_block_mode_marker_write(sharc_byte_buffer* out, SHARC_BLOCK_MODE mode) {
     *(out->pointer + out->position) = (sharc_byte)mode;
 
     out->position += sizeof(sharc_mode_marker);

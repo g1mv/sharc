@@ -37,7 +37,7 @@ typedef struct {
 } sharc_mode_marker;
 #pragma pack(pop)
 
-uint_fast32_t sharc_mode_marker_read(sharc_byte_buffer*, sharc_mode_marker *);
-uint_fast32_t sharc_mode_marker_write(sharc_byte_buffer*, SHARC_BLOCK_MODE);
+uint_fast32_t sharc_block_mode_marker_read(sharc_byte_buffer*, sharc_mode_marker *);
+uint_fast32_t sharc_block_mode_marker_write(sharc_byte_buffer*, SHARC_BLOCK_MODE);
 
 #endif
