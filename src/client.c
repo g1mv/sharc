@@ -141,19 +141,19 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     /*
      * The following code is an example of how to use the stream API to compress a file
      */
-    sharc_stream stream = {};
+    sharc_stream* stream = (sharc_stream*)malloc(sizeof(sharc_stream));
     SHARC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
-    if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
+    if (sharc_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_error("Unable to prepare compression");
-    read = sharc_client_reloadInputBuffer(&stream, io_in);
-    while ((streamState = sharc_stream_compress_init(&stream, attemptMode, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT, SHARC_BLOCK_TYPE_DEFAULT, io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE ? &attributes : NULL)))
-        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "Unable to initialize compression");
-    while ((streamState = sharc_stream_compress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
-        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured during compression");
-    while ((streamState = sharc_stream_compress_finish(&stream)))
-        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured while finishing compression");
-    sharc_client_emptyOutputBuffer(&stream, io_out);
+    read = sharc_client_reloadInputBuffer(stream, io_in);
+    while ((streamState = sharc_stream_compress_init(stream, attemptMode, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT, SHARC_BLOCK_TYPE_DEFAULT, io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE ? &attributes : NULL)))
+        sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize compression");
+    while ((streamState = sharc_stream_compress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
+        sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during compression");
+    while ((streamState = sharc_stream_compress_finish(stream)))
+        sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing compression");
+    sharc_client_emptyOutputBuffer(stream, io_out);
     /*
      * That's it !
      */
@@ -163,11 +163,11 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
         const double elapsed = sharc_chrono_elapsed(&chrono);
 
-        uint64_t totalWritten = *stream.out_total_written;
+        uint64_t totalWritten = *stream->out_total_written;
         fclose(io_out->stream);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            uint64_t totalRead = *stream.in_total_read;
+            uint64_t totalRead = *stream->in_total_read;
             fclose(io_in->stream);
 
             double ratio = (100.0 * totalWritten) / totalRead;
@@ -177,6 +177,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
         } else
             printf("Compressed %s to %s, %"PRIu64" bytes written.\n", io_in->name, io_out->name, totalWritten);
     }
+    free(stream);
 }
 
 SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_client_io *io_out, const sharc_bool prompting, const char *inPath, const char *outPath) {
@@ -216,19 +217,19 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     /*
      * The following code is an example of how to use the stream API to decompress a file
      */
-    sharc_stream stream = {};
+    sharc_stream* stream = (sharc_stream*)malloc(sizeof(sharc_stream));
     SHARC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
-    if (sharc_stream_prepare(&stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
+    if (sharc_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_error("Unable to prepare decompression");
-    read = sharc_client_reloadInputBuffer(&stream, io_in);
-    while ((streamState = sharc_stream_decompress_init(&stream)))
-        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "Unable to initialize decompression");
-    while ((streamState = sharc_stream_decompress(&stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
-        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured during decompression");
-    while ((streamState = sharc_stream_decompress_finish(&stream)))
-        sharc_client_actionRequired(&read, &written, io_in, io_out, &stream, streamState, "An error occured while finishing decompression");
-    sharc_client_emptyOutputBuffer(&stream, io_out);
+    read = sharc_client_reloadInputBuffer(stream, io_in);
+    while ((streamState = sharc_stream_decompress_init(stream)))
+        sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize decompression");
+    while ((streamState = sharc_stream_decompress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
+        sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during decompression");
+    while ((streamState = sharc_stream_decompress_finish(stream)))
+        sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing decompression");
+    sharc_client_emptyOutputBuffer(stream, io_out);
     /*
      * That's it !
      */
@@ -238,17 +239,17 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
         const double elapsed = sharc_chrono_elapsed(&chrono);
 
-        uint64_t totalWritten = *stream.out_total_written;
+        uint64_t totalWritten = *stream->out_total_written;
         fclose(io_out->stream);
 
         sharc_header header;
-        sharc_stream_decompress_utilities_get_header(&stream, &header);
+        sharc_stream_decompress_utilities_get_header(stream, &header);
 
         if (header.genericHeader.originType == SHARC_STREAM_ORIGIN_TYPE_FILE)
             sharc_header_restore_file_attributes(&header, io_out->name);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            uint64_t totalRead = *stream.in_total_read;
+            uint64_t totalRead = *stream->in_total_read;
             fclose(io_in->stream);
 
             if (header.genericHeader.originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
@@ -262,6 +263,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
         } else
             printf("Decompressed %s to %s, %"PRIu64" bytes written.\n", io_in->name, io_out->name, totalWritten);
     }
+    free(stream);
 }
 
 int main(int argc, char *argv[]) {
