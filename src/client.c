@@ -38,23 +38,31 @@ SHARC_FORCE_INLINE FILE *sharc_client_checkOpenFile(const char *fileName, const 
     }
     FILE *file = fopen(fileName, options);
     if (file == NULL) {
-        fprintf(stderr, "Unable to open file : %s\n", fileName);
-        exit(0);
+        char message[512];
+        sprintf(message, "Unable to open file %s", fileName);
+        sharc_error(message);
     }
     return file;
 }
 
 SHARC_FORCE_INLINE void sharc_client_version() {
+    printf("%c[1m", SHARC_ESCAPE_CHARACTER);
     printf("Centaurean Sharc %i.%i.%i\n", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
+    printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+    printf("Copyright (C) 2013 Guillaume Voirin\n");
     printf("Built for %s (%s endian system, %u bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, (unsigned int) (8 * sizeof(void *)), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
 }
 
 SHARC_FORCE_INLINE void sharc_client_usage() {
     sharc_client_version();
-    printf("Copyright (C) 2013 Guillaume Voirin\n");
-    printf("Usage : sharc [OPTIONS]... [FILES]...\n");
-    printf("Superfast archiving of files.\n\n");
+    printf("\nSuperfast compression\n\n");
+    printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+    printf("Usage :\n");
+    printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+    printf("  sharc [OPTIONS]... [FILES]...\n\n");
+    printf("%c[1m", SHARC_ESCAPE_CHARACTER);
     printf("Available options :\n");
+    printf("%c[0m", SHARC_ESCAPE_CHARACTER);
     printf("  -c[LEVEL], --compress[=LEVEL]     Compress files using LEVEL if specified (default)\n");
     printf("                                    LEVEL can have the following values :\n");
     printf("                                    0 = Fastest compression algorithm (default)\n");
@@ -67,6 +75,15 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     printf("  -v, --version                     Display version information\n");
     printf("  -h, --help                        Display this help\n");
     exit(0);
+}
+
+void sharc_client_format_decimal(uint64_t number) {
+    if (number < 1000) {
+        printf("%"PRIu64, number);
+        return;
+    }
+    sharc_client_format_decimal(number / 1000);
+    printf(",%03"PRIu64, number % 1000);
 }
 
 SHARC_FORCE_INLINE uint_fast64_t sharc_client_reloadInputBuffer(sharc_stream *restrict stream, const sharc_client_io *restrict io_in) {
@@ -141,7 +158,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     /*
      * The following code is an example of how to use the stream API to compress a file
      */
-    sharc_stream* stream = (sharc_stream*)malloc(sizeof(sharc_stream));
+    sharc_stream *stream = (sharc_stream *) malloc(sizeof(sharc_stream));
     SHARC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
     if (sharc_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
@@ -172,10 +189,31 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 
             double ratio = (100.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
-            printf("Compressed %s to %s, %"PRIu64" bytes in, %"PRIu64" bytes out, ", inFilePath, io_out->name, totalRead, totalWritten);
+            printf("Compressed ");
+            printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+            printf("%s", inFilePath);
+            printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+            printf(" (");
+            sharc_client_format_decimal(totalRead);
+            printf(" bytes) to ");
+            printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+            printf("%s", io_out->name);
+            printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+            printf(" (");
+            sharc_client_format_decimal(totalWritten);
+            printf(" bytes), ");
             printf("Ratio out / in = %.1lf%%, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
-        } else
-            printf("Compressed %s to %s, %"PRIu64" bytes written.\n", io_in->name, io_out->name, totalWritten);
+        } else {
+            printf("Compressed ");
+            printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+            printf("%s", io_in->name);
+            printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+            printf(" to ");
+            printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+            printf("%s", io_out->name);
+            printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+            printf(", %"PRIu64" bytes written.\n", totalWritten);
+        }
     }
     free(stream);
 }
@@ -217,7 +255,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     /*
      * The following code is an example of how to use the stream API to decompress a file
      */
-    sharc_stream* stream = (sharc_stream*)malloc(sizeof(sharc_stream));
+    sharc_stream *stream = (sharc_stream *) malloc(sizeof(sharc_stream));
     SHARC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
     if (sharc_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
@@ -258,10 +296,31 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
             }
 
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
-            printf("Decompressed %s to %s, %"PRIu64" bytes in, %"PRIu64" bytes out, ", inFilePath, io_out->name, totalRead, totalWritten);
+            printf("Decompressed ");
+            printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+            printf("%s", inFilePath);
+            printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+            printf(" (");
+            sharc_client_format_decimal(totalRead);
+            printf(" bytes) to ");
+            printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+            printf("%s", io_out->name);
+            printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+            printf(" (");
+            sharc_client_format_decimal(totalWritten);
+            printf(" bytes), ");
             printf("Time = %.3lf s, Speed = %.0lf MB/s\n", elapsed, speed);
-        } else
-            printf("Decompressed %s to %s, %"PRIu64" bytes written.\n", io_in->name, io_out->name, totalWritten);
+        } else {
+            printf("Decompressed ");
+            printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+            printf("%s", io_in->name);
+            printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+            printf(" to ");
+            printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+            printf("%s", io_out->name);
+            printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+            printf(", %"PRIu64" bytes written.\n", totalWritten);
+        }
     }
     free(stream);
 }

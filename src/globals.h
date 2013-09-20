@@ -65,6 +65,8 @@
 #define SHARC_MINOR_VERSION               9
 #define SHARC_REVISION                    11
 
+#define SHARC_ESCAPE_CHARACTER   ((char)27)
+
 typedef uint8_t sharc_byte;
 typedef bool sharc_bool;
 

@@ -73,7 +73,6 @@
 #elif defined(__APPLE__)
 #include "TargetConditionals.h"
 #include "globals.h"
-
 #if TARGET_IPHONE_SIMULATOR
 #define SHARC_PLATFORM_STRING         "iOS Simulator"
 #elif TARGET_OS_IPHONE
@@ -100,6 +99,7 @@ typedef struct {
     FILE* stream;
     sharc_byte origin_type;
 } sharc_client_io;
+
 
 uint8_t input_buffer[SHARC_PREFERRED_BUFFER_SIZE];
 uint8_t output_buffer[SHARC_PREFERRED_BUFFER_SIZE];
