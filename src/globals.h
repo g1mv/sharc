@@ -76,6 +76,4 @@ typedef enum {
     SHARC_COMPRESSION_MODE_DUAL_PASS = 2
 } SHARC_COMPRESSION_MODE;
 
-void sharc_error(const char*);
-
 #endif

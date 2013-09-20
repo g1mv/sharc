@@ -26,6 +26,14 @@
 
 #if SHARC_USE_AS_LIBRARY == SHARC_NO
 
+SHARC_FORCE_INLINE void sharc_client_exit_error(const char* message) {
+    fprintf(stderr, "%c[1;31m", SHARC_ESCAPE_CHARACTER);
+    fprintf(stderr, "Sharc error");
+    fprintf(stderr, "%c[0m", SHARC_ESCAPE_CHARACTER);
+    fprintf(stderr, " : %s\n", message);
+    exit(0);
+}
+
 SHARC_FORCE_INLINE FILE *sharc_client_checkOpenFile(const char *fileName, const char *options, const sharc_bool checkOverwrite) {
     if (checkOverwrite && access(fileName, F_OK) != -1) {
         printf("File %s already exists. Do you want to overwrite it (y/N) ? ", fileName);
@@ -40,7 +48,7 @@ SHARC_FORCE_INLINE FILE *sharc_client_checkOpenFile(const char *fileName, const 
     if (file == NULL) {
         char message[512];
         sprintf(message, "Unable to open file %s", fileName);
-        sharc_error(message);
+        sharc_client_exit_error(message);
     }
     return file;
 }
@@ -90,7 +98,7 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_client_reloadInputBuffer(sharc_stream *re
     stream->in.size = (uint_fast64_t) fread(stream->in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
     if (stream->in.size < SHARC_PREFERRED_BUFFER_SIZE) {
         if (ferror(io_in->stream))
-            sharc_error("Error reading file");
+            sharc_client_exit_error("Error reading file");
     }
     sharc_byte_buffer_rewind(&stream->in);
     return stream->in.size;
@@ -100,7 +108,7 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_client_emptyOutputBuffer(sharc_stream *re
     uint_fast64_t written = (uint_fast64_t) fwrite(stream->out.pointer, sizeof(sharc_byte), (size_t) stream->out.position, io_out->stream);
     if (written < stream->out.position) {
         if (ferror(io_out->stream))
-            sharc_error("Error writing file");
+            sharc_client_exit_error("Error writing file");
     }
     sharc_byte_buffer_rewind(&stream->out);
     return written;
@@ -115,7 +123,7 @@ SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fa
             *read = sharc_client_reloadInputBuffer(stream, io_in);
             break;
         default:
-            sharc_error(errorMessage);
+            sharc_client_exit_error(errorMessage);
     }
 }
 
@@ -162,7 +170,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     SHARC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
     if (sharc_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
-        sharc_error("Unable to prepare compression");
+        sharc_client_exit_error("Unable to prepare compression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = sharc_stream_compress_init(stream, attemptMode, SHARC_ENCODE_OUTPUT_TYPE_DEFAULT, SHARC_BLOCK_TYPE_DEFAULT, io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE ? &attributes : NULL)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize compression");
@@ -259,7 +267,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     SHARC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
     if (sharc_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
-        sharc_error("Unable to prepare decompression");
+        sharc_client_exit_error("Unable to prepare decompression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = sharc_stream_decompress_init(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize decompression");
@@ -292,7 +300,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
 
             if (header.genericHeader.originType == SHARC_STREAM_ORIGIN_TYPE_FILE) {
                 if (totalWritten != header.fileInformationHeader.originalFileSize)
-                    sharc_error("Input file is corrupt !");
+                    sharc_client_exit_error("Input file is corrupt !");
             }
 
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
