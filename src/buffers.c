@@ -44,21 +44,31 @@ SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_max_compressed_length(uint_
 SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t *restrict written, uint8_t *restrict in, uint_fast64_t inSize, uint8_t *restrict out, uint_fast64_t outSize, const SHARC_COMPRESSION_MODE compressionMode, const SHARC_ENCODE_OUTPUT_TYPE outputType, const SHARC_BLOCK_TYPE blockType, const struct stat *restrict fileAttributes, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
     SHARC_STREAM_STATE returnState;
 
-    sharc_stream stream = {};
-    if ((returnState = sharc_stream_prepare(&stream, in, inSize, out, outSize, mem_alloc, mem_free)))
+    sharc_stream* stream;
+    if(mem_alloc)
+        stream = mem_alloc(sizeof(sharc_stream));
+    else
+        stream = malloc(sizeof(sharc_stream));
+
+    if ((returnState = sharc_stream_prepare(stream, in, inSize, out, outSize, mem_alloc, mem_free)))
         return sharc_buffers_translate_state(returnState);
 
-    if ((returnState = sharc_stream_compress_init(&stream, compressionMode, outputType, blockType, fileAttributes)))
+    if ((returnState = sharc_stream_compress_init(stream, compressionMode, outputType, blockType, fileAttributes)))
         return sharc_buffers_translate_state(returnState);
 
-    if ((returnState = sharc_stream_compress(&stream, true)))
+    if ((returnState = sharc_stream_compress(stream, true)))
         return sharc_buffers_translate_state(returnState);
 
-    if ((returnState = sharc_stream_compress_finish(&stream)))
+    if ((returnState = sharc_stream_compress_finish(stream)))
         return sharc_buffers_translate_state(returnState);
 
     if (written)
-        *written = *stream.out_total_written;
+        *written = *stream->out_total_written;
+
+    if(mem_free)
+        mem_free(stream);
+    else
+        free(stream);
 
     return SHARC_BUFFERS_STATE_OK;
 }
@@ -66,24 +76,34 @@ SHARC_FORCE_INLINE SHARC_BUFFERS_STATE sharc_buffers_compress(uint_fast64_t *res
 SHARC_BUFFERS_STATE sharc_buffers_decompress(uint_fast64_t *restrict written, sharc_header *restrict header, uint8_t *restrict in, uint_fast64_t inSize, uint8_t *restrict out, uint_fast64_t outSize, void *(*mem_alloc)(size_t), void (*mem_free)(void *)) {
     SHARC_STREAM_STATE returnState;
 
-    sharc_stream stream = {};
-    if ((returnState = sharc_stream_prepare(&stream, in, inSize, out, outSize, mem_alloc, mem_free)))
+    sharc_stream* stream;
+    if(mem_alloc)
+        stream = mem_alloc(sizeof(sharc_stream));
+    else
+        stream = malloc(sizeof(sharc_stream));
+
+    if ((returnState = sharc_stream_prepare(stream, in, inSize, out, outSize, mem_alloc, mem_free)))
         return sharc_buffers_translate_state(returnState);
 
-    if ((returnState = sharc_stream_decompress_init(&stream)))
+    if ((returnState = sharc_stream_decompress_init(stream)))
         return sharc_buffers_translate_state(returnState);
 
     if (header)
-        *header = stream.internal_state.internal_decode_state.header;
+        *header = stream->internal_state.internal_decode_state.header;
 
-    if ((returnState = sharc_stream_decompress(&stream, true)))
+    if ((returnState = sharc_stream_decompress(stream, true)))
         return sharc_buffers_translate_state(returnState);
 
-    if ((returnState = sharc_stream_decompress_finish(&stream)))
+    if ((returnState = sharc_stream_decompress_finish(stream)))
         return sharc_buffers_translate_state(returnState);
 
     if (written)
-        *written = *stream.out_total_written;
+        *written = *stream->out_total_written;
+
+    if(mem_free)
+        mem_free(stream);
+    else
+        free(stream);
 
     return SHARC_BUFFERS_STATE_OK;
 }
