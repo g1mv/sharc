@@ -37,42 +37,41 @@
 
 //#define SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD             (sizeof(sharc_hash_signature) + sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
 
+#define SHARC_ARGONAUT_OUTPUT_UNIT_BIT_SIZE                         (sizeof(sharc_argonaut_output_unit) << 3)
+//#define SHARC_ARGONAUT_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD_UNITS        8
+//#define SHARC_ARGONAUT_ENCODE_MINIMUM_OUTPUT_BYTES_LOOKAHEAD        (SHARC_ARGONAUT_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD_UNITS * SHARC_ARGONAUT_OUTPUT_UNIT_BIT_SIZE)
+
 typedef enum {
-    SHARC_ARGONAUT_ENCODE_PROCESS_CHECK_STATE,
-    SHARC_ARGONAUT_ENCODE_PROCESS_PREPARE_NEW_BLOCK,
-    SHARC_ARGONAUT_ENCODE_PROCESS_DATA,
+    SHARC_ARGONAUT_ENCODE_PROCESS_PREPARE_OUTPUT,
+    SHARC_ARGONAUT_ENCODE_PROCESS_CHECK_AVAILABLE_MEMORY,
+    SHARC_ARGONAUT_ENCODE_PROCESS_GOTO_NEXT_WORD,
+    SHARC_ARGONAUT_ENCODE_PROCESS_WORD,
     SHARC_ARGONAUT_ENCODE_PROCESS_FINISH
 } SHARC_ARGONAUT_ENCODE_PROCESS;
+
+typedef uint_fast64_t sharc_argonaut_output_unit;
+
+typedef struct {
+    sharc_argonaut_huffman_code lookup [sizeof(sharc_argonaut_output_unit)];
+} wlhufflook;
 
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
     SHARC_ARGONAUT_ENCODE_PROCESS process;
 
-    sharc_hash_signature * signature;
-    sharc_byte pending;
-    uint_fast64_t bitCount;
+    //uint_fast64_t bitCount;
     int_fast64_t count[8];
-    uint_fast8_t huff[8];
-    int_fast64_t * countRank[8];
-    uint8_t overflows;
-    uint8_t limit;
-    uint32_t previous_chunk;
-    bool searchMode;
-    uint32_t offset;
-    bool print;
-    uint_fast32_t signaturesCount;
+    int_fast64_t length[8];
+    //uint32_t offset;
     uint_fast8_t efficiencyChecked;
+    sharc_argonaut_dictionary_word partialWord;
+    sharc_argonaut_dictionary_word word;
 
-    sharc_byte_buffer workBuffer;
-
-    uint_fast64_t block_read;
-    uint_fast64_t block_written;
-
+    sharc_argonaut_huffman_code code;
     uint_fast8_t shift;
-    uint_fast64_t* output;
-    uint_fast64_t partialOutput;
-    uint_fast8_t partialOutputBits;
+    //uint_fast8_t blockShift;
+    sharc_argonaut_output_unit* output;
 } sharc_argonaut_encode_state;
 #pragma pack(pop)
 
