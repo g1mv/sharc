@@ -52,7 +52,7 @@ typedef enum {
 typedef uint_fast64_t sharc_argonaut_output_unit;
 
 typedef struct {
-    sharc_argonaut_huffman_code lookup [sizeof(sharc_argonaut_output_unit)];
+    sharc_argonaut_huffman_code lookup [SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
 } wlhufflook;
 
 #pragma pack(push)
@@ -62,21 +62,22 @@ typedef struct {
 
     //uint_fast64_t bitCount;
     int_fast64_t count[8];
-    int_fast64_t length[8];
+    int_fast64_t length[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
     //uint32_t offset;
     uint_fast8_t efficiencyChecked;
-    sharc_argonaut_dictionary_word partialWord;
+    //sharc_argonaut_dictionary_word partialWord;
     sharc_argonaut_dictionary_word word;
 
     sharc_argonaut_huffman_code code;
     uint_fast8_t shift;
+    uint_fast8_t preliminaryShift;
     //uint_fast8_t blockShift;
     sharc_argonaut_output_unit* output;
 } sharc_argonaut_encode_state;
 #pragma pack(pop)
 
 SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_init(sharc_argonaut_encode_state*, sharc_argonaut_dictionary *);
-SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_argonaut_dictionary *, sharc_argonaut_encode_state *, const sharc_bool);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_argonaut_dictionary *, sharc_argonaut_encode_state *, const sharc_bool, const sharc_bool);
 SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_finish(sharc_argonaut_encode_state*);
 
 #endif

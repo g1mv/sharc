@@ -33,7 +33,7 @@
 
 #define SHARC_ARGONAUT_DICTIONARY_PRIMARY_RANKS                                             (256)
 #define SHARC_ARGONAUT_DICTIONARY_SECONDARY_RANKS                                           (2048)
-#define SHARC_ARGONAUT_DICTIONARY_WORD_MAX_LETTERS                                          10
+#define SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS                                          8
 
 #pragma pack(push)
 #pragma pack(4)
@@ -51,12 +51,12 @@ typedef struct {
 
 typedef struct {
     union {
-        uint64_t as_uint64_t[2];
-        uint16_t as_uint16_t[SHARC_ARGONAUT_DICTIONARY_WORD_MAX_LETTERS >> 1];
-        uint8_t letters[SHARC_ARGONAUT_DICTIONARY_WORD_MAX_LETTERS];
+        uint64_t as_uint64_t;
+        uint16_t as_uint16_t;
+        uint8_t letters[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
     };
     uint_fast8_t length;
-    const sharc_argonaut_huffman_code* letterCode[SHARC_ARGONAUT_DICTIONARY_WORD_MAX_LETTERS];
+    const sharc_argonaut_huffman_code* letterCode[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
     //uint8_t compressedBitLength;
 } sharc_argonaut_dictionary_word;
 
