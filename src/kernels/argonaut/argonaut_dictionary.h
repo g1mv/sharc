@@ -56,7 +56,7 @@ typedef struct {
         uint8_t letters[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
     };
     uint_fast8_t length;
-    const sharc_argonaut_huffman_code* letterCode[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
+    /*const */sharc_argonaut_huffman_code* letterCode[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
     //uint8_t compressedBitLength;
 } sharc_argonaut_dictionary_word;
 
