@@ -35,7 +35,7 @@ SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_write_block_heade
     else {
         switch (state->targetMode) {
             case SHARC_BLOCK_MODE_HASH:
-                state->dictionaryData.dictionary_reset(&state->dictionaryData.dictionary);
+                //state->dictionaryData.dictionary_reset(&state->dictionaryData.dictionary);
                 break;
 
             case SHARC_BLOCK_MODE_COPY:
@@ -79,7 +79,7 @@ SHARC_FORCE_INLINE void sharc_block_encode_update_totals(sharc_byte_buffer *rest
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_encode_state *restrict state, const SHARC_BLOCK_MODE mode, const SHARC_BLOCK_TYPE blockType, void (*dictionary_reset)(sharc_dictionary *)) {
+SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_encode_state *restrict state, const SHARC_BLOCK_MODE mode, const SHARC_BLOCK_TYPE blockType, void* kernelState, SHARC_KERNEL_ENCODE_STATE (*kernelInit)(void*), SHARC_KERNEL_ENCODE_STATE (*kernelProcess)(sharc_byte_buffer *, sharc_byte_buffer *, void*, const sharc_bool), SHARC_KERNEL_ENCODE_STATE (*kernelFinish)(void*)) {
     state->process = SHARC_BLOCK_ENCODE_PROCESS_WRITE_BLOCK_HEADER;
     state->targetMode = mode;
     state->currentMode = mode;
@@ -88,17 +88,23 @@ SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_
     state->totalRead = 0;
     state->totalWritten = 0;
 
-    sharc_hash_encode_init(&state->hashEncodeState);
+    //sharc_argonaut_encode_init(&state->hashEncodeState, &state->dictionaryData.dictionary);
+    state->kernelEncodeState = kernelState;
+    state->kernelEncodeInit = kernelInit;
+    state->kernelEncodeProcess = kernelProcess;
+    state->kernelEncodeFinish = kernelFinish;
+
+    state->kernelEncodeInit(state->kernelEncodeState);
 
     state->dictionaryData.resetCycle = 0;
-    state->dictionaryData.dictionary_reset = dictionary_reset;
+    //state->dictionaryData.dictionary_reset = dictionary_reset;
 
     return SHARC_BLOCK_ENCODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_block_encode_state *restrict state, const sharc_bool flush, const uint32_t xorMask) {
+SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_block_encode_state *restrict state, const sharc_bool flush) {
     SHARC_BLOCK_ENCODE_STATE encodeState;
-    SHARC_HASH_ENCODE_STATE hashEncodeState;
+    SHARC_KERNEL_ENCODE_STATE hashEncodeState;
     uint_fast64_t inPositionBefore;
     uint_fast64_t outPositionBefore;
     uint_fast64_t blockRemaining;
@@ -179,29 +185,29 @@ SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_process(sharc_byt
                         break;
 
                     case SHARC_BLOCK_MODE_HASH:
-                        hashEncodeState = sharc_hash_encode_process(in, out, xorMask, &state->dictionaryData.dictionary, &state->hashEncodeState, flush);
+                        hashEncodeState = state->kernelEncodeProcess(in, out, state->kernelEncodeState, flush);//sharc_argonaut_encode_process(in, out, xorMask, &state->dictionaryData.dictionary, &state->hashEncodeState, flush); // (false) = c3, (true) = c4
                         sharc_block_encode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
 
                         switch (hashEncodeState) {
-                            case SHARC_HASH_ENCODE_STATE_STALL_ON_INPUT_BUFFER:
+                            case SHARC_KERNEL_ENCODE_STATE_STALL_ON_INPUT_BUFFER:
                                 return SHARC_BLOCK_ENCODE_STATE_STALL_ON_INPUT_BUFFER;
 
-                            case SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER:
+                            case SHARC_KERNEL_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER:
                                 return SHARC_BLOCK_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
-                            case SHARC_HASH_ENCODE_STATE_INFO_NEW_BLOCK:
+                            case SHARC_KERNEL_ENCODE_STATE_INFO_NEW_BLOCK:
                                 state->process = SHARC_BLOCK_ENCODE_PROCESS_WRITE_BLOCK_FOOTER;
                                 break;
 
-                            case SHARC_HASH_ENCODE_STATE_INFO_EFFICIENCY_CHECK:
+                            case SHARC_KERNEL_ENCODE_STATE_INFO_EFFICIENCY_CHECK:
                                 state->process = SHARC_BLOCK_ENCODE_PROCESS_WRITE_BLOCK_MODE_MARKER;
                                 break;
 
-                            case SHARC_HASH_ENCODE_STATE_FINISHED:
+                            case SHARC_KERNEL_ENCODE_STATE_FINISHED:
                                 state->process = SHARC_BLOCK_ENCODE_PROCESS_WRITE_LAST_BLOCK_FOOTER;
                                 break;
 
-                            case SHARC_HASH_ENCODE_STATE_READY:
+                            case SHARC_KERNEL_ENCODE_STATE_READY:
                                 break;
 
                             default:
@@ -224,7 +230,8 @@ SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_finish(sharc_bloc
     if (state->process ^ SHARC_BLOCK_ENCODE_PROCESS_FINISHED)
         return SHARC_BLOCK_ENCODE_STATE_ERROR;
 
-    sharc_hash_encode_finish(&state->hashEncodeState);
+    //sharc_argonaut_encode_finish(&state->hashEncodeState);
+    state->kernelEncodeFinish(state->kernelEncodeState);
 
     return SHARC_BLOCK_ENCODE_STATE_READY;
 }

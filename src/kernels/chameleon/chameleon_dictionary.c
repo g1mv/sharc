@@ -22,15 +22,14 @@
  * 19/08/13 18:49
  */
 
-#include "dictionary.h"
+#include "chameleon_dictionary.h"
 
-const sharc_dictionary sharc_dictionary_chameleon = {.entries = SHARC_DICTIONARY_CHAMELEON};
-const sharc_dictionary sharc_dictionary_compressed = {.entries = SHARC_DICTIONARY_COMPRESSED};  // todo update with SHARC_HASH_XOR_MASK_DIRECT
+#ifdef SHARC_CHAMELEON_DISPERSION
+const sharc_dictionary NAME(sharc_dictionary) = {.entries = SHARC_DICTIONARY_CHAMELEON};
+#else
+const sharc_dictionary NAME(sharc_dictionary) = {.entries = SHARC_DICTIONARY_COMPRESSED};
+#endif
 
-SHARC_FORCE_INLINE void sharc_dictionary_resetDirect(sharc_dictionary * dictionary) {
-    memcpy(dictionary, &sharc_dictionary_chameleon, sizeof(sharc_dictionary));
-}
-
-SHARC_FORCE_INLINE void sharc_dictionary_resetCompressed(sharc_dictionary * dictionary) {
-    memcpy(dictionary, &sharc_dictionary_compressed, sizeof(sharc_dictionary));
+SHARC_FORCE_INLINE void NAME(sharc_dictionary_reset)(sharc_dictionary * dictionary) {
+    memcpy(dictionary, &NAME(sharc_dictionary), sizeof(sharc_dictionary));
 }

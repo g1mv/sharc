@@ -26,12 +26,12 @@
 #define SHARC_DICTIONARY_H
 
 #include "globals.h"
-#include "hash.h"
+#include "chameleon.h"
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#include "dictionary_le.data"
+#include "chameleon_dictionary_le.data"
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#include "dictionary_be.data"
+#include "chameleon_dictionary_be.data"
 #else
 #error Unable to load dictionary due to unsupported endian
 #endif
@@ -52,11 +52,10 @@ typedef struct {
 } sharc_dictionary_entry;
 
 typedef struct {
-    sharc_dictionary_entry entries[1 << SHARC_HASH_BITS];
+    sharc_dictionary_entry entries[1 << SHARC_CHAMELEON_HASH_BITS];
 } sharc_dictionary;
 #pragma pack(pop)
 
-void sharc_dictionary_resetDirect(sharc_dictionary *);
-void sharc_dictionary_resetCompressed(sharc_dictionary *);
+void NAME(sharc_dictionary_reset)(sharc_dictionary *);
 
 #endif

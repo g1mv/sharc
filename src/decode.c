@@ -65,16 +65,16 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_init(sharc_byte_buffer *in, s
 
     switch (state->header.genericHeader.compressionMode) {
         case SHARC_COMPRESSION_MODE_COPY:
-            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_COPY, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), NULL);
+            //sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_COPY, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), NULL);
             break;
 
         case SHARC_COMPRESSION_MODE_FASTEST:
-            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_resetDirect);
+            //sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_reset_dispersion);
             break;
 
         case SHARC_COMPRESSION_MODE_DUAL_PASS:
-            sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_resetCompressed);
-            sharc_block_decode_init(&state->blockDecodeStateB, SHARC_BLOCK_MODE_HASH, SHARC_BLOCK_TYPE_NO_HASHSUM_INTEGRITY_CHECK, 0, sharc_dictionary_resetDirect);
+            //sharc_block_decode_init(&state->blockDecodeStateA, SHARC_BLOCK_MODE_HASH, (SHARC_BLOCK_TYPE) state->header.genericHeader.blockType, sizeof(sharc_footer), sharc_dictionary_reset_direct);
+            //sharc_block_decode_init(&state->blockDecodeStateB, SHARC_BLOCK_MODE_HASH, SHARC_BLOCK_TYPE_NO_HASHSUM_INTEGRITY_CHECK, 0, sharc_dictionary_reset_dispersion);
             break;
 
         default:
@@ -101,7 +101,7 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                 switch (state->header.genericHeader.compressionMode) {
                     case SHARC_COMPRESSION_MODE_COPY:
                     case SHARC_COMPRESSION_MODE_FASTEST:
-                        blockDecodeState = sharc_block_decode_process(in, out, &state->blockDecodeStateA, flush, SHARC_HASH_XOR_MASK_DISPERSION);
+                        blockDecodeState = sharc_block_decode_process(in, out, &state->blockDecodeStateA, flush);
                         sharc_decode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
 
                         switch (blockDecodeState) {
@@ -131,7 +131,7 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
 
             case SHARC_DECODE_PROCESS_READ_BLOCKS_IN_TO_WORKBUFFER:
                 state->workBuffer->size = state->workBufferData.memorySize;
-                blockDecodeState = sharc_block_decode_process(in, state->workBuffer, &state->blockDecodeStateA, flush, SHARC_HASH_XOR_MASK_DIRECT);
+                blockDecodeState = sharc_block_decode_process(in, state->workBuffer, &state->blockDecodeStateA, flush);
                 state->totalRead += in->position - inPositionBefore;
                 switch (blockDecodeState) {
                     case SHARC_BLOCK_DECODE_STATE_READY:
@@ -152,7 +152,7 @@ SHARC_FORCE_INLINE SHARC_DECODE_STATE sharc_decode_process(sharc_byte_buffer *re
                 break;
 
             case SHARC_DECODE_PROCESS_READ_BLOCKS_WORKBUFFER_TO_OUT:
-                blockDecodeState = sharc_block_decode_process(state->workBuffer, out, &state->blockDecodeStateB, flush && in->position == in->size, SHARC_HASH_XOR_MASK_DISPERSION);
+                blockDecodeState = sharc_block_decode_process(state->workBuffer, out, &state->blockDecodeStateB, flush && in->position == in->size);
                 state->totalWritten += out->position - outPositionBefore;
                 switch (blockDecodeState) {
                     case SHARC_BLOCK_DECODE_STATE_READY:

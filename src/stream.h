@@ -27,9 +27,7 @@
 
 #include <stdint.h>
 
-#include "hash_encode.h"
-#include "block_encode.h"
-#include "block_decode.h"
+#include "chameleon_encode.h"
 #include "byte_buffer.h"
 #include "header.h"
 #include "block.h"

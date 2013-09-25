@@ -27,11 +27,12 @@
 
 #include "block_footer.h"
 #include "block_header.h"
-#include "dictionary.h"
-#include "hash_encode.h"
+#include "chameleon_dictionary.h"
 #include "header.h"
 #include "footer.h"
 #include "block_mode_marker.h"
+#include "argonaut_dictionary.h"
+#include "argonaut_encode.h"
 
 typedef enum {
     SHARC_BLOCK_ENCODE_STATE_READY = 0,
@@ -57,7 +58,7 @@ typedef struct {
 } sharc_block_encode_current_block_data;
 
 typedef struct {
-    sharc_dictionary dictionary;
+    sharc_argonaut_dictionary dictionary;
     uint_fast32_t resetCycle;
     void (*dictionary_reset)(sharc_dictionary *);
 } sharc_block_encode_dictionary_data;
@@ -71,14 +72,18 @@ typedef struct {
     uint_fast64_t totalRead;
     uint_fast64_t totalWritten;
 
-    sharc_hash_encode_state hashEncodeState;
     sharc_block_encode_current_block_data currentBlockData;
     sharc_block_encode_dictionary_data dictionaryData;
+
+    void*kernelEncodeState;
+    SHARC_KERNEL_ENCODE_STATE (*kernelEncodeInit)(void*);
+    SHARC_KERNEL_ENCODE_STATE (*kernelEncodeProcess)(sharc_byte_buffer *, sharc_byte_buffer *, void*, const sharc_bool);
+    SHARC_KERNEL_ENCODE_STATE (*kernelEncodeFinish)(void*);
 } sharc_block_encode_state;
 #pragma pack(pop)
 
-SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_encode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, void (*)(sharc_dictionary *));
-SHARC_BLOCK_ENCODE_STATE sharc_block_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_block_encode_state *, const sharc_bool, const uint32_t);
+SHARC_BLOCK_ENCODE_STATE sharc_block_encode_init(sharc_block_encode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, void*, SHARC_KERNEL_ENCODE_STATE (*)(void*), SHARC_KERNEL_ENCODE_STATE (*)(sharc_byte_buffer *, sharc_byte_buffer *, void*, const sharc_bool), SHARC_KERNEL_ENCODE_STATE (*)(void*));
+SHARC_BLOCK_ENCODE_STATE sharc_block_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_block_encode_state *, const sharc_bool);
 SHARC_BLOCK_ENCODE_STATE sharc_block_encode_finish(sharc_block_encode_state *);
 
 #endif

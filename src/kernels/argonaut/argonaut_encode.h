@@ -26,10 +26,10 @@
 #define SHARC_ARGONAUT_ENCODE_H
 
 #include "byte_buffer.h"
-#include "hash.h"
 #include "block.h"
 #include "kernel_encode.h"
 #include "argonaut_dictionary.h"
+#include "argonaut.h"
 
 #include <inttypes.h>
 #include <math.h>
@@ -42,7 +42,7 @@
 //#define SHARC_ARGONAUT_ENCODE_MINIMUM_OUTPUT_BYTES_LOOKAHEAD        (SHARC_ARGONAUT_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD_UNITS * SHARC_ARGONAUT_OUTPUT_UNIT_BIT_SIZE)
 
 #define SHARC_ARGONAUT_ENCODE_PROCESS_RANKS
-#define SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
+//#define SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
 //#define SHARC_ARGONAUT_ENCODE_STATS
 
 /*
@@ -86,38 +86,36 @@ typedef enum {
 } SHARC_ARGONAUT_ENTITY;
 
 typedef struct {
-    sharc_argonaut_huffman_code lookup [SHARC_ARGONAUT_ENTITY_COUNT];
-} ehufflook;
+    sharc_argonaut_huffman_code code[SHARC_ARGONAUT_ENTITY_COUNT];
+} sharc_argonaut_entity_code_lookup;
 
 typedef uint_fast64_t sharc_argonaut_output_unit;
 
 typedef struct {
-    sharc_argonaut_huffman_code lookup [SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
-} wlhufflook;
+    sharc_argonaut_huffman_code code [SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
+} sharc_argonaut_word_length_code_lookup;
 
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
     SHARC_ARGONAUT_ENCODE_PROCESS process;
 
-    //uint_fast64_t bitCount;
-    int_fast64_t count[8];
-    int_fast64_t length[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
-    //uint32_t offset;
     uint_fast8_t efficiencyChecked;
-    //sharc_argonaut_dictionary_word partialWord;
-    sharc_argonaut_dictionary_word word;
-
-    sharc_argonaut_huffman_code code;
-    uint_fast8_t shift;
-    uint_fast8_t preliminaryShift;
-    //uint_fast8_t blockShift;
     sharc_argonaut_output_unit* output;
+
+    sharc_argonaut_dictionary_word word;
+    uint_fast8_t shift;
+
+    sharc_argonaut_dictionary dictionary;
 } sharc_argonaut_encode_state;
 #pragma pack(pop)
 
-SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_init(sharc_argonaut_encode_state*, sharc_argonaut_dictionary *);
-SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_argonaut_dictionary *, sharc_argonaut_encode_state *, const sharc_bool);
-SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_finish(sharc_argonaut_encode_state*);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_init_direct(void*);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process_direct(sharc_byte_buffer *, sharc_byte_buffer *, void *, const sharc_bool);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_finish_direct(void*);
+
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_init_post_processing(void*);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process_post_processing(sharc_byte_buffer *, sharc_byte_buffer *, void *, const sharc_bool);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_finish_post_processing(void*);
 
 #endif

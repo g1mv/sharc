@@ -77,7 +77,7 @@ SHARC_FORCE_INLINE void sharc_block_decode_update_totals(sharc_byte_buffer *rest
     state->totalWritten += out->position - outPositionBefore;
 }
 
-SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *restrict state, const SHARC_BLOCK_MODE mode, const SHARC_BLOCK_TYPE blockType, const uint_fast32_t endDataOverhead, void (*dictionary_reset)(sharc_dictionary *)) {
+SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *restrict state, const SHARC_BLOCK_MODE mode, const SHARC_BLOCK_TYPE blockType, const uint_fast32_t endDataOverhead, void* kernelState, SHARC_KERNEL_DECODE_STATE (*kernelInit)(void*, const uint32_t), SHARC_KERNEL_DECODE_STATE (*kernelProcess)(sharc_byte_buffer *, sharc_byte_buffer *, void*, const sharc_bool), SHARC_KERNEL_DECODE_STATE (*kernelFinish)(void*)) {
     state->mode = mode;
     state->blockType = blockType;
 
@@ -85,17 +85,22 @@ SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_
     state->totalWritten = 0;
     state->endDataOverhead = (state->blockType == SHARC_BLOCK_TYPE_DEFAULT ? sizeof(sharc_block_footer) : 0) + endDataOverhead;
 
-    sharc_hash_decode_init(&state->hashDecodeState, state->endDataOverhead);
+    state->kernelDecodeState = kernelState;
+    state->kernelDecodeInit = kernelInit;
+    state->kernelDecodeProcess = kernelProcess;
+    state->kernelDecodeFinish = kernelFinish;
+
+    state->kernelDecodeInit(state->kernelDecodeState, state->endDataOverhead);
 
     state->dictionaryData.resetCycle = 0;
-    state->dictionaryData.dictionary_reset = dictionary_reset;
+    //state->dictionaryData.dictionary_reset = dictionary_reset;
 
     return SHARC_BLOCK_DECODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_block_decode_state *restrict state, const sharc_bool flush, const uint32_t xorMask) {
+SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_process(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_block_decode_state *restrict state, const sharc_bool flush) {
     SHARC_BLOCK_DECODE_STATE decodeState;
-    SHARC_HASH_DECODE_STATE hashDecodeState;
+    SHARC_CHAMELEON_DECODE_STATE hashDecodeState;
     uint_fast64_t inPositionBefore;
     uint_fast64_t outPositionBefore;
     uint_fast64_t blockRemaining;
@@ -179,29 +184,29 @@ SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_process(sharc_byt
                         break;
 
                     case SHARC_BLOCK_MODE_HASH:
-                        hashDecodeState = sharc_hash_decode_process(in, out, xorMask, &state->dictionaryData.dictionary, &state->hashDecodeState, flush);
+                        //hashDecodeState = sharc_hash_decode_process(in, out, &state->hashDecodeState, flush);
                         sharc_block_decode_update_totals(in, out, state, inPositionBefore, outPositionBefore);
 
                         switch (hashDecodeState) {
-                            case SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER:
+                            case SHARC_CHAMELEON_DECODE_STATE_STALL_ON_INPUT_BUFFER:
                                 return SHARC_BLOCK_DECODE_STATE_STALL_ON_INPUT_BUFFER;
 
-                            case SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER:
+                            case SHARC_CHAMELEON_DECODE_STATE_STALL_ON_OUTPUT_BUFFER:
                                 return SHARC_BLOCK_DECODE_STATE_STALL_ON_OUTPUT_BUFFER;
 
-                            case SHARC_HASH_DECODE_STATE_INFO_NEW_BLOCK:
+                            case SHARC_CHAMELEON_DECODE_STATE_INFO_NEW_BLOCK:
                                 state->process = SHARC_BLOCK_DECODE_PROCESS_READ_BLOCK_FOOTER;
                                 break;
 
-                            case SHARC_HASH_DECODE_STATE_INFO_EFFICIENCY_CHECK:
+                            case SHARC_CHAMELEON_DECODE_STATE_INFO_EFFICIENCY_CHECK:
                                 state->process = SHARC_BLOCK_DECODE_PROCESS_READ_BLOCK_MODE_MARKER;
                                 break;
 
-                            case SHARC_HASH_DECODE_STATE_FINISHED:
+                            case SHARC_CHAMELEON_DECODE_STATE_FINISHED:
                                 state->process = SHARC_BLOCK_DECODE_PROCESS_READ_LAST_BLOCK_FOOTER;
                                 break;
 
-                            case SHARC_HASH_DECODE_STATE_READY:
+                            case SHARC_CHAMELEON_DECODE_STATE_READY:
                                 break;
 
                             default:
@@ -224,7 +229,7 @@ SHARC_FORCE_INLINE SHARC_BLOCK_DECODE_STATE sharc_block_decode_finish(sharc_bloc
     if (state->process ^ SHARC_BLOCK_DECODE_PROCESS_FINISHED)
         return SHARC_BLOCK_DECODE_STATE_ERROR;
 
-    sharc_hash_decode_finish(&state->hashDecodeState);
+    //sharc_hash_decode_finish(&state->hashDecodeState);
 
     return SHARC_BLOCK_DECODE_STATE_READY;
 }

@@ -26,21 +26,12 @@
 #define SHARC_HASH_ENCODE_H
 
 #include "byte_buffer.h"
-#include "dictionary.h"
-#include "hash.h"
+#include "chameleon_dictionary.h"
+#include "chameleon.h"
 #include "block.h"
+#include "kernel_encode.h"
 
 #define SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD             (sizeof(sharc_hash_signature) + sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
-
-typedef enum {
-    SHARC_HASH_ENCODE_STATE_READY = 0,
-    SHARC_HASH_ENCODE_STATE_INFO_NEW_BLOCK,
-    SHARC_HASH_ENCODE_STATE_INFO_EFFICIENCY_CHECK,
-    SHARC_HASH_ENCODE_STATE_FINISHED,
-    SHARC_HASH_ENCODE_STATE_STALL_ON_OUTPUT_BUFFER,
-    SHARC_HASH_ENCODE_STATE_STALL_ON_INPUT_BUFFER,
-    SHARC_HASH_ENCODE_STATE_ERROR
-} SHARC_HASH_ENCODE_STATE;
 
 typedef enum {
     SHARC_HASH_ENCODE_PROCESS_CHECK_STATE,
@@ -58,11 +49,17 @@ typedef struct {
     sharc_hash_signature * signature;
     uint_fast32_t signaturesCount;
     uint_fast8_t efficiencyChecked;
-} sharc_hash_encode_state;
+
+    sharc_dictionary dictionary;
+} sharc_chameleon_encode_state;
 #pragma pack(pop)
 
-SHARC_HASH_ENCODE_STATE sharc_hash_encode_init(sharc_hash_encode_state*);
-SHARC_HASH_ENCODE_STATE sharc_hash_encode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_dictionary *, sharc_hash_encode_state *, const sharc_bool);
-SHARC_HASH_ENCODE_STATE sharc_hash_encode_finish(sharc_hash_encode_state*);
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_init_direct(sharc_chameleon_encode_state *);
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_process_direct(sharc_byte_buffer *, sharc_byte_buffer *, sharc_chameleon_encode_state *, const sharc_bool);
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_finish_direct(sharc_chameleon_encode_state *);
+
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_init_dispersion(sharc_chameleon_encode_state *);
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_process_dispersion(sharc_byte_buffer *, sharc_byte_buffer *, sharc_chameleon_encode_state *, const sharc_bool);
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_finish_dispersion(sharc_chameleon_encode_state *);
 
 #endif

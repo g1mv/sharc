@@ -26,7 +26,7 @@
 #define SHARC_ARGONAUT_DICTIONARY_H
 
 #include "globals.h"
-#include "hash.h"
+#include "argonaut.h"
 #include "argonaut_le.data"
 
 #include <string.h>
@@ -45,58 +45,40 @@ struct sharc_argonaut_dictionary_primary_entry {
 };
 
 typedef struct {
-    uint_fast64_t code;
-    uint_fast8_t bitSize;
-} sharc_argonaut_huffman_code;
-
-typedef struct {
     union {
         uint64_t as_uint64_t;
         uint16_t as_uint16_t;
         uint8_t letters[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
     };
     uint_fast8_t length;
-    /*const */sharc_argonaut_huffman_code* letterCode[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
-    //uint8_t compressedBitLength;
+    const sharc_argonaut_huffman_code* letterCode[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
 } sharc_argonaut_dictionary_word;
 
 typedef struct {
-    sharc_argonaut_huffman_code lookup [SHARC_ARGONAUT_DICTIONARY_PRIMARY_RANKS];
-} primhufflook;
+    sharc_argonaut_huffman_code code [SHARC_ARGONAUT_DICTIONARY_PRIMARY_RANKS];
+} sharc_argonaut_primary_code_lookup;
 
 typedef struct {
-    sharc_argonaut_huffman_code lookup [SHARC_ARGONAUT_DICTIONARY_SECONDARY_RANKS];
-} sechufflook;
+    sharc_argonaut_huffman_code code [SHARC_ARGONAUT_DICTIONARY_SECONDARY_RANKS];
+} sharc_argonaut_secondary_code_lookup;
 
 typedef struct {
     sharc_argonaut_dictionary_word word;
     uint_fast32_t durability;
     uint_fast16_t ranking;
     uint_fast8_t ranked;
-} sharc_dictionary_qentry;
+} sharc_argonaut_dictionary_secondary_entry;
 
 typedef struct {
-    /*sharc_dictionary_entry* first16[1 << 4];
-    uint32_t first16Limit;
-
-    sharc_dictionary_entry* first256[1 << 8];
-    uint32_t first256Limit;*/
-    //sharc_dictionary_primary_entry* lastPrimRanked;
-    sharc_dictionary_qentry* top[SHARC_ARGONAUT_DICTIONARY_SECONDARY_RANKS];
     sharc_argonaut_dictionary_primary_entry *primary[SHARC_ARGONAUT_DICTIONARY_PRIMARY_RANKS];
-} sharc_dictionary_ranking;
+    sharc_argonaut_dictionary_secondary_entry *secondary[SHARC_ARGONAUT_DICTIONARY_SECONDARY_RANKS];
+} sharc_argonaut_dictionary_ranking;
 
 typedef struct {
-    sharc_dictionary_ranking ranking;
-    sharc_argonaut_dictionary_primary_entry prim[1 << 8];
-    //sharc_dictionary_entry sec[1 << 16];
-    //sharc_dictionary_64_entry ter[1 << 16];
-    sharc_dictionary_qentry quad[1 << 16];
-    //uint8_t hits[1 << 16];
+    sharc_argonaut_dictionary_ranking ranking;
+    sharc_argonaut_dictionary_primary_entry primary_entry[1 << 8];
+    sharc_argonaut_dictionary_secondary_entry secondary_entry[1 << 16];
 } sharc_argonaut_dictionary;
 #pragma pack(pop)
-
-void sharc_argonaut_dictionary_resetDirect(sharc_argonaut_dictionary *);
-void sharc_argonaut_dictionary_resetCompressed(sharc_argonaut_dictionary *);
 
 #endif

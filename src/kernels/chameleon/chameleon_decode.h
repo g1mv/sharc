@@ -26,35 +26,35 @@
 #define SHARC_HASH_DECODE_H
 
 #include "byte_buffer.h"
-#include "dictionary.h"
-#include "hash.h"
+#include "chameleon_dictionary.h"
+#include "chameleon.h"
 #include "block.h"
 
 #define SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD               (sizeof(sharc_hash_signature) + sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
 #define SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD              (sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
 
 typedef enum {
-    SHARC_HASH_DECODE_STATE_READY = 0,
-    SHARC_HASH_DECODE_STATE_INFO_NEW_BLOCK,
-    SHARC_HASH_DECODE_STATE_INFO_EFFICIENCY_CHECK,
-    SHARC_HASH_DECODE_STATE_STALL_ON_OUTPUT_BUFFER,
-    SHARC_HASH_DECODE_STATE_STALL_ON_INPUT_BUFFER,
-    SHARC_HASH_DECODE_STATE_FINISHED,
-    SHARC_HASH_DECODE_STATE_ERROR
-} SHARC_HASH_DECODE_STATE;
+    SHARC_CHAMELEON_DECODE_STATE_READY = 0,
+    SHARC_CHAMELEON_DECODE_STATE_INFO_NEW_BLOCK,
+    SHARC_CHAMELEON_DECODE_STATE_INFO_EFFICIENCY_CHECK,
+    SHARC_CHAMELEON_DECODE_STATE_STALL_ON_OUTPUT_BUFFER,
+    SHARC_CHAMELEON_DECODE_STATE_STALL_ON_INPUT_BUFFER,
+    SHARC_CHAMELEON_DECODE_STATE_FINISHED,
+    SHARC_CHAMELEON_DECODE_STATE_ERROR
+} SHARC_CHAMELEON_DECODE_STATE;
 
 typedef enum {
-    SHARC_HASH_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST,
-    SHARC_HASH_DECODE_PROCESS_SIGNATURE_SAFE,
-    SHARC_HASH_DECODE_PROCESS_DATA_FAST,
-    SHARC_HASH_DECODE_PROCESS_DATA_SAFE,
-    SHARC_HASH_DECODE_PROCESS_FINISH
-} SHARC_HASH_DECODE_PROCESS;
+    SHARC_CHAMELEON_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST,
+    SHARC_CHAMELEON_DECODE_PROCESS_SIGNATURE_SAFE,
+    SHARC_CHAMELEON_DECODE_PROCESS_DATA_FAST,
+    SHARC_CHAMELEON_DECODE_PROCESS_DATA_SAFE,
+    SHARC_CHAMELEON_DECODE_PROCESS_FINISH
+} SHARC_CHAMELEON_DECODE_PROCESS;
 
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
-    SHARC_HASH_DECODE_PROCESS process;
+    SHARC_CHAMELEON_DECODE_PROCESS process;
 
     sharc_hash_signature signature;
     uint_fast32_t shift;
@@ -74,11 +74,13 @@ typedef struct {
 
     uint_fast64_t signatureBytes;
     uint_fast64_t uncompressedChunkBytes;
+
+    sharc_dictionary dictionary;
 } sharc_hash_decode_state;
 #pragma pack(pop)
 
-SHARC_HASH_DECODE_STATE sharc_hash_decode_init(sharc_hash_decode_state*, const uint_fast32_t);
-SHARC_HASH_DECODE_STATE sharc_hash_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, const uint32_t, sharc_dictionary *, sharc_hash_decode_state *, const sharc_bool);
-SHARC_HASH_DECODE_STATE sharc_hash_decode_finish(sharc_hash_decode_state*);
+SHARC_CHAMELEON_DECODE_STATE NAME(sharc_hash_decode_init)(sharc_hash_decode_state*, const uint_fast32_t);
+SHARC_CHAMELEON_DECODE_STATE NAME(sharc_hash_decode_process)(sharc_byte_buffer *, sharc_byte_buffer *, sharc_hash_decode_state *, const sharc_bool);
+SHARC_CHAMELEON_DECODE_STATE NAME(sharc_hash_decode_finish)(sharc_hash_decode_state*);
 
 #endif

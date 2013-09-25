@@ -27,8 +27,8 @@
 
 #include "block_footer.h"
 #include "block_header.h"
-#include "dictionary.h"
-#include "hash_encode.h"
+#include "chameleon_dictionary.h"
+#include "chameleon_encode.h"
 #include "header.h"
 #include "footer.h"
 #include "block_mode_marker.h"

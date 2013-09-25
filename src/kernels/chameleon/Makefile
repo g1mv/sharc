@@ -19,21 +19,20 @@
 # license, see http://www.centaurean.com/sharc for more
 # information.
 #
-# 01/06/13 17:27
+# 25/09/13 14:51
 #
 
 bold=`tput bold`
 normal=`tput sgr0`
 
-TARGET = sharc
+TARGET_A = libkernel_chameleon_direct.a
+TARGET_B = libkernel_chameleon_dispersion.a
 
-CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64 -I. -I./kernels/ -I./kernels/argonaut/ -I./kernels/chameleon/
+CFLAGS = -std=c99 -I. -I../ -I../../
 
 ifeq ($(OS),Windows_NT)
-    EXTENSION = .exe
     ARROW = ^-^>
 else
-    EXTENSION =
     ARROW = \-\>
 endif
 
@@ -56,34 +55,46 @@ endif
 CC = @$(CROSS-PREFIX)cc
 
 SRC = $(wildcard *.c)
-OBJ = $(SRC:.c=.o)
-.PHONY: header footer kernels
+OBJ_A = $(SRC:.c=_direct.o)
+OBJ_B = $(SRC:.c=_dispersion.o)
+.PHONY: header footer
 
-all: kernels header $(TARGET)$(EXTENSION) footer
+all: header_a $(TARGET_A) footer_a header_b $(TARGET_B) footer_b
 
-header:
-	@echo ${bold}Compiling sharc main components${normal} ...
+header_a:
+	@echo ${bold}Compiling kernel chameleon direct${normal} ...
 
-kernels:
-	@cd ./kernels/ && $(MAKE)
-
-footer:
+footer_a:
 	@echo Build completed successfully.
 	@echo
-	
-$(TARGET)$(EXTENSION): $(OBJ)
-	@echo ${bold}Linking${normal} ...
-	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
-	$(CC) -L. -L./kernels/ -L./kernels/argonaut/ -L./kernels/chameleon/ -lkernel_argonaut_direct -lkernel_argonaut_post_processing -lkernel_chameleon_direct -lkernel_chameleon_dispersion -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
 
-%.o: %.c
+header_b:
+	@echo ${bold}Compiling kernel chameleon dispersion${normal} ...
+
+footer_b:
+	@echo Build completed successfully.
+	@echo
+
+$(TARGET_A): $(OBJ_A)
+	@echo ${bold}Linking${normal} ...
+	@echo $^ $(ARROW) ${bold}$(TARGET_A)${normal}
+	@ar rcs $(TARGET_A) $(OBJ_A)
+
+$(TARGET_B): $(OBJ_B)
+	@echo ${bold}Linking${normal} ...
+	@echo $^ $(ARROW) ${bold}$(TARGET_B)${normal}
+	@ar rcs $(TARGET_B) $(OBJ_B)
+
+%_direct.o: %.c
 	@echo $^ $(ARROW) $@
 	$(CC) -c $(CFLAGS) $< -o $@
-	
+
+%_dispersion.o: %.c
+	@echo $^ $(ARROW) $@
+	$(CC) -c $(CFLAGS) -DSHARC_CHAMELEON_DISPERSION $< -o $@
+
 clean:
-	@echo ${bold}Cleaning build directories${normal} ...
-	@cd ./kernels/ && $(MAKE) clean
-	@rm -f $(OBJ)
-	@rm -f $(TARGET)$(EXTENSION)
-	@echo Done.
-	@echo
+	@rm -f $(OBJ_A)
+	@rm -f $(OBJ_B)
+	@rm -f $(TARGET_A)
+	@rm -f $(TARGET_B)

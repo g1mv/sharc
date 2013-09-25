@@ -28,11 +28,12 @@
 #include "block_header.h"
 #include "block_footer.h"
 #include "byte_buffer.h"
-#include "dictionary.h"
-#include "hash_decode.h"
+#include "chameleon_dictionary.h"
+#include "chameleon_decode.h"
 #include "header.h"
 #include "footer.h"
 #include "block_mode_marker.h"
+#include "kernel_decode.h"
 
 typedef enum {
     SHARC_BLOCK_DECODE_STATE_READY = 0,
@@ -79,11 +80,16 @@ typedef struct {
     sharc_hash_decode_state hashDecodeState;
     sharc_block_decode_current_block_data currentBlockData;
     sharc_block_decode_dictionary_data dictionaryData;
+
+    void*kernelDecodeState;
+    SHARC_KERNEL_DECODE_STATE (*kernelDecodeInit)(void*, const uint32_t);
+    SHARC_KERNEL_DECODE_STATE (*kernelDecodeProcess)(sharc_byte_buffer *, sharc_byte_buffer *, void*, const sharc_bool);
+    SHARC_KERNEL_DECODE_STATE (*kernelDecodeFinish)(void*);
 } sharc_block_decode_state;
 #pragma pack(pop)
 
-SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, const uint_fast32_t, void (*)(sharc_dictionary *));
-SHARC_BLOCK_DECODE_STATE sharc_block_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_block_decode_state *, const sharc_bool, const uint32_t);
+SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, const uint32_t, void*, SHARC_KERNEL_DECODE_STATE (*)(void*, const uint32_t), SHARC_KERNEL_DECODE_STATE (*)(sharc_byte_buffer *, sharc_byte_buffer *, void*, const sharc_bool), SHARC_KERNEL_DECODE_STATE (*)(void*));
+SHARC_BLOCK_DECODE_STATE sharc_block_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_block_decode_state *, const sharc_bool);
 SHARC_BLOCK_DECODE_STATE sharc_block_decode_finish(sharc_block_decode_state *);
 
 #endif
