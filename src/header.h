@@ -44,7 +44,6 @@
 #include <utime.h>
 
 #include "globals.h"
-#include "chameleon_dictionary.h"
 #include "byte_buffer.h"
 #include "block.h"
 

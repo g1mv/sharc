@@ -27,7 +27,7 @@ normal=`tput sgr0`
 
 TARGET = sharc
 
-CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64 -I. -I./kernels/ -I./kernels/argonaut/ -I./kernels/chameleon/
+CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64 -I. -I./kernels/ -I./kernels/argonaut/ -I./kernels/chameleon/ -I./blocks/
 
 ifeq ($(OS),Windows_NT)
     EXTENSION = .exe
@@ -57,12 +57,20 @@ CC = @$(CROSS-PREFIX)cc
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
-.PHONY: header footer kernels
+OBJ += $(addsuffix .o,$(basename $(wildcard blocks/*.c)))
+OBJ += $(addsuffix _dispersion.o,$(basename $(wildcard kernels/chameleon/*.c)))
+OBJ += $(addsuffix _direct.o,$(basename $(wildcard kernels/chameleon/*.c)))
+OBJ += $(addsuffix _post_processing.o,$(basename $(wildcard kernels/argonaut/*.c)))
+OBJ += $(addsuffix _direct.o,$(basename $(wildcard kernels/argonaut/*.c)))
+.PHONY: header footer kernels blocks
 
-all: kernels header $(TARGET)$(EXTENSION) footer
+all: blocks kernels header $(TARGET)$(EXTENSION) footer
 
 header:
 	@echo ${bold}Compiling sharc main components${normal} ...
+
+blocks:
+	@cd ./blocks/ && $(MAKE)
 
 kernels:
 	@cd ./kernels/ && $(MAKE)
@@ -72,9 +80,10 @@ footer:
 	@echo
 	
 $(TARGET)$(EXTENSION): $(OBJ)
+	@echo
 	@echo ${bold}Linking${normal} ...
 	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
-	$(CC) -L. -L./kernels/ -L./kernels/argonaut/ -L./kernels/chameleon/ -lkernel_argonaut_direct -lkernel_argonaut_post_processing -lkernel_chameleon_direct -lkernel_chameleon_dispersion -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
+	$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
 
 %.o: %.c
 	@echo $^ $(ARROW) $@
@@ -82,6 +91,7 @@ $(TARGET)$(EXTENSION): $(OBJ)
 	
 clean:
 	@echo ${bold}Cleaning build directories${normal} ...
+	@cd ./blocks/ && $(MAKE) clean
 	@cd ./kernels/ && $(MAKE) clean
 	@rm -f $(OBJ)
 	@rm -f $(TARGET)$(EXTENSION)

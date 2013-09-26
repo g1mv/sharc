@@ -27,12 +27,10 @@
 
 #include "block_footer.h"
 #include "block_header.h"
-#include "chameleon_dictionary.h"
 #include "header.h"
 #include "footer.h"
 #include "block_mode_marker.h"
-#include "argonaut_dictionary.h"
-#include "argonaut_encode.h"
+#include "kernel_encode.h"
 
 typedef enum {
     SHARC_BLOCK_ENCODE_STATE_READY = 0,
@@ -57,11 +55,11 @@ typedef struct {
     uint_fast64_t outStart;
 } sharc_block_encode_current_block_data;
 
-typedef struct {
+/*typedef struct {
     sharc_argonaut_dictionary dictionary;
     uint_fast32_t resetCycle;
     void (*dictionary_reset)(sharc_dictionary *);
-} sharc_block_encode_dictionary_data;
+} sharc_block_encode_dictionary_data;*/
 
 typedef struct {
     SHARC_BLOCK_ENCODE_PROCESS process;
@@ -73,7 +71,7 @@ typedef struct {
     uint_fast64_t totalWritten;
 
     sharc_block_encode_current_block_data currentBlockData;
-    sharc_block_encode_dictionary_data dictionaryData;
+    //sharc_block_encode_dictionary_data dictionaryData;
 
     void*kernelEncodeState;
     SHARC_KERNEL_ENCODE_STATE (*kernelEncodeInit)(void*);

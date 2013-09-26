@@ -22,9 +22,19 @@
 # 25/09/13 14:43
 #
 
-.PHONY: argonaut chameleon
+bold=`tput bold`
+normal=`tput sgr0`
 
-all: argonaut chameleon
+.PHONY: header footer argonaut chameleon
+
+all: header argonaut chameleon footer
+
+header:
+	@echo ${bold}Compiling sharc kernels${normal} ...
+
+footer:
+	@echo Build completed successfully.
+	@echo
 
 argonaut:
 	@cd ./argonaut/ && $(MAKE)

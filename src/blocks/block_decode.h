@@ -28,8 +28,6 @@
 #include "block_header.h"
 #include "block_footer.h"
 #include "byte_buffer.h"
-#include "chameleon_dictionary.h"
-#include "chameleon_decode.h"
 #include "header.h"
 #include "footer.h"
 #include "block_mode_marker.h"
@@ -58,11 +56,11 @@ typedef struct {
     uint_fast64_t outStart;
 } sharc_block_decode_current_block_data;
 
-typedef struct {
+/*typedef struct {
     sharc_dictionary dictionary;
     uint_fast32_t resetCycle;
-    void (*dictionary_reset)(sharc_dictionary *);
-} sharc_block_decode_dictionary_data;
+    void (*dictionary_reset)(void *);
+} sharc_block_decode_dictionary_data;*/
 
 typedef struct {
     SHARC_BLOCK_DECODE_PROCESS process;
@@ -77,9 +75,9 @@ typedef struct {
     sharc_mode_marker lastModeMarker;
     sharc_block_footer lastBlockFooter;
 
-    sharc_hash_decode_state hashDecodeState;
+    //sharc_hash_decode_state hashDecodeState;
     sharc_block_decode_current_block_data currentBlockData;
-    sharc_block_decode_dictionary_data dictionaryData;
+    //sharc_block_decode_dictionary_data dictionaryData;
 
     void*kernelDecodeState;
     SHARC_KERNEL_DECODE_STATE (*kernelDecodeInit)(void*, const uint32_t);

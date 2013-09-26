@@ -19,16 +19,19 @@
 # license, see http://www.centaurean.com/sharc for more
 # information.
 #
-# 25/09/13 15:08
+# 01/06/13 17:27
 #
 
-TARGET = sharc
+bold=`tput bold`
+normal=`tput sgr0`
 
-CFLAGS = -std=c99 -I. -I../
+CFLAGS = -std=c99 -I. -I../ -I../kernels/
 
 ifeq ($(OS),Windows_NT)
+    EXTENSION = .exe
     ARROW = ^-^>
 else
+    EXTENSION =
     ARROW = \-\>
 endif
 
@@ -54,25 +57,18 @@ SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 .PHONY: header footer
 
-all: header $(TARGET)$(EXTENSION) footer
+all: header $(OBJ) footer
 
 header:
-	@echo Compiling sharc ...
+	@echo ${bold}Compiling sharc block components${normal} ...
 
 footer:
 	@echo Build completed successfully.
-
-$(TARGET)$(EXTENSION): $(OBJ)
-	@echo Linking sharc ...
-	@echo $^ $(ARROW) $(TARGET)$(EXTENSION)
-	$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
+	@echo
 
 %.o: %.c
 	@echo $^ $(ARROW) $@
 	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-	@echo Cleaning build directory...
 	@rm -f $(OBJ)
-	@rm -f $(TARGET)$(EXTENSION)
-	@echo Done.

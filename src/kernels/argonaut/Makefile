@@ -22,12 +22,6 @@
 # 25/09/13 14:37
 #
 
-bold=`tput bold`
-normal=`tput sgr0`
-
-TARGET_A = libkernel_argonaut_direct.a
-TARGET_B = libkernel_argonaut_post_processing.a
-
 CFLAGS = -std=c99 -I. -I../ -I../../
 
 ifeq ($(OS),Windows_NT)
@@ -57,33 +51,8 @@ CC = @$(CROSS-PREFIX)cc
 SRC = $(wildcard *.c)
 OBJ_A = $(SRC:.c=_direct.o)
 OBJ_B = $(SRC:.c=_post_processing.o)
-.PHONY: header footer
 
-all: header_a $(TARGET_A) footer_a header_b $(TARGET_B) footer_b
-
-header_a:
-	@echo ${bold}Compiling kernel argonaut direct${normal} ...
-
-footer_a:
-	@echo Build completed successfully.
-	@echo
-
-header_b:
-	@echo ${bold}Compiling kernel argonaut post processing${normal} ...
-
-footer_b:
-	@echo Build completed successfully.
-	@echo
-
-$(TARGET_A): $(OBJ_A)
-	@echo ${bold}Linking${normal} ...
-	@echo $^ $(ARROW) ${bold}$(TARGET_A)${normal}
-	@ar rcs $(TARGET_A) $(OBJ_A)
-
-$(TARGET_B): $(OBJ_B)
-	@echo ${bold}Linking${normal} ...
-	@echo $^ $(ARROW) ${bold}$(TARGET_B)${normal}
-	@ar rcs $(TARGET_B) $(OBJ_B)
+all: $(OBJ_A) ${OBJ_B}
 
 %_direct.o: %.c
 	@echo $^ $(ARROW) $@
@@ -96,5 +65,3 @@ $(TARGET_B): $(OBJ_B)
 clean:
 	@rm -f $(OBJ_A)
 	@rm -f $(OBJ_B)
-	@rm -f $(TARGET_A)
-	@rm -f $(TARGET_B)

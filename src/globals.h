@@ -61,6 +61,10 @@
 #error Unknow endianness
 #endif
 
+#define SHARC_DICTIONARY_MAX_RESET_CYCLE_SHIFT          32
+#define SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT    6
+#define SHARC_DICTIONARY_PREFERRED_RESET_CYCLE          (1 << SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT)
+
 #define likely(x)                         __builtin_expect(!!(x), 1)
 #define unlikely(x)                       __builtin_expect(!!(x), 0)
 

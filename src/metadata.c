@@ -29,7 +29,7 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_metadata_structure_overhead() {
 }
 
 SHARC_FORCE_INLINE uint_fast64_t sharc_metadata_block_structure_overhead(const uint_fast64_t length) {
-    return (1 + length / (SHARC_PREFERRED_BLOCK_SIGNATURES * sizeof(uint16_t) * 8 * sizeof(sharc_hash_signature))) * (sizeof(sharc_block_header) + sizeof(sharc_mode_marker) + sizeof(sharc_block_footer));
+    return (1 + length / (SHARC_PREFERRED_BLOCK_SIGNATURES * sizeof(uint16_t) * 8 * 8/*sizeof(sharc_hash_signature)*/)) * (sizeof(sharc_block_header) + sizeof(sharc_mode_marker) + sizeof(sharc_block_footer));
 }
 
 SHARC_FORCE_INLINE uint_fast64_t sharc_metadata_max_compressed_length(const uint_fast64_t length, const SHARC_COMPRESSION_MODE mode, const bool includeStructure) {

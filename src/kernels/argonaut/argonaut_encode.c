@@ -24,7 +24,9 @@
 
 #include "argonaut_encode.h"
 
+#ifdef SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
 const sharc_argonaut_primary_code_lookup NAME(hl) = {.code = SHARC_ARGONAUT_PRIMARY_HUFFMAN_CODES};
+#endif
 const sharc_argonaut_secondary_code_lookup NAME(shl) = {.code = SHARC_ARGONAUT_SECONDARY_HUFFMAN_CODES};
 const sharc_argonaut_word_length_code_lookup NAME(wlhl) = {.code = SHARC_ARGONAUT_WORD_LENGTH_HUFFMAN_CODES};
 const sharc_argonaut_entity_code_lookup NAME(ehl) = {.code = SHARC_ARGONAUT_ENTITY_HUFFMAN_CODES};
