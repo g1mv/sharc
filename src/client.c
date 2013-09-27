@@ -73,8 +73,11 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
     printf("  -c[LEVEL], --compress[=LEVEL]     Compress files using LEVEL if specified (default)\n");
     printf("                                    LEVEL can have the following values :\n");
-    printf("                                    0 = Fastest compression algorithm (default)\n");
-    printf("                                    1 = Better compression (dual pass), slightly slower\n");
+    printf("                                    0 = No compression\n");
+    printf("                                    1 = Chameleon algorithm, fastest compression available (default)\n");
+    printf("                                    2 = Chameleon algorithm dual pass\n");
+    /*printf("                                    3 = Argonaut algorithm\n");
+    printf("                                    4 = Argonaut algorithm with post processing\n");*/
     printf("  -d, --decompress                  Decompress files\n");
     printf("  -p[PATH], --output-path[=PATH]    Set output path\n");
     printf("  -n, --no-prompt                   Overwrite without prompting\n");
@@ -344,7 +347,7 @@ int main(int argc, char *argv[]) {
         sharc_client_usage();
 
     sharc_byte action = SHARC_ACTION_COMPRESS;
-    SHARC_COMPRESSION_MODE mode = SHARC_COMPRESSION_MODE_FASTEST;
+    SHARC_COMPRESSION_MODE mode = SHARC_COMPRESSION_MODE_CHAMELEON;
     sharc_byte prompting = SHARC_PROMPTING;
     sharc_client_io in;
     in.origin_type = SHARC_HEADER_ORIGIN_TYPE_FILE;
@@ -365,14 +368,29 @@ int main(int argc, char *argv[]) {
                     sharc_client_usage();
                 switch (argv[i][1]) {
                     case 'c':
-                        if (argLength == 2) {
-                            mode = SHARC_COMPRESSION_MODE_FASTEST;
+                        if (argLength == 2)
                             break;
-                        }
                         if (argLength != 3)
                             sharc_client_usage();
-                        if (argv[i][2] - '0')
-                            mode = SHARC_COMPRESSION_MODE_DUAL_PASS;
+                        switch (argv[i][2] - '0') {
+                            case 0:
+                                mode = SHARC_COMPRESSION_MODE_COPY;
+                                break;
+                            case 1:
+                                mode = SHARC_COMPRESSION_MODE_CHAMELEON;
+                                break;
+                            case 2:
+                                mode = SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS;
+                                break;
+                            case 3:
+                                mode = SHARC_COMPRESSION_MODE_ARGONAUT;
+                                break;
+                            case 4:
+                                mode = SHARC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING;
+                                break;
+                            default:
+                                sharc_client_usage();
+                        }
                         break;
                     case 'd':
                         action = SHARC_ACTION_DECOMPRESS;
@@ -415,8 +433,25 @@ int main(int argc, char *argv[]) {
                                     break;
                                 if (argLength != 12)
                                     sharc_client_usage();
-                                if (argv[i][11] - '0')
-                                    mode = SHARC_COMPRESSION_MODE_DUAL_PASS;
+                                switch (argv[i][11] - '0') {
+                                    case 0:
+                                        mode = SHARC_COMPRESSION_MODE_COPY;
+                                        break;
+                                    case 1:
+                                        mode = SHARC_COMPRESSION_MODE_CHAMELEON;
+                                        break;
+                                    case 2:
+                                        mode = SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS;
+                                        break;
+                                    case 3:
+                                        mode = SHARC_COMPRESSION_MODE_ARGONAUT;
+                                        break;
+                                    case 4:
+                                        mode = SHARC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING;
+                                        break;
+                                    default:
+                                        sharc_client_usage();
+                                }
                                 break;
                             case 'd':
                                 if (argLength != 12)

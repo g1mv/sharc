@@ -31,13 +31,13 @@
 #define SHARC_CHAMELEON_SUFFIX                                      dispersion
 #define SHARC_CHAMELEON_HASH_OFFSET_BASIS                           (uint32_t)2885564586
 #else
-#define SHARC_CHAMELEON_SUFFIX                                      direct
+#define SHARC_CHAMELEON_SUFFIX                                      default
 #define SHARC_CHAMELEON_HASH_OFFSET_BASIS                           (uint32_t)2166115717
 #endif
 
 #define PASTER(x,y) x ## _ ## y
 #define EVALUATOR(x,y)  PASTER(x,y)
-#define NAME(function) EVALUATOR(function, SHARC_CHAMELEON_SUFFIX)
+#define CHAMELEON_NAME(function) EVALUATOR(function, SHARC_CHAMELEON_SUFFIX)
 
 #define SHARC_CHAMELEON_HASH_BITS                                   16
 #define SHARC_CHAMELEON_HASH_PRIME                                  16777619

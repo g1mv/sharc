@@ -30,6 +30,7 @@
 #include "chameleon.h"
 #include "block.h"
 #include "kernel_encode.h"
+#include "block_encode.h"
 
 #define SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD             (sizeof(sharc_hash_signature) + sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
 
@@ -45,6 +46,8 @@ typedef enum {
 typedef struct {
     SHARC_HASH_ENCODE_PROCESS process;
 
+    uint_fast64_t resetCycle;
+
     uint_fast32_t shift;
     sharc_hash_signature * signature;
     uint_fast32_t signaturesCount;
@@ -54,9 +57,9 @@ typedef struct {
 } sharc_chameleon_encode_state;
 #pragma pack(pop)
 
-SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_init_direct(sharc_chameleon_encode_state *);
-SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_process_direct(sharc_byte_buffer *, sharc_byte_buffer *, sharc_chameleon_encode_state *, const sharc_bool);
-SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_finish_direct(sharc_chameleon_encode_state *);
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_init_default(sharc_chameleon_encode_state *);
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_process_default(sharc_byte_buffer *, sharc_byte_buffer *, sharc_chameleon_encode_state *, const sharc_bool);
+SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_finish_default(sharc_chameleon_encode_state *);
 
 SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_init_dispersion(sharc_chameleon_encode_state *);
 SHARC_KERNEL_ENCODE_STATE sharc_chameleon_encode_process_dispersion(sharc_byte_buffer *, sharc_byte_buffer *, sharc_chameleon_encode_state *, const sharc_bool);

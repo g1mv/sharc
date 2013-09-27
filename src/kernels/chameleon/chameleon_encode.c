@@ -46,6 +46,14 @@ SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE sharc_hash_encode_prepareNewBlock(s
         case SHARC_PREFERRED_BLOCK_SIGNATURES:
             state->signaturesCount = 0;
             state->efficiencyChecked = 0;
+
+            if (state->resetCycle)
+                state->resetCycle--;
+            else {
+                CHAMELEON_NAME(sharc_dictionary_reset)(&state->dictionary);
+                state->resetCycle = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE - 1;
+            }
+
             return SHARC_KERNEL_ENCODE_STATE_INFO_NEW_BLOCK;
         default:
             break;
@@ -122,16 +130,18 @@ SHARC_FORCE_INLINE sharc_bool sharc_hash_encode_attempt_copy(sharc_byte_buffer *
     return true;
 }
 
-SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_chameleon_encode_init)(sharc_chameleon_encode_state *state) {
+SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE CHAMELEON_NAME(sharc_chameleon_encode_init)(sharc_chameleon_encode_state *state) {
     state->signaturesCount = 0;
     state->efficiencyChecked = 0;
+    CHAMELEON_NAME(sharc_dictionary_reset)(&state->dictionary);
+    state->resetCycle = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE - 1;
 
     state->process = SHARC_HASH_ENCODE_PROCESS_PREPARE_NEW_BLOCK;
 
     return SHARC_KERNEL_ENCODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_chameleon_encode_process)(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_chameleon_encode_state *restrict state, const sharc_bool flush) {
+SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE CHAMELEON_NAME(sharc_chameleon_encode_process)(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, sharc_chameleon_encode_state *restrict state, const sharc_bool flush) {
     SHARC_KERNEL_ENCODE_STATE returnState;
     uint32_t hash;
     uint_fast64_t remaining;
@@ -210,6 +220,6 @@ SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_chameleon_encode_process
             SHARC_KERNEL_ENCODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_chameleon_encode_finish)(sharc_chameleon_encode_state *state) {
+SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE CHAMELEON_NAME(sharc_chameleon_encode_finish)(sharc_chameleon_encode_state *state) {
     return SHARC_KERNEL_ENCODE_STATE_READY;
 }

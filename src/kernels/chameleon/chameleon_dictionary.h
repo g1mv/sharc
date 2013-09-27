@@ -51,6 +51,6 @@ typedef struct {
 } sharc_dictionary;
 #pragma pack(pop)
 
-void NAME(sharc_dictionary_reset)(sharc_dictionary *);
+void CHAMELEON_NAME(sharc_dictionary_reset)(sharc_dictionary *);
 
 #endif

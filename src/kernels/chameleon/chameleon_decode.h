@@ -29,19 +29,10 @@
 #include "chameleon_dictionary.h"
 #include "chameleon.h"
 #include "block.h"
+#include "kernel_decode.h"
 
 #define SHARC_HASH_DECODE_MINIMUM_INPUT_LOOKAHEAD               (sizeof(sharc_hash_signature) + sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
 #define SHARC_HASH_DECODE_MINIMUM_OUTPUT_LOOKAHEAD              (sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
-
-typedef enum {
-    SHARC_CHAMELEON_DECODE_STATE_READY = 0,
-    SHARC_CHAMELEON_DECODE_STATE_INFO_NEW_BLOCK,
-    SHARC_CHAMELEON_DECODE_STATE_INFO_EFFICIENCY_CHECK,
-    SHARC_CHAMELEON_DECODE_STATE_STALL_ON_OUTPUT_BUFFER,
-    SHARC_CHAMELEON_DECODE_STATE_STALL_ON_INPUT_BUFFER,
-    SHARC_CHAMELEON_DECODE_STATE_FINISHED,
-    SHARC_CHAMELEON_DECODE_STATE_ERROR
-} SHARC_CHAMELEON_DECODE_STATE;
 
 typedef enum {
     SHARC_CHAMELEON_DECODE_PROCESS_SIGNATURES_AND_DATA_FAST,
@@ -55,6 +46,8 @@ typedef enum {
 #pragma pack(4)
 typedef struct {
     SHARC_CHAMELEON_DECODE_PROCESS process;
+
+    uint_fast64_t resetCycle;
 
     sharc_hash_signature signature;
     uint_fast32_t shift;
@@ -79,8 +72,12 @@ typedef struct {
 } sharc_hash_decode_state;
 #pragma pack(pop)
 
-SHARC_CHAMELEON_DECODE_STATE NAME(sharc_hash_decode_init)(sharc_hash_decode_state*, const uint_fast32_t);
-SHARC_CHAMELEON_DECODE_STATE NAME(sharc_hash_decode_process)(sharc_byte_buffer *, sharc_byte_buffer *, sharc_hash_decode_state *, const sharc_bool);
-SHARC_CHAMELEON_DECODE_STATE NAME(sharc_hash_decode_finish)(sharc_hash_decode_state*);
+SHARC_KERNEL_DECODE_STATE sharc_hash_decode_init_default(sharc_hash_decode_state*, const uint_fast32_t);
+SHARC_KERNEL_DECODE_STATE sharc_hash_decode_process_default(sharc_byte_buffer *, sharc_byte_buffer *, sharc_hash_decode_state *, const sharc_bool);
+SHARC_KERNEL_DECODE_STATE sharc_hash_decode_finish_default(sharc_hash_decode_state*);
+
+SHARC_KERNEL_DECODE_STATE sharc_hash_decode_init_dispersion(sharc_hash_decode_state*, const uint_fast32_t);
+SHARC_KERNEL_DECODE_STATE sharc_hash_decode_process_dispersion(sharc_byte_buffer *, sharc_byte_buffer *, sharc_hash_decode_state *, const sharc_bool);
+SHARC_KERNEL_DECODE_STATE sharc_hash_decode_finish_dispersion(sharc_hash_decode_state*);
 
 #endif

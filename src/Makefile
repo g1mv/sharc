@@ -22,8 +22,13 @@
 # 01/06/13 17:27
 #
 
-bold=`tput bold`
-normal=`tput sgr0`
+ifeq ($(OS),Windows_NT)
+    bold =
+    normal =
+else
+    bold = `tput bold`
+    normal = `tput sgr0`
+endif
 
 TARGET = sharc
 
@@ -53,37 +58,50 @@ else
     CFLAGS += -O0 -g
 endif
 
-CC = @$(CROSS-PREFIX)cc
+CC = @$(PREFIX)cc
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
-OBJ += $(addsuffix .o,$(basename $(wildcard blocks/*.c)))
-OBJ += $(addsuffix _dispersion.o,$(basename $(wildcard kernels/chameleon/*.c)))
-OBJ += $(addsuffix _direct.o,$(basename $(wildcard kernels/chameleon/*.c)))
-OBJ += $(addsuffix _post_processing.o,$(basename $(wildcard kernels/argonaut/*.c)))
-OBJ += $(addsuffix _direct.o,$(basename $(wildcard kernels/argonaut/*.c)))
+
+SRC_BLOCKS = $(wildcard blocks/*.c)
+OBJ_BLOCKS = $(SRC_BLOCKS:.c=.o)
+
+SRC_CHAMELEON = $(wildcard kernels/chameleon/*.c)
+OBJ_CHAMELEON_DEFAULT = $(SRC_CHAMELEON:.c=_default.o)
+OBJ_CHAMELEON_DISPERSION = $(SRC_CHAMELEON:.c=_dispersion.o)
+
+SRC_ARGONAUT = $(wildcard kernels/argonaut/*.c)
+OBJ_ARGONAUT_DEFAULT = $(SRC_ARGONAUT:.c=_default.o)
+OBJ_ARGONAUT_POST_PROCESSING = $(SRC_ARGONAUT:.c=_post_processing.o)
+
 .PHONY: header footer kernels blocks
 
-all: blocks kernels header $(TARGET)$(EXTENSION) footer
+all: header $(TARGET)$(EXTENSION) footer
 
 header:
-	@echo ${bold}Compiling sharc main components${normal} ...
-
-blocks:
-	@cd ./blocks/ && $(MAKE)
-
-kernels:
-	@cd ./kernels/ && $(MAKE)
+	@echo ${bold}Compiling${normal} ...
 
 footer:
 	@echo Build completed successfully.
 	@echo
 	
-$(TARGET)$(EXTENSION): $(OBJ)
+$(TARGET)$(EXTENSION): $(OBJ) $(OBJ_BLOCKS) $(OBJ_CHAMELEON_DEFAULT) $(OBJ_CHAMELEON_DISPERSION) $(OBJ_ARGONAUT_DEFAULT) $(OBJ_ARGONAUT_POST_PROCESSING)
 	@echo
 	@echo ${bold}Linking${normal} ...
 	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
 	$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
+
+%_default.o: %.c
+	@echo $^ $(ARROW) $@
+	$(CC) -c $(CFLAGS) $< -o $@
+
+%_dispersion.o: %.c
+	@echo $^ $(ARROW) $@
+	$(CC) -c $(CFLAGS) -DSHARC_CHAMELEON_DISPERSION $< -o $@
+
+%_post_processing.o: %.c
+	@echo $^ $(ARROW) $@
+	$(CC) -c $(CFLAGS) -DSHARC_ARGONAUT_POST_PROCESSING $< -o $@
 
 %.o: %.c
 	@echo $^ $(ARROW) $@
@@ -91,9 +109,7 @@ $(TARGET)$(EXTENSION): $(OBJ)
 	
 clean:
 	@echo ${bold}Cleaning build directories${normal} ...
-	@cd ./blocks/ && $(MAKE) clean
-	@cd ./kernels/ && $(MAKE) clean
-	@rm -f $(OBJ)
+	@rm -f $(OBJ) $(OBJ_BLOCKS) $(OBJ_CHAMELEON_DEFAULT) $(OBJ_CHAMELEON_DISPERSION) $(OBJ_ARGONAUT_DEFAULT) $(OBJ_ARGONAUT_POST_PROCESSING)
 	@rm -f $(TARGET)$(EXTENSION)
 	@echo Done.
 	@echo

@@ -71,7 +71,7 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *r
     if (streamState)
         return streamState;
 
-    uint_fast64_t workBufferSize = SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD + 0x20 + sharc_metadata_max_compressed_length(stream->in.size, SHARC_COMPRESSION_MODE_FASTEST, false);
+    uint_fast64_t workBufferSize = SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD + 0x20 + sharc_metadata_max_compressed_length(stream->in.size, SHARC_COMPRESSION_MODE_CHAMELEON, false);
     SHARC_ENCODE_STATE encodeState = sharc_encode_init(&stream->out, &stream->internal_state.workBuffer, workBufferSize, &stream->internal_state.internal_encode_state, compressionMode, outputType, blockType, fileAttributes);
     switch (encodeState) {
         case SHARC_ENCODE_STATE_READY:
@@ -87,7 +87,7 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_init(sharc_stream *r
     stream->in_total_read = &stream->internal_state.internal_encode_state.totalRead;
     stream->out_total_written = &stream->internal_state.internal_encode_state.totalWritten;
 
-    if (compressionMode == SHARC_COMPRESSION_MODE_DUAL_PASS)
+    if (compressionMode == SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS)
         sharc_stream_malloc_work_buffer(stream, workBufferSize);
 
     stream->internal_state.process = SHARC_STREAM_PROCESS_COMPRESSION_INITED;
@@ -148,7 +148,7 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_compress_finish(sharc_stream 
             return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
     }
 
-    if (stream->internal_state.internal_encode_state.compressionMode == SHARC_COMPRESSION_MODE_DUAL_PASS)
+    if (stream->internal_state.internal_encode_state.compressionMode == SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS)
         sharc_stream_free_work_buffer(stream);
 
     stream->internal_state.process = SHARC_STREAM_PROCESS_COMPRESSION_FINISHED;
@@ -164,7 +164,7 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream 
     if (streamState)
         return streamState;
 
-    uint_fast64_t workBufferSize = 0x20 + sharc_metadata_max_decompressed_length(stream->in.size, SHARC_COMPRESSION_MODE_FASTEST, false);
+    uint_fast64_t workBufferSize = 0x20 + sharc_metadata_max_decompressed_length(stream->in.size, SHARC_COMPRESSION_MODE_CHAMELEON, false);
     SHARC_DECODE_STATE decodeState = sharc_decode_init(&stream->in, &stream->internal_state.workBuffer, workBufferSize, &stream->internal_state.internal_decode_state);
     switch (decodeState) {
         case SHARC_DECODE_STATE_READY:
@@ -180,7 +180,7 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_init(sharc_stream 
     stream->in_total_read = &stream->internal_state.internal_decode_state.totalRead;
     stream->out_total_written = &stream->internal_state.internal_decode_state.totalWritten;
 
-    if (stream->internal_state.internal_decode_state.header.genericHeader.compressionMode == SHARC_COMPRESSION_MODE_DUAL_PASS)
+    if (stream->internal_state.internal_decode_state.header.genericHeader.compressionMode == SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS)
         sharc_stream_malloc_work_buffer(stream, workBufferSize);
 
     stream->internal_state.process = SHARC_STREAM_PROCESS_DECOMPRESSION_INITED;
@@ -232,7 +232,7 @@ SHARC_FORCE_INLINE SHARC_STREAM_STATE sharc_stream_decompress_finish(sharc_strea
             return SHARC_STREAM_STATE_ERROR_INVALID_INTERNAL_STATE;
     }
 
-    if (stream->internal_state.internal_decode_state.header.genericHeader.compressionMode == SHARC_COMPRESSION_MODE_DUAL_PASS)
+    if (stream->internal_state.internal_decode_state.header.genericHeader.compressionMode == SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS)
         sharc_stream_free_work_buffer(stream);
 
     stream->internal_state.process = SHARC_STREAM_PROCESS_DECOMPRESSION_FINISHED;

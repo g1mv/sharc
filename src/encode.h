@@ -33,6 +33,8 @@
 #include "footer.h"
 #include "block_mode_marker.h"
 #include "block_encode.h"
+#include "argonaut_encode.h"
+#include "argonaut_dictionary.h"
 
 typedef enum {
     SHARC_ENCODE_STATE_READY = 0,

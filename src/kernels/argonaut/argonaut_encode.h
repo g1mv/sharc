@@ -30,6 +30,7 @@
 #include "kernel_encode.h"
 #include "argonaut_dictionary.h"
 #include "argonaut.h"
+#include "block_encode.h"
 
 #include <inttypes.h>
 #include <math.h>
@@ -110,9 +111,9 @@ typedef struct {
 } sharc_argonaut_encode_state;
 #pragma pack(pop)
 
-SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_init_direct(void*);
-SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process_direct(sharc_byte_buffer *, sharc_byte_buffer *, void *, const sharc_bool);
-SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_finish_direct(void*);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_init_default(void*);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process_default(sharc_byte_buffer *, sharc_byte_buffer *, void *, const sharc_bool);
+SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_finish_default(void*);
 
 SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_init_post_processing(void*);
 SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process_post_processing(sharc_byte_buffer *, sharc_byte_buffer *, void *, const sharc_bool);

@@ -38,10 +38,10 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_metadata_max_compressed_length(const uint
         default:
             return headerFooterLength + length;
 
-        case SHARC_COMPRESSION_MODE_FASTEST:
+        case SHARC_COMPRESSION_MODE_CHAMELEON:
             return headerFooterLength + sharc_metadata_block_structure_overhead(length) + length;
 
-        case SHARC_COMPRESSION_MODE_DUAL_PASS:
+        case SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS:
             return headerFooterLength + sharc_metadata_block_structure_overhead(sharc_metadata_block_structure_overhead(length) + length) + length;
     }
 }
@@ -53,10 +53,10 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_metadata_max_decompressed_length(const ui
         default:
             return length - headerFooterLength;
 
-        case SHARC_COMPRESSION_MODE_FASTEST:
+        case SHARC_COMPRESSION_MODE_CHAMELEON:
             return (length - sharc_metadata_block_structure_overhead(length)) << (1 - headerFooterLength);
 
-        case SHARC_COMPRESSION_MODE_DUAL_PASS:
+        case SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS:
             intermediate = (length - sharc_metadata_block_structure_overhead(length)) << 1;
             return (intermediate - sharc_metadata_block_structure_overhead(intermediate)) << (1 - headerFooterLength);
     }

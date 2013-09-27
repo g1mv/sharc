@@ -25,11 +25,11 @@
 #include "argonaut_encode.h"
 
 #ifdef SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
-const sharc_argonaut_primary_code_lookup NAME(hl) = {.code = SHARC_ARGONAUT_PRIMARY_HUFFMAN_CODES};
+const sharc_argonaut_primary_code_lookup ARGONAUT_NAME(hl) = {.code = SHARC_ARGONAUT_PRIMARY_HUFFMAN_CODES};
 #endif
-const sharc_argonaut_secondary_code_lookup NAME(shl) = {.code = SHARC_ARGONAUT_SECONDARY_HUFFMAN_CODES};
-const sharc_argonaut_word_length_code_lookup NAME(wlhl) = {.code = SHARC_ARGONAUT_WORD_LENGTH_HUFFMAN_CODES};
-const sharc_argonaut_entity_code_lookup NAME(ehl) = {.code = SHARC_ARGONAUT_ENTITY_HUFFMAN_CODES};
+const sharc_argonaut_secondary_code_lookup ARGONAUT_NAME(shl) = {.code = SHARC_ARGONAUT_SECONDARY_HUFFMAN_CODES};
+const sharc_argonaut_word_length_code_lookup ARGONAUT_NAME(wlhl) = {.code = SHARC_ARGONAUT_WORD_LENGTH_HUFFMAN_CODES};
+const sharc_argonaut_entity_code_lookup ARGONAUT_NAME(ehl) = {.code = SHARC_ARGONAUT_ENTITY_HUFFMAN_CODES};
 
 SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_check_next_output_block_memory_available(sharc_byte_buffer *restrict out, sharc_argonaut_encode_state *restrict state) {
     if (out->position + 64 > out->size)
@@ -65,7 +65,7 @@ SHARC_FORCE_INLINE void sharc_argonaut_encode_write_to_output(sharc_argonaut_enc
 }
 
 SHARC_FORCE_INLINE void sharc_argonaut_encode_write_coded_separator(sharc_byte_buffer *restrict out, sharc_argonaut_encode_state *restrict state) {
-    sharc_argonaut_encode_write_to_output(state, NAME(ehl).code[SHARC_ARGONAUT_ENTITY_SEPARATOR].code);
+    sharc_argonaut_encode_write_to_output(state, ARGONAUT_NAME(ehl).code[SHARC_ARGONAUT_ENTITY_SEPARATOR].code);
 
     state->shift++;
     if (state->shift == SHARC_ARGONAUT_OUTPUT_UNIT_BIT_SIZE)
@@ -94,7 +94,7 @@ SHARC_FORCE_INLINE void sharc_argonaut_encode_process_letter(sharc_byte_buffer *
     const uint8_t rank = match->ranking;
     const uint8_t precedingRank = match->ranking - 1;
 
-    const sharc_argonaut_huffman_code *huffmanCode = &NAME(hl).code[rank];
+    const sharc_argonaut_huffman_code *huffmanCode = &ARGONAUT_NAME(hl).code[rank];
     word->letterCode[index] = huffmanCode;
 
     match->durability++;
@@ -251,11 +251,11 @@ SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process_word(
         const uint8_t wordLength = state->word.length;
         // todo word code (3)
 #ifdef SHARC_ARGONAUT_ENCODE_PROCESS_RANKS
-        sharc_argonaut_encode_write_coded(out, state, &NAME(ehl).code[SHARC_ARGONAUT_ENTITY_WORD]); // todo move
+        sharc_argonaut_encode_write_coded(out, state, &ARGONAUT_NAME(ehl).code[SHARC_ARGONAUT_ENTITY_WORD]); // todo move
 #else
         sharc_argonaut_encode_write(out, state, 0, 2);
 #endif
-        sharc_argonaut_encode_write_coded(out, state, &NAME(wlhl).code[wordLength - 1]);
+        sharc_argonaut_encode_write_coded(out, state, &ARGONAUT_NAME(wlhl).code[wordLength - 1]);
 #ifdef SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
         for (uint_fast8_t i = 0; i ^ wordLength; i++)
             sharc_argonaut_encode_write_coded(out, state, state->word.letterCode[i]);
@@ -271,15 +271,15 @@ SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process_word(
 #ifdef SHARC_ARGONAUT_ENCODE_PROCESS_RANKS
         if (match->ranked) {
             // todo dict code (3)
-            sharc_argonaut_encode_write_coded(out, state, &NAME(ehl).code[SHARC_ARGONAUT_ENTITY_RANKED_KEY]);
+            sharc_argonaut_encode_write_coded(out, state, &ARGONAUT_NAME(ehl).code[SHARC_ARGONAUT_ENTITY_RANKED_KEY]);
             //sharc_argonaut_encode_write(out, state, 0, 2);
-            sharc_argonaut_encode_write_coded(out, state, &NAME(shl).code[match->ranking]);
+            sharc_argonaut_encode_write_coded(out, state, &ARGONAUT_NAME(shl).code[match->ranking]);
 #ifdef SHARC_ARGONAUT_ENCODE_STATS
             state->count[3]++;
 #endif
         } else {
             // todo dict code (2)
-            sharc_argonaut_encode_write_coded(out, state, &NAME(ehl).code[SHARC_ARGONAUT_ENTITY_KEY]);
+            sharc_argonaut_encode_write_coded(out, state, &ARGONAUT_NAME(ehl).code[SHARC_ARGONAUT_ENTITY_KEY]);
 #else
             sharc_argonaut_encode_write(out, state, 0, 2);
 #endif
@@ -321,7 +321,7 @@ SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE sharc_argonaut_encode_process_word(
     return SHARC_KERNEL_ENCODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_argonaut_encode_init)(void *s) {
+SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE ARGONAUT_NAME(sharc_argonaut_encode_init)(void *s) {
     sharc_argonaut_encode_state *state = s;
     state->efficiencyChecked = 0;
 
@@ -344,7 +344,7 @@ SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_argonaut_encode_init)(vo
     return SHARC_KERNEL_ENCODE_STATE_READY;
 }
 
-SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_argonaut_encode_process)(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, void *restrict s, const sharc_bool flush) {
+SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE ARGONAUT_NAME(sharc_argonaut_encode_process)(sharc_byte_buffer *restrict in, sharc_byte_buffer *restrict out, void *restrict s, const sharc_bool flush) {
     sharc_argonaut_encode_state *state = s;
     SHARC_KERNEL_ENCODE_STATE returnState;
     uint_fast8_t letter;
@@ -415,7 +415,7 @@ SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_argonaut_encode_process)
     }
 }
 
-SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE NAME(sharc_argonaut_encode_finish)(void *s) {
+SHARC_FORCE_INLINE SHARC_KERNEL_ENCODE_STATE ARGONAUT_NAME(sharc_argonaut_encode_finish)(void *s) {
     sharc_argonaut_encode_state *state = s;
 
     return SHARC_KERNEL_ENCODE_STATE_READY;

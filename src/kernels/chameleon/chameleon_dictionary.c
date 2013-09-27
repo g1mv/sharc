@@ -25,11 +25,11 @@
 #include "chameleon_dictionary.h"
 
 #ifdef SHARC_CHAMELEON_DISPERSION
-const sharc_dictionary NAME(sharc_dictionary) = {.entries = SHARC_DICTIONARY_CHAMELEON};
+const sharc_dictionary CHAMELEON_NAME(sharc_dictionary) = {.entries = SHARC_DICTIONARY_CHAMELEON};
 #else
-const sharc_dictionary NAME(sharc_dictionary) = {.entries = SHARC_DICTIONARY_COMPRESSED};
+const sharc_dictionary CHAMELEON_NAME(sharc_dictionary) = {.entries = SHARC_DICTIONARY_COMPRESSED};
 #endif
 
-SHARC_FORCE_INLINE void NAME(sharc_dictionary_reset)(sharc_dictionary * dictionary) {
-    memcpy(dictionary, &NAME(sharc_dictionary), sizeof(sharc_dictionary));
+SHARC_FORCE_INLINE void CHAMELEON_NAME(sharc_dictionary_reset)(sharc_dictionary * dictionary) {
+    memcpy(dictionary, &CHAMELEON_NAME(sharc_dictionary), sizeof(sharc_dictionary));
 }

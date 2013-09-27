@@ -29,12 +29,12 @@
 #define SHARC_ARGONAUT_SUFFIX                                      post_processing
 #define SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
 #else
-#define SHARC_ARGONAUT_SUFFIX                                      direct
+#define SHARC_ARGONAUT_SUFFIX                                      default
 #endif
 
 #define PASTER(x,y) x ## _ ## y
 #define EVALUATOR(x,y)  PASTER(x,y)
-#define NAME(function) EVALUATOR(function, SHARC_ARGONAUT_SUFFIX)
+#define ARGONAUT_NAME(function) EVALUATOR(function, SHARC_ARGONAUT_SUFFIX)
 
 #define SHARC_ARGONAUT_HASH_BITS                            16
 #define SHARC_ARGONAUT_HASH_OFFSET_BASIS                    (uint32_t)(2885564586)
