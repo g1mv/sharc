@@ -86,7 +86,7 @@ typedef struct {
 } sharc_block_decode_state;
 #pragma pack(pop)
 
-SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, const uint32_t, void*, SHARC_KERNEL_DECODE_STATE (*)(void*, const uint32_t), SHARC_KERNEL_DECODE_STATE (*)(sharc_byte_buffer *, sharc_byte_buffer *, void*, const sharc_bool), SHARC_KERNEL_DECODE_STATE (*)(void*));
+SHARC_BLOCK_DECODE_STATE sharc_block_decode_init(sharc_block_decode_state *, const SHARC_BLOCK_MODE, const SHARC_BLOCK_TYPE, const uint_fast32_t, void*, SHARC_KERNEL_DECODE_STATE (*)(void*, const uint32_t), SHARC_KERNEL_DECODE_STATE (*)(sharc_byte_buffer *, sharc_byte_buffer *, void*, const sharc_bool), SHARC_KERNEL_DECODE_STATE (*)(void*));
 SHARC_BLOCK_DECODE_STATE sharc_block_decode_process(sharc_byte_buffer *, sharc_byte_buffer *, sharc_block_decode_state *, const sharc_bool);
 SHARC_BLOCK_DECODE_STATE sharc_block_decode_finish(sharc_block_decode_state *);
 
