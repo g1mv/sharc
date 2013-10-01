@@ -107,9 +107,9 @@ SHARC_FORCE_INLINE SHARC_BLOCK_ENCODE_STATE sharc_block_encode_process(sharc_byt
     SHARC_KERNEL_ENCODE_STATE hashEncodeState;
     uint_fast64_t inPositionBefore;
     uint_fast64_t outPositionBefore;
-    uint_fast64_t blockRemaining;
+    /*uint_fast64_t blockRemaining;
     uint_fast64_t inRemaining;
-    uint_fast64_t outRemaining;
+    uint_fast64_t outRemaining;*/
 
     while (true) {
         switch (state->process) {

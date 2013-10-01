@@ -25,12 +25,12 @@
 #ifndef SHARC_ARGONAUT_H
 #define SHARC_ARGONAUT_H
 
-#ifdef SHARC_ARGONAUT_POST_PROCESSING
+//#ifdef SHARC_ARGONAUT_POST_PROCESSING
 #define SHARC_ARGONAUT_SUFFIX                                      post_processing
 #define SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
-#else
-#define SHARC_ARGONAUT_SUFFIX                                      default
-#endif
+//#else
+//#define SHARC_ARGONAUT_SUFFIX                                      default
+//#endif
 
 #define PASTER(x,y) x ## _ ## y
 #define EVALUATOR(x,y)  PASTER(x,y)
@@ -40,10 +40,10 @@
 #define SHARC_ARGONAUT_HASH_OFFSET_BASIS                    (uint32_t)(2885564586)
 #define SHARC_ARGONAUT_HASH_PRIME                           16777619
 
-typedef uint64_t                                            sharc_hash_signature;
+//typedef uint64_t                                            sharc_hash_signature;
 
 typedef struct {
-    uint_fast64_t code;
+    uint_fast32_t code;
     uint_fast8_t bitSize;
 } sharc_argonaut_huffman_code;
 

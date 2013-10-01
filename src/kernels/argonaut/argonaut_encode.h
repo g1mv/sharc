@@ -30,7 +30,7 @@
 #include "kernel_encode.h"
 #include "argonaut_dictionary.h"
 #include "argonaut.h"
-#include "block_encode.h"
+#include "encode.h"
 
 #include <inttypes.h>
 #include <math.h>
@@ -46,33 +46,14 @@
 //#define SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
 //#define SHARC_ARGONAUT_ENCODE_STATS
 
-/*
-SHARC_ARGONAUT_ENCODE_PROCESS_RANKS
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (53,057,920 bytes), Ratio out / in = 53.1%, Time = 0.953 s, Speed = 100 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (51,886,888 bytes), Ratio out / in = 51.9%, Time = 0.964 s, Speed = 99 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (51,573,768 bytes), Ratio out / in = 51.6%, Time = 0.958 s, Speed = 100 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (51,372,968 bytes), Ratio out / in = 51.4%, Time = 0.967 s, Speed = 99 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (51,222,056 bytes), Ratio out / in = 51.2%, Time = 0.957 s, Speed = 100 MB/s
-
-SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (52,479,304 bytes), Ratio out / in = 52.5%, Time = 0.954 s, Speed = 100 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (52,470,400 bytes), Ratio out / in = 52.5%, Time = 0.960 s, Speed = 99 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (52,470,896 bytes), Ratio out / in = 52.5%, Time = 0.964 s, Speed = 99 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (52,470,728 bytes), Ratio out / in = 52.5%, Time = 0.958 s, Speed = 100 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (52,470,552 bytes), Ratio out / in = 52.5%, Time = 0.964 s, Speed = 99 MB/s
-
-SHARC_ARGONAUT_ENCODE_PROCESS_RANKS
-SHARC_ARGONAUT_ENCODE_PROCESS_LETTERS
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (46,100,800 bytes), Ratio out / in = 46.1%, Time = 1.126 s, Speed = 85 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (45,038,864 bytes), Ratio out / in = 45.0%, Time = 1.128 s, Speed = 85 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (44,728,248 bytes), Ratio out / in = 44.7%, Time = 1.122 s, Speed = 85 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (44,526,960 bytes), Ratio out / in = 44.5%, Time = 1.130 s, Speed = 84 MB/s
-    Compressed enwik8 (99,999,393 bytes) to enwik8.sharc (44,380,760 bytes), Ratio out / in = 44.4%, Time = 1.131 s, Speed = 84 MB/s
- */
+#define sharc_argonaut_contains_zero(search64) (((search64) - 0x0101010101010101llu) & ~(search64) & 0x8080808080808080llu)
+#define sharc_argonaut_contains_value(search64, value8) (sharc_argonaut_contains_zero((search64) ^ (~0llu / 255 * (value8))))
 
 typedef enum {
-    SHARC_ARGONAUT_ENCODE_PROCESS_PREPARE_OUTPUT,
-    SHARC_ARGONAUT_ENCODE_PROCESS_CHECK_AVAILABLE_MEMORY,
+    //SHARC_ARGONAUT_ENCODE_PROCESS_PREPARE_OUTPUT,
+            SHARC_ARGONAUT_ENCODE_PROCESS_CHECK_OUTPUT_MEMORY,
+    //SHARC_ARGONAUT_ENCODE_PROCESS_ALLOCATE_ANCHOR,
+    //SHARC_ARGONAUT_ENCODE_PROCESS_CHECK_AVAILABLE_MEMORY,
     SHARC_ARGONAUT_ENCODE_PROCESS_GOTO_NEXT_WORD,
     SHARC_ARGONAUT_ENCODE_PROCESS_WORD,
     SHARC_ARGONAUT_ENCODE_PROCESS_FINISH
@@ -90,22 +71,46 @@ typedef struct {
     sharc_argonaut_huffman_code code[SHARC_ARGONAUT_ENTITY_COUNT];
 } sharc_argonaut_entity_code_lookup;
 
+typedef uint_fast64_t sharc_argonaut_signature;
 typedef uint_fast64_t sharc_argonaut_output_unit;
 
 typedef struct {
     sharc_argonaut_huffman_code code [SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
 } sharc_argonaut_word_length_code_lookup;
 
+typedef struct {
+    union {
+        uint64_t as_uint64_t;
+        //uint16_t as_uint16_t;
+        uint8_t letters[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
+    };
+    uint_fast8_t length; // todo
+    //const sharc_argonaut_huffman_code* letterCode[SHARC_ARGONAUT_DICTIONARY_MAX_WORD_LETTERS];
+} sharc_argonaut_encode_word;
+
 #pragma pack(push)
 #pragma pack(4)
 typedef struct {
     SHARC_ARGONAUT_ENCODE_PROCESS process;
+    
+    //uint_fast64_t resetCycle;
 
-    uint_fast8_t efficiencyChecked;
-    sharc_argonaut_output_unit* output;
+    //uint_fast8_t efficiencyChecked;
+    //sharc_argonaut_output_unit* output;
+    //sharc_byte* anchor;
+    uint_fast32_t shift;
+    uint_fast16_t count;
+    
+    //uint_fast64_t bitCount;
 
-    sharc_argonaut_dictionary_word word;
-    uint_fast8_t shift;
+    sharc_argonaut_encode_word word;
+    
+    //uint_fast32_t signatureShift;
+    //sharc_argonaut_signature * signature;
+    //uint_fast32_t signaturesCount;
+    
+    uint_fast64_t buffer;
+    uint_fast8_t bufferBits;
 
     sharc_argonaut_dictionary dictionary;
 } sharc_argonaut_encode_state;

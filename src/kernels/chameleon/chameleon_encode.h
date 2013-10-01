@@ -30,7 +30,7 @@
 #include "chameleon.h"
 #include "block.h"
 #include "kernel_encode.h"
-#include "block_encode.h"
+#include "encode.h"
 
 #define SHARC_HASH_ENCODE_MINIMUM_OUTPUT_LOOKAHEAD             (sizeof(sharc_hash_signature) + sizeof(uint32_t) * 8 * sizeof(sharc_hash_signature))
 

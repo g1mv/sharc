@@ -74,6 +74,9 @@ SRC_ARGONAUT = $(wildcard kernels/argonaut/*.c)
 OBJ_ARGONAUT_DEFAULT = $(SRC_ARGONAUT:.c=_default.o)
 OBJ_ARGONAUT_POST_PROCESSING = $(SRC_ARGONAUT:.c=_post_processing.o)
 
+#$(OBJ_CHAMELEON_DEFAULT) $(OBJ_ARGONAUT_DEFAULT) $(OBJ_CHAMELEON_DISPERSION)
+ALL_OBJ = $(OBJ) $(OBJ_BLOCKS) $(OBJ_ARGONAUT_POST_PROCESSING)
+
 .PHONY: header footer kernels blocks
 
 all: header $(TARGET)$(EXTENSION) footer
@@ -85,7 +88,7 @@ footer:
 	@echo Build completed successfully.
 	@echo
 	
-$(TARGET)$(EXTENSION): $(OBJ) $(OBJ_BLOCKS) $(OBJ_CHAMELEON_DEFAULT) $(OBJ_CHAMELEON_DISPERSION) $(OBJ_ARGONAUT_DEFAULT) $(OBJ_ARGONAUT_POST_PROCESSING)
+$(TARGET)$(EXTENSION): $(ALL_OBJ)
 	@echo
 	@echo ${bold}Linking${normal} ...
 	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
@@ -109,7 +112,7 @@ $(TARGET)$(EXTENSION): $(OBJ) $(OBJ_BLOCKS) $(OBJ_CHAMELEON_DEFAULT) $(OBJ_CHAME
 	
 clean:
 	@echo ${bold}Cleaning build directories${normal} ...
-	@rm -f $(OBJ) $(OBJ_BLOCKS) $(OBJ_CHAMELEON_DEFAULT) $(OBJ_CHAMELEON_DISPERSION) $(OBJ_ARGONAUT_DEFAULT) $(OBJ_ARGONAUT_POST_PROCESSING)
+	@rm -f $(ALL_OBJ)
 	@rm -f $(TARGET)$(EXTENSION)
 	@echo Done.
 	@echo

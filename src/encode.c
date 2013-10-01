@@ -64,20 +64,23 @@ SHARC_FORCE_INLINE SHARC_ENCODE_STATE sharc_encode_init(sharc_byte_buffer *restr
 
     switch (mode) {
         case SHARC_COMPRESSION_MODE_COPY:
-            sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_COPY, blockType, NULL, NULL, NULL, NULL);
+            //sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_COPY, blockType, NULL, NULL, NULL, NULL);
+            ///sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_HASH, blockType, malloc(sizeof(sharc_huffman_encode_state)), (void*)sharc_huffman_encode_init, (void*)sharc_huffman_encode_process, (void*)sharc_huffman_encode_finish);
             break;
 
         case SHARC_COMPRESSION_MODE_CHAMELEON:
-            sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_HASH, blockType, malloc(sizeof(sharc_chameleon_encode_state)), (void*)sharc_chameleon_encode_init_dispersion, (void*)sharc_chameleon_encode_process_dispersion, (void*)sharc_chameleon_encode_finish_dispersion);
+            ///sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_HASH, blockType, malloc(sizeof(sharc_chameleon_encode_state)), (void*)sharc_chameleon_encode_init_dispersion, (void*)sharc_chameleon_encode_process_dispersion, (void*)sharc_chameleon_encode_finish_dispersion);
             break;
 
         case SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS:
-            sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_HASH, SHARC_BLOCK_TYPE_NO_HASHSUM_INTEGRITY_CHECK, malloc(sizeof(sharc_chameleon_encode_state)), (void*)sharc_chameleon_encode_init_dispersion, (void*)sharc_chameleon_encode_process_dispersion, (void*)sharc_chameleon_encode_finish_dispersion);
-            sharc_block_encode_init(&state->blockEncodeStateB, SHARC_BLOCK_MODE_HASH, blockType, malloc(sizeof(sharc_chameleon_encode_state)), (void*)sharc_chameleon_encode_init_default, (void*)sharc_chameleon_encode_process_default, (void*)sharc_chameleon_encode_finish_default);
+            //sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_HASH, SHARC_BLOCK_TYPE_NO_HASHSUM_INTEGRITY_CHECK, malloc(sizeof(sharc_huffman_encode_state)), (void*)sharc_huffman_encode_init, (void*)sharc_huffman_encode_process, (void*)sharc_huffman_encode_finish);
+            ///sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_HASH, SHARC_BLOCK_TYPE_NO_HASHSUM_INTEGRITY_CHECK, malloc(sizeof(sharc_chameleon_encode_state)), (void*)sharc_chameleon_encode_init_dispersion, (void*)sharc_chameleon_encode_process_dispersion, (void*)sharc_chameleon_encode_finish_dispersion);
+            ///sharc_block_encode_init(&state->blockEncodeStateB, SHARC_BLOCK_MODE_HASH, blockType, malloc(sizeof(sharc_chameleon_encode_state)), (void*)sharc_chameleon_encode_init_default, (void*)sharc_chameleon_encode_process_default, (void*)sharc_chameleon_encode_finish_default);
+            //sharc_block_encode_init(&state->blockEncodeStateB, SHARC_BLOCK_MODE_HASH, blockType, malloc(sizeof(sharc_huffman_encode_state)), (void*)sharc_huffman_encode_init, (void*)sharc_huffman_encode_process, (void*)sharc_huffman_encode_finish);
             break;
 
         case SHARC_COMPRESSION_MODE_ARGONAUT:
-            sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_HASH, blockType, malloc(sizeof(sharc_argonaut_encode_state)), (void*)sharc_argonaut_encode_init_default, (void*)sharc_argonaut_encode_process_default, (void*)sharc_argonaut_encode_finish_default);
+            ///sharc_block_encode_init(&state->blockEncodeStateA, SHARC_BLOCK_MODE_HASH, blockType, malloc(sizeof(sharc_argonaut_encode_state)), (void*)sharc_argonaut_encode_init_default, (void*)sharc_argonaut_encode_process_default, (void*)sharc_argonaut_encode_finish_default);
             break;
 
         case SHARC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING:
