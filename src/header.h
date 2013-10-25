@@ -62,7 +62,7 @@ typedef struct {
     sharc_byte blockSignaturesShift;
     sharc_byte resetCycleSizeShift;
     sharc_byte efficiencyCheckSignaturesShift;
-    sharc_byte originType;
+    sharc_byte originType;   //
     sharc_byte compressionMode;
     sharc_byte blockType;
     sharc_byte reserved[3];
