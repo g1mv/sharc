@@ -28,8 +28,8 @@ SHARC_FORCE_INLINE sharc_bool sharc_header_check_validity(sharc_header *restrict
     return (header->genericHeader.magicNumber == SHARC_HEADER_MAGIC_NUMBER);
 }
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_header_read(sharc_byte_buffer *restrict in, sharc_header *restrict header) {
-    header->genericHeader.magicNumber = SHARC_LITTLE_ENDIAN_32(*(uint32_t *) (in->pointer + in->position));
+SHARC_FORCE_INLINE uint_fast32_t sharc_header_read(FILE *restrict in, sharc_header *restrict header) {
+    /*header->genericHeader.magicNumber = SHARC_LITTLE_ENDIAN_32(*(uint32_t *) (in->pointer + in->position));
     in->position += sizeof(uint32_t);
     header->genericHeader.version[0] = *(in->pointer + in->position);
     in->position += sizeof(sharc_byte);
@@ -63,25 +63,16 @@ SHARC_FORCE_INLINE uint_fast32_t sharc_header_read(sharc_byte_buffer *restrict i
             return sizeof(sharc_header_generic) + sizeof(sharc_header_file_information);
         default:
             return sizeof(sharc_header_generic);
-    }
+    }*/
+    return 0;
 }
 
-SHARC_FORCE_INLINE uint_fast32_t sharc_header_write(sharc_byte_buffer *restrict out, const SHARC_HEADER_ORIGIN_TYPE originType, const SHARC_COMPRESSION_MODE compressionMode, SHARC_BLOCK_TYPE blockType, const struct stat *restrict fileAttributes) {
-    uint_fast32_t written;
-    sharc_byte *pointer = out->pointer + out->position;
-    *(uint32_t *) pointer = SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER);
+SHARC_FORCE_INLINE uint_fast32_t sharc_header_write(FILE *restrict out, const SHARC_HEADER_ORIGIN_TYPE originType, const struct stat *restrict fileAttributes) {
+    /*uint_fast32_t written;
+    fwrite((uint32_t *)SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER), sizeof(sharc_byte), sizeof(SHARC_HEADER_MAGIC_NUMBER), out);
     *(pointer + 4) = SHARC_MAJOR_VERSION;
     *(pointer + 5) = SHARC_MINOR_VERSION;
     *(pointer + 6) = SHARC_REVISION;
-    *(pointer + 7) = SHARC_PREFERRED_BLOCK_SIGNATURES_SHIFT;
-    *(pointer + 8) = SHARC_DICTIONARY_PREFERRED_RESET_CYCLE_SHIFT;
-    *(pointer + 9) = SHARC_PREFERRED_EFFICIENCY_CHECK_SIGNATURES_SHIFT;
-    *(pointer + 10) = originType;
-    *(pointer + 11) = compressionMode;
-    *(pointer + 12) = blockType;
-    *(pointer + 13) = 0;
-    *(pointer + 14) = 0;
-    *(pointer + 15) = 0;
     switch (originType) {
         case SHARC_HEADER_ORIGIN_TYPE_FILE:
             *(uint64_t *) (pointer + 16) = SHARC_LITTLE_ENDIAN_64(fileAttributes->st_size);
@@ -96,7 +87,8 @@ SHARC_FORCE_INLINE uint_fast32_t sharc_header_write(sharc_byte_buffer *restrict 
             break;
     }
     out->position += written;
-    return written;
+    return written; */
+    return 0;
 }
 
 SHARC_FORCE_INLINE sharc_bool sharc_header_restore_file_attributes(sharc_header *restrict header, const char *restrict fileName) {

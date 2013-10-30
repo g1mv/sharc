@@ -25,7 +25,7 @@
 #ifndef SHARC_CLIENT_H
 #define SHARC_CLIENT_H
 
-#include "api.h"
+#include "../libssc/src/api.h"
 
 #if SHARC_USE_AS_LIBRARY == SHARC_NO
 
@@ -39,8 +39,8 @@
 #include <inttypes.h>
 
 #include "chrono.h"
-#include "stream.h"
 #include "header.h"
+#include "globals.h"
 
 #define SHARC_ACTION_COMPRESS         0
 #define SHARC_ACTION_DECOMPRESS       1
@@ -55,6 +55,8 @@
 #define SHARC_OUTPUT_PATH_MAX_SIZE    256
 #define SHARC_FILE_OUTPUT_PATH        false
 #define SHARC_FIXED_OUTPUT_PATH       true
+
+#define SHARC_PREFERRED_BUFFER_SIZE   1 << 19
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define SHARC_ENDIAN_STRING           "Little"
@@ -100,14 +102,13 @@ typedef struct {
     sharc_byte origin_type;
 } sharc_client_io;
 
-
 uint8_t input_buffer[SHARC_PREFERRED_BUFFER_SIZE];
 uint8_t output_buffer[SHARC_PREFERRED_BUFFER_SIZE];
 
 FILE* sharc_client_checkOpenFile(const char*, const char*, const sharc_bool);
 void sharc_client_version();
 void sharc_client_usage();
-void sharc_client_compress(sharc_client_io *, sharc_client_io *, const SHARC_COMPRESSION_MODE, const sharc_bool, const char*, const char*);
+void sharc_client_compress(sharc_client_io *, sharc_client_io *, const SSC_COMPRESSION_MODE, const sharc_bool, const char*, const char*);
 void sharc_client_decompress(sharc_client_io *, sharc_client_io *, const sharc_bool, const char*, const char*);
 
 #endif

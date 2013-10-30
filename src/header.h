@@ -42,10 +42,10 @@
 #include <stdio.h>
 #include <time.h>
 #include <utime.h>
+#include <stdint.h>
 
 #include "globals.h"
 #include "byte_buffer.h"
-#include "block.h"
 
 #define SHARC_HEADER_MAGIC_NUMBER      1908011803
 
@@ -82,8 +82,8 @@ typedef struct {
 #pragma pack(pop)
 
 sharc_bool sharc_header_check_validity(sharc_header*);
-uint_fast32_t sharc_header_read(sharc_byte_buffer*, sharc_header*);
-uint_fast32_t sharc_header_write(sharc_byte_buffer*, const SHARC_HEADER_ORIGIN_TYPE, const SHARC_COMPRESSION_MODE, const SHARC_BLOCK_TYPE, const struct stat*);
+uint_fast32_t sharc_header_read(FILE*, sharc_header*);
+uint_fast32_t sharc_header_write(FILE*, const SHARC_HEADER_ORIGIN_TYPE, const struct stat*);
 sharc_bool sharc_header_restore_file_attributes(sharc_header *, const char*);
 
 #endif

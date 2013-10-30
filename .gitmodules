@@ -1,0 +1,3 @@
+[submodule "libssc"]
+	path = libssc
+	url = https://github.com/centaurean/libssc.git

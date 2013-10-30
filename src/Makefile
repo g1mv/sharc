@@ -31,8 +31,9 @@ else
 endif
 
 TARGET = sharc
+SSC_SRC_DIRECTORY = ../libssc/src/
 
-CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64 -I. -I./kernels/ -I./kernels/argonaut/ -I./kernels/chameleon/ -I./blocks/
+CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64
 
 ifeq ($(OS),Windows_NT)
     EXTENSION = .exe
@@ -63,23 +64,11 @@ CC = @$(PREFIX)cc
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 
-SRC_BLOCKS = $(wildcard blocks/*.c)
-OBJ_BLOCKS = $(SRC_BLOCKS:.c=.o)
+ALL_OBJ = $(OBJ)
 
-SRC_CHAMELEON = $(wildcard kernels/chameleon/*.c)
-OBJ_CHAMELEON_DEFAULT = $(SRC_CHAMELEON:.c=_default.o)
-OBJ_CHAMELEON_DISPERSION = $(SRC_CHAMELEON:.c=_dispersion.o)
+.PHONY: header footer libssc
 
-SRC_ARGONAUT = $(wildcard kernels/argonaut/*.c)
-OBJ_ARGONAUT_DEFAULT = $(SRC_ARGONAUT:.c=_default.o)
-OBJ_ARGONAUT_POST_PROCESSING = $(SRC_ARGONAUT:.c=_post_processing.o)
-
-#$(OBJ_CHAMELEON_DEFAULT) $(OBJ_ARGONAUT_DEFAULT) $(OBJ_CHAMELEON_DISPERSION)
-ALL_OBJ = $(OBJ) $(OBJ_BLOCKS) $(OBJ_ARGONAUT_POST_PROCESSING)
-
-.PHONY: header footer kernels blocks
-
-all: header $(TARGET)$(EXTENSION) footer
+all: libssc header $(TARGET)$(EXTENSION) footer
 
 header:
 	@echo ${bold}Compiling${normal} ...
@@ -87,6 +76,9 @@ header:
 footer:
 	@echo Build completed successfully.
 	@echo
+
+libssc:
+	@cd $(SSC_SRC_DIRECTORY) && $(MAKE)
 	
 $(TARGET)$(EXTENSION): $(ALL_OBJ)
 	@echo
@@ -94,24 +86,13 @@ $(TARGET)$(EXTENSION): $(ALL_OBJ)
 	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
 	$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
 
-%_default.o: %.c
-	@echo $^ $(ARROW) $@
-	$(CC) -c $(CFLAGS) $< -o $@
-
-%_dispersion.o: %.c
-	@echo $^ $(ARROW) $@
-	$(CC) -c $(CFLAGS) -DSHARC_CHAMELEON_DISPERSION $< -o $@
-
-%_post_processing.o: %.c
-	@echo $^ $(ARROW) $@
-	$(CC) -c $(CFLAGS) -DSHARC_ARGONAUT_POST_PROCESSING $< -o $@
-
 %.o: %.c
 	@echo $^ $(ARROW) $@
 	$(CC) -c $(CFLAGS) $< -o $@
 	
 clean:
 	@echo ${bold}Cleaning build directories${normal} ...
+	@cd $(SSC_SRC_DIRECTORY) && $(MAKE) clean
 	@rm -f $(ALL_OBJ)
 	@rm -f $(TARGET)$(EXTENSION)
 	@echo Done.
