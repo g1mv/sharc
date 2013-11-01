@@ -84,7 +84,7 @@ $(TARGET)$(EXTENSION): $(ALL_OBJ)
 	@echo
 	@echo ${bold}Linking${normal} ...
 	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
-	$(CC) -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
+	$(CC) -L. -lssc -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
 
 %.o: %.c
 	@echo $^ $(ARROW) $@
