@@ -269,6 +269,8 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
      */
     sharc_header header;
     uint64_t totalRead = sharc_header_read(io_in->stream, &header);
+    if(!sharc_header_check_validity(&header))
+        sharc_client_exit_error("Invalid file");
     ssc_stream *stream = (ssc_stream *) malloc(sizeof(ssc_stream));
     SSC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;

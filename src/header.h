@@ -45,7 +45,6 @@
 #include <stdint.h>
 
 #include "globals.h"
-#include "byte_buffer.h"
 
 #define SHARC_HEADER_MAGIC_NUMBER      1908011803
 
