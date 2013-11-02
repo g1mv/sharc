@@ -59,13 +59,8 @@ typedef enum {
 typedef struct {
     uint32_t magicNumber;
     sharc_byte version[3];
-    sharc_byte blockSignaturesShift;
-    sharc_byte resetCycleSizeShift;
-    sharc_byte efficiencyCheckSignaturesShift;
-    sharc_byte originType;   //
-    sharc_byte compressionMode;
-    sharc_byte blockType;
-    sharc_byte reserved[3];
+    sharc_byte originType;
+    sharc_byte reserved[4];
 } sharc_header_generic;
 
 typedef struct {

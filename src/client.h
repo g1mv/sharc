@@ -25,7 +25,7 @@
 #ifndef SHARC_CLIENT_H
 #define SHARC_CLIENT_H
 
-#include "../libssc/src/api.h"
+#include "ssc_api.h"
 
 #if SHARC_USE_AS_LIBRARY == SHARC_NO
 
@@ -99,7 +99,7 @@
 typedef struct {
     const char* name;
     FILE* stream;
-    sharc_byte origin_type;
+    SHARC_HEADER_ORIGIN_TYPE origin_type;
 } sharc_client_io;
 
 uint8_t input_buffer[SHARC_PREFERRED_BUFFER_SIZE];

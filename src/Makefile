@@ -31,14 +31,15 @@ else
 endif
 
 TARGET = sharc
-SSC_SRC_DIRECTORY = ../libssc/src/
 
 CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64
 
 ifeq ($(OS),Windows_NT)
+    LIBS = c:/windows/system/
     EXTENSION = .exe
     ARROW = ^-^>
 else
+    LIBS = /usr/lib/
     EXTENSION =
     ARROW = \-\>
 endif
@@ -68,7 +69,7 @@ ALL_OBJ = $(OBJ)
 
 .PHONY: header footer libssc
 
-all: libssc header $(TARGET)$(EXTENSION) footer
+all: header $(TARGET)$(EXTENSION) footer
 
 header:
 	@echo ${bold}Compiling${normal} ...
@@ -76,9 +77,6 @@ header:
 footer:
 	@echo Build completed successfully.
 	@echo
-
-libssc:
-	@cd $(SSC_SRC_DIRECTORY) && $(MAKE)
 	
 $(TARGET)$(EXTENSION): $(ALL_OBJ)
 	@echo
@@ -92,7 +90,6 @@ $(TARGET)$(EXTENSION): $(ALL_OBJ)
 	
 clean:
 	@echo ${bold}Cleaning build directories${normal} ...
-	@cd $(SSC_SRC_DIRECTORY) && $(MAKE) clean
 	@rm -f $(ALL_OBJ)
 	@rm -f $(TARGET)$(EXTENSION)
 	@echo Done.

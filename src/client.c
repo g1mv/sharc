@@ -26,7 +26,7 @@
 
 #if SHARC_USE_AS_LIBRARY == SHARC_NO
 
-SHARC_FORCE_INLINE void sharc_client_exit_error(const char* message) {
+SHARC_FORCE_INLINE void sharc_client_exit_error(const char *message) {
     fprintf(stderr, "%c[1;31m", SHARC_ESCAPE_CHARACTER);
     fprintf(stderr, "Sharc error");
     fprintf(stderr, "%c[0m", SHARC_ESCAPE_CHARACTER);
@@ -55,7 +55,7 @@ SHARC_FORCE_INLINE FILE *sharc_client_checkOpenFile(const char *fileName, const 
 
 SHARC_FORCE_INLINE void sharc_client_version() {
     printf("%c[1m", SHARC_ESCAPE_CHARACTER);
-    printf("Centaurean Sharc %i.%i.%i\n", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
+    printf("Centaurean Sharc %i.%i.%i (using Centaurean Libssc %i.%i.%i)\n", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION, ssc_version_major(), ssc_version_minor(), ssc_version_revision());
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
     printf("Copyright (C) 2013 Guillaume Voirin\n");
     printf("Built for %s (%s endian system, %u bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, (unsigned int) (8 * sizeof(void *)), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
@@ -169,6 +169,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     /*
      * The following code is an example of how to use the stream API to compress a file
      */
+    uint64_t totalWritten = sharc_header_write(io_out->stream, io_out->origin_type, &attributes);
     ssc_stream *stream = (ssc_stream *) malloc(sizeof(ssc_stream));
     SSC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
@@ -191,7 +192,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
         const double elapsed = sharc_chrono_elapsed(&chrono);
 
-        uint64_t totalWritten = *stream->out_total_written;
+        totalWritten += *stream->out_total_written;
         fclose(io_out->stream);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
@@ -266,6 +267,8 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     /*
      * The following code is an example of how to use the stream API to decompress a file
      */
+    sharc_header header;
+    uint64_t totalRead = sharc_header_read(io_in->stream, &header);
     ssc_stream *stream = (ssc_stream *) malloc(sizeof(ssc_stream));
     SSC_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
@@ -291,14 +294,11 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
         uint64_t totalWritten = *stream->out_total_written;
         fclose(io_out->stream);
 
-        sharc_header header;
-        ssc_stream_decompress_utilities_get_header(stream, &header);
-
         if (header.genericHeader.originType == SHARC_HEADER_ORIGIN_TYPE_FILE)
             sharc_header_restore_file_attributes(&header, io_out->name);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            uint64_t totalRead = *stream->in_total_read;
+            totalRead += *stream->in_total_read;
             fclose(io_in->stream);
 
             if (header.genericHeader.originType == SHARC_HEADER_ORIGIN_TYPE_FILE) {
@@ -347,7 +347,7 @@ int main(int argc, char *argv[]) {
         sharc_client_usage();
 
     sharc_byte action = SHARC_ACTION_COMPRESS;
-    SHARC_COMPRESSION_MODE mode = SHARC_COMPRESSION_MODE_CHAMELEON;
+    SSC_COMPRESSION_MODE mode = SSC_COMPRESSION_MODE_CHAMELEON;
     sharc_byte prompting = SHARC_PROMPTING;
     sharc_client_io in;
     in.origin_type = SHARC_HEADER_ORIGIN_TYPE_FILE;
@@ -374,20 +374,20 @@ int main(int argc, char *argv[]) {
                             sharc_client_usage();
                         switch (argv[i][2] - '0') {
                             case 0:
-                                mode = SHARC_COMPRESSION_MODE_COPY;
+                                mode = SSC_COMPRESSION_MODE_COPY;
                                 break;
                             case 1:
-                                mode = SHARC_COMPRESSION_MODE_CHAMELEON;
+                                mode = SSC_COMPRESSION_MODE_CHAMELEON;
                                 break;
                             case 2:
-                                mode = SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS;
+                                mode = SSC_COMPRESSION_MODE_DUAL_PASS_CHAMELEON;
                                 break;
-                            case 3:
-                                mode = SHARC_COMPRESSION_MODE_ARGONAUT;
-                                break;
-                            case 4:
-                                mode = SHARC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING;
-                                break;
+                                /*case 3:
+                                    mode = SSC_COMPRESSION_MODE_ARGONAUT;
+                                    break;
+                                case 4:
+                                    mode = SSC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING;
+                                    break;*/
                             default:
                                 sharc_client_usage();
                         }
@@ -435,20 +435,20 @@ int main(int argc, char *argv[]) {
                                     sharc_client_usage();
                                 switch (argv[i][11] - '0') {
                                     case 0:
-                                        mode = SHARC_COMPRESSION_MODE_COPY;
+                                        mode = SSC_COMPRESSION_MODE_COPY;
                                         break;
                                     case 1:
-                                        mode = SHARC_COMPRESSION_MODE_CHAMELEON;
+                                        mode = SSC_COMPRESSION_MODE_CHAMELEON;
                                         break;
                                     case 2:
-                                        mode = SHARC_COMPRESSION_MODE_CHAMELEON_DUAL_PASS;
+                                        mode = SSC_COMPRESSION_MODE_DUAL_PASS_CHAMELEON;
                                         break;
-                                    case 3:
-                                        mode = SHARC_COMPRESSION_MODE_ARGONAUT;
-                                        break;
-                                    case 4:
-                                        mode = SHARC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING;
-                                        break;
+                                        /*case 3:
+                                            mode = SHARC_COMPRESSION_MODE_ARGONAUT;
+                                            break;
+                                        case 4:
+                                            mode = SHARC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING;
+                                            break;*/
                                     default:
                                         sharc_client_usage();
                                 }
