@@ -55,8 +55,9 @@ SHARC_FORCE_INLINE FILE *sharc_client_checkOpenFile(const char *fileName, const 
 
 SHARC_FORCE_INLINE void sharc_client_version() {
     printf("%c[1m", SHARC_ESCAPE_CHARACTER);
-    printf("Centaurean Sharc %i.%i.%i (using Centaurean Libssc %i.%i.%i)\n", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION, ssc_version_major(), ssc_version_minor(), ssc_version_revision());
+    printf("Centaurean sharc %i.%i.%i", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+    printf(" powered by libssc %i.%i.%i\n", ssc_version_major(), ssc_version_minor(), ssc_version_revision());
     printf("Copyright (C) 2013 Guillaume Voirin\n");
     printf("Built for %s (%s endian system, %u bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, (unsigned int) (8 * sizeof(void *)), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
 }

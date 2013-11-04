@@ -68,11 +68,15 @@ OBJ = $(SRC:.c=.o)
 
 ALL_OBJ = $(OBJ)
 
-.PHONY: compile-header compile link-header link libssc-compile
+.PHONY: compile-header compile link-header link libssc-compile libssc-clean
 
 all: compile link
 
-libssc-compile:
+$(LIBSSC_SRC_DIRECTORY)Makefile:
+	@git submodule init
+	@git submodule update
+
+libssc-compile: $(LIBSSC_SRC_DIRECTORY)Makefile
 	@cd $(LIBSSC_SRC_DIRECTORY) && $(MAKE) compile
 
 compile-header:
