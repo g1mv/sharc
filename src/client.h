@@ -25,10 +25,6 @@
 #ifndef SHARC_CLIENT_H
 #define SHARC_CLIENT_H
 
-#include "ssc_api.h"
-
-#if SHARC_USE_AS_LIBRARY == SHARC_NO
-
 #ifdef _WIN32
 #include <fcntl.h>
 #endif
@@ -38,6 +34,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#include "../modules/libssc/src/ssc_api.h"
 #include "chrono.h"
 #include "header.h"
 #include "globals.h"
@@ -110,7 +107,5 @@ void sharc_client_version();
 void sharc_client_usage();
 void sharc_client_compress(sharc_client_io *, sharc_client_io *, const SSC_COMPRESSION_MODE, const sharc_bool, const char*, const char*);
 void sharc_client_decompress(sharc_client_io *, sharc_client_io *, const sharc_bool, const char*, const char*);
-
-#endif
 
 #endif

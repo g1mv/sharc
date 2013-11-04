@@ -31,6 +31,7 @@ else
 endif
 
 TARGET = sharc
+LIBSSC_SRC_DIRECTORY = ../modules/libssc/src/
 
 CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64
 
@@ -67,29 +68,40 @@ OBJ = $(SRC:.c=.o)
 
 ALL_OBJ = $(OBJ)
 
-.PHONY: header footer libssc
+.PHONY: compile-header compile link-header link libssc-compile
 
-all: header $(TARGET)$(EXTENSION) footer
+all: compile link
 
-header:
-	@echo ${bold}Compiling${normal} ...
+libssc-compile:
+	@cd $(LIBSSC_SRC_DIRECTORY) && $(MAKE) compile
 
-footer:
-	@echo Build completed successfully.
+compile-header:
+	@echo ${bold}Compiling sharc${normal} ...
+
+link-header:
+	@echo ${bold}Linking sharc${normal} ...
+
+compile: libssc-compile compile-header $(ALL_OBJ)
+	@echo Done.
+	@echo
+
+link: compile link-header $(TARGET)$(EXTENSION)
+	@echo Done.
 	@echo
 	
 $(TARGET)$(EXTENSION): $(ALL_OBJ)
-	@echo
-	@echo ${bold}Linking${normal} ...
 	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
-	$(CC) -L. -lssc -o $(TARGET)$(EXTENSION) $^ $(CFLAGS)
+	$(CC) -o $(TARGET)$(EXTENSION) $(LIBSSC_SRC_DIRECTORY)/*.o $^ $(CFLAGS)
 
 %.o: %.c
 	@echo $^ $(ARROW) $@
 	$(CC) -c $(CFLAGS) $< -o $@
+
+libssc-clean:
+	@cd $(LIBSSC_SRC_DIRECTORY) && $(MAKE) clean
 	
-clean:
-	@echo ${bold}Cleaning build directories${normal} ...
+clean: libssc-clean
+	@echo ${bold}Cleaning sharc build directories${normal} ...
 	@rm -f $(ALL_OBJ)
 	@rm -f $(TARGET)$(EXTENSION)
 	@echo Done.

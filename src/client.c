@@ -76,8 +76,7 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     printf("                                    0 = No compression\n");
     printf("                                    1 = Chameleon algorithm, fastest compression available (default)\n");
     printf("                                    2 = Chameleon algorithm dual pass\n");
-    /*printf("                                    3 = Argonaut algorithm\n");
-    printf("                                    4 = Argonaut algorithm with post processing\n");*/
+    printf("                                    3 = Argonaut algorithm\n");
     printf("  -d, --decompress                  Decompress files\n");
     printf("  -p[PATH], --output-path[=PATH]    Set output path\n");
     printf("  -n, --no-prompt                   Overwrite without prompting\n");
@@ -269,7 +268,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
      */
     sharc_header header;
     uint64_t totalRead = sharc_header_read(io_in->stream, &header);
-    if(!sharc_header_check_validity(&header))
+    if (!sharc_header_check_validity(&header))
         sharc_client_exit_error("Invalid file");
     ssc_stream *stream = (ssc_stream *) malloc(sizeof(ssc_stream));
     SSC_STREAM_STATE streamState;
@@ -384,12 +383,9 @@ int main(int argc, char *argv[]) {
                             case 2:
                                 mode = SSC_COMPRESSION_MODE_DUAL_PASS_CHAMELEON;
                                 break;
-                                /*case 3:
-                                    mode = SSC_COMPRESSION_MODE_ARGONAUT;
-                                    break;
-                                case 4:
-                                    mode = SSC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING;
-                                    break;*/
+                            case 3:
+                                mode = SSC_COMPRESSION_MODE_ARGONAUT;
+                                break;
                             default:
                                 sharc_client_usage();
                         }
@@ -445,12 +441,9 @@ int main(int argc, char *argv[]) {
                                     case 2:
                                         mode = SSC_COMPRESSION_MODE_DUAL_PASS_CHAMELEON;
                                         break;
-                                        /*case 3:
-                                            mode = SHARC_COMPRESSION_MODE_ARGONAUT;
-                                            break;
-                                        case 4:
-                                            mode = SHARC_COMPRESSION_MODE_ARGONAUT_POST_PROCESSING;
-                                            break;*/
+                                    case 3:
+                                        mode = SSC_COMPRESSION_MODE_ARGONAUT;
+                                        break;
                                     default:
                                         sharc_client_usage();
                                 }
