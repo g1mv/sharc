@@ -73,8 +73,8 @@ ALL_OBJ = $(OBJ)
 all: compile link
 
 $(LIBSSC_SRC_DIRECTORY)Makefile:
-	@git submodule init
-	@git submodule update
+	@cd .. && git submodule init
+	@cd .. && git submodule update
 
 libssc-compile: $(LIBSSC_SRC_DIRECTORY)Makefile
 	@cd $(LIBSSC_SRC_DIRECTORY) && $(MAKE) compile
