@@ -73,8 +73,10 @@ ALL_OBJ = $(OBJ)
 all: compile link
 
 $(LIBSSC_SRC_DIRECTORY)Makefile:
+	@echo ${bold}Cloning libssc${normal} ...
 	@cd .. && git submodule init
 	@cd .. && git submodule update
+	@echo
 
 libssc-compile: $(LIBSSC_SRC_DIRECTORY)Makefile
 	@cd $(LIBSSC_SRC_DIRECTORY) && $(MAKE) compile
@@ -95,7 +97,7 @@ link: compile link-header $(TARGET)$(EXTENSION)
 	
 $(TARGET)$(EXTENSION): $(ALL_OBJ)
 	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
-	$(CC) -o $(TARGET)$(EXTENSION) $(LIBSSC_SRC_DIRECTORY)/*.o $^ $(CFLAGS)
+	$(CC) -o $(TARGET)$(EXTENSION) $(LIBSSC_SRC_DIRECTORY)*.o $^ $(CFLAGS)
 
 %.o: %.c
 	@echo $^ $(ARROW) $@
