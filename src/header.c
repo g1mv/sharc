@@ -30,7 +30,7 @@ SHARC_FORCE_INLINE sharc_bool sharc_header_check_validity(sharc_header *restrict
 }
 
 SHARC_FORCE_INLINE uint_fast32_t sharc_header_read(FILE *restrict in, sharc_header *restrict header) {
-    uint_fast32_t read = fread(&header->genericHeader.magicNumber, sizeof(sharc_byte), sizeof(uint32_t), in);
+    uint_fast32_t read = (uint_fast32_t)fread(&header->genericHeader.magicNumber, sizeof(sharc_byte), sizeof(uint32_t), in);
     header->genericHeader.magicNumber = SHARC_LITTLE_ENDIAN_32(header->genericHeader.magicNumber);
     header->genericHeader.version[0] = (sharc_byte)fgetc(in);
     header->genericHeader.version[1] = (sharc_byte)fgetc(in);
@@ -60,7 +60,7 @@ SHARC_FORCE_INLINE uint_fast32_t sharc_header_write(FILE *restrict out, const SH
     uint64_t temp64;
 
     temp32 = SHARC_LITTLE_ENDIAN_32(SHARC_HEADER_MAGIC_NUMBER);
-    uint_fast32_t written = fwrite(&temp32, sizeof(sharc_byte), sizeof(uint32_t), out);
+    uint_fast32_t written = (uint_fast32_t)fwrite(&temp32, sizeof(sharc_byte), sizeof(uint32_t), out);
     fputc(SHARC_MAJOR_VERSION, out);
     fputc(SHARC_MINOR_VERSION, out);
     fputc(SHARC_REVISION, out);

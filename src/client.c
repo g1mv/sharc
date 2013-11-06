@@ -55,7 +55,7 @@ SHARC_FORCE_INLINE FILE *sharc_client_checkOpenFile(const char *fileName, const 
 
 SHARC_FORCE_INLINE void sharc_client_version() {
     printf("%c[1m", SHARC_ESCAPE_CHARACTER);
-    printf("Centaurean sharc %i.%i.%i", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
+    printf("Centaurean SHARC %i.%i.%i", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
     printf(" powered by libssc %i.%i.%i\n", ssc_version_major(), ssc_version_minor(), ssc_version_revision());
     printf("Copyright (C) 2013 Guillaume Voirin\n");
@@ -384,9 +384,9 @@ int main(int argc, char *argv[]) {
                             case 2:
                                 mode = SSC_COMPRESSION_MODE_DUAL_PASS_CHAMELEON;
                                 break;
-                            case 3:
+                            /*case 3:
                                 mode = SSC_COMPRESSION_MODE_ARGONAUT;
-                                break;
+                                break;*/
                             default:
                                 sharc_client_usage();
                         }
@@ -442,9 +442,9 @@ int main(int argc, char *argv[]) {
                                     case 2:
                                         mode = SSC_COMPRESSION_MODE_DUAL_PASS_CHAMELEON;
                                         break;
-                                    case 3:
+                                    /*case 3:
                                         mode = SSC_COMPRESSION_MODE_ARGONAUT;
-                                        break;
+                                        break;*/
                                     default:
                                         sharc_client_usage();
                                 }
