@@ -24,8 +24,6 @@
 
 #include "client.h"
 
-#if SHARC_USE_AS_LIBRARY == SHARC_NO
-
 SHARC_FORCE_INLINE void sharc_client_exit_error(const char *message) {
     fprintf(stderr, "%c[1;31m", SHARC_ESCAPE_CHARACTER);
     fprintf(stderr, "Sharc error");
@@ -535,8 +533,7 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
+
+    return true;
 }
-
-#endif
-
 
