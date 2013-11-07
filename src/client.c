@@ -25,9 +25,13 @@
 #include "client.h"
 
 SHARC_FORCE_INLINE void sharc_client_exit_error(const char *message) {
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     fprintf(stderr, "%c[1;31m", SHARC_ESCAPE_CHARACTER);
+#endif
     fprintf(stderr, "Sharc error");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     fprintf(stderr, "%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
     fprintf(stderr, " : %s\n", message);
     exit(0);
 }
@@ -52,9 +56,13 @@ SHARC_FORCE_INLINE FILE *sharc_client_checkOpenFile(const char *fileName, const 
 }
 
 SHARC_FORCE_INLINE void sharc_client_version() {
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     printf("%c[1m", SHARC_ESCAPE_CHARACTER);
-    printf("Centaurean SHARC %i.%i.%i", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
+#endif
+    printf("Centaurean Sharc %i.%i.%i", SHARC_MAJOR_VERSION, SHARC_MINOR_VERSION, SHARC_REVISION);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
     printf(" powered by libssc %i.%i.%i\n", ssc_version_major(), ssc_version_minor(), ssc_version_revision());
     printf("Copyright (C) 2013 Guillaume Voirin\n");
     printf("Built for %s (%s endian system, %u bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, (unsigned int) (8 * sizeof(void *)), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
@@ -63,13 +71,21 @@ SHARC_FORCE_INLINE void sharc_client_version() {
 SHARC_FORCE_INLINE void sharc_client_usage() {
     sharc_client_version();
     printf("\nSuperfast compression\n\n");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
     printf("Usage :\n");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
     printf("  sharc [OPTIONS]... [FILES]...\n\n");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
     printf("Available options :\n");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
     printf("  -c[LEVEL], --compress[=LEVEL]     Compress files using LEVEL if specified (default)\n");
     printf("                                    LEVEL can have the following values :\n");
     printf("                                    0 = No compression\n");
@@ -200,28 +216,44 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
             double ratio = (100.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
             printf("Compressed ");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf("%s", inFilePath);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf(" (");
             sharc_client_format_decimal(totalRead);
             printf(" bytes) to ");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf("%s", io_out->name);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf(" (");
             sharc_client_format_decimal(totalWritten);
             printf(" bytes), ");
             printf("Ratio out / in = %.1lf%%, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
         } else {
             printf("Compressed ");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf("%s", io_in->name);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf(" to ");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf("%s", io_out->name);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf(", %"PRIu64" bytes written.\n", totalWritten);
         }
     }
@@ -308,28 +340,44 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
 
             double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
             printf("Decompressed ");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf("%s", inFilePath);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf(" (");
             sharc_client_format_decimal(totalRead);
             printf(" bytes) to ");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf("%s", io_out->name);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf(" (");
             sharc_client_format_decimal(totalWritten);
             printf(" bytes), ");
             printf("Time = %.3lf s, Speed = %.0lf MB/s\n", elapsed, speed);
         } else {
             printf("Decompressed ");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf("%s", io_in->name);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf(" to ");
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf("%s", io_out->name);
+#ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
+#endif
             printf(", %"PRIu64" bytes written.\n", totalWritten);
         }
     }

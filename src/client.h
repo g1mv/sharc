@@ -65,6 +65,7 @@
 #define SHARC_PATH_SEPARATOR          '\\'
 #else
 #define SHARC_PATH_SEPARATOR          '/'
+#define SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
 #endif
 
 #if defined(_WIN64) || defined(_WIN32)
