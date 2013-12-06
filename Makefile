@@ -22,6 +22,8 @@
 # 01/06/13 17:27
 #
 
+export
+
 ifeq ($(OS),Windows_NT)
     bold =
     normal =

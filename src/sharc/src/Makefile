@@ -32,14 +32,6 @@ endif
 
 CFLAGS = -flto -std=c99 -D_FILE_OFFSET_BITS=64
 
-ifeq ($(OS),Windows_NT)
-    EXTENSION = .exe
-    ARROW = ^-^>
-else
-    EXTENSION =
-    ARROW = \-\>
-endif
-
 ifdef ARCH
     CFLAGS += -m$(ARCH)
 endif
