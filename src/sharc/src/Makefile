@@ -30,17 +30,12 @@ else
     normal = `tput sgr0`
 endif
 
-TARGET = sharc
-LIBSSC_SRC_DIRECTORY = ../modules/libssc/src/
-
-CFLAGS = -std=c99 -D_FILE_OFFSET_BITS=64
+CFLAGS = -flto -std=c99 -D_FILE_OFFSET_BITS=64
 
 ifeq ($(OS),Windows_NT)
-    LIBS = c:/windows/system/
     EXTENSION = .exe
     ARROW = ^-^>
 else
-    LIBS = /usr/lib/
     EXTENSION =
     ARROW = \-\>
 endif
@@ -61,54 +56,30 @@ else
     CFLAGS += -O0 -g
 endif
 
-CC = @$(PREFIX)cc
+CC = @$(PREFIX)cc$(SUFFIX)
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 
 ALL_OBJ = $(OBJ)
 
-.PHONY: compile-header compile link-header link libssc-compile libssc-clean
+.PHONY: compile-header compile
 
-all: compile link
-
-$(LIBSSC_SRC_DIRECTORY)Makefile:
-	@echo ${bold}Cloning libssc${normal} ...
-	@cd .. && git submodule init
-	@cd .. && git submodule update
-	@echo
-
-libssc-compile: $(LIBSSC_SRC_DIRECTORY)Makefile
-	@cd $(LIBSSC_SRC_DIRECTORY) && $(MAKE) compile
+all: compile
 
 compile-header:
-	@echo ${bold}Compiling sharc${normal} ...
+	@echo ${bold}Compiling Sharc${normal} ...
 
-link-header:
-	@echo ${bold}Linking sharc${normal} ...
-
-compile: libssc-compile compile-header $(ALL_OBJ)
+compile: compile-header $(ALL_OBJ)
 	@echo Done.
 	@echo
-
-link: compile link-header $(TARGET)$(EXTENSION)
-	@echo Done.
-	@echo
-	
-$(TARGET)$(EXTENSION): $(ALL_OBJ)
-	@echo $^ $(ARROW) ${bold}$(TARGET)$(EXTENSION)${normal}
-	$(CC) -o $(TARGET)$(EXTENSION) $(LIBSSC_SRC_DIRECTORY)*.o $^ $(CFLAGS)
 
 %.o: %.c
 	@echo $^ $(ARROW) $@
 	$(CC) -c $(CFLAGS) $< -o $@
 
-libssc-clean:
-	@cd $(LIBSSC_SRC_DIRECTORY) && $(MAKE) clean
-	
-clean: libssc-clean
-	@echo ${bold}Cleaning sharc build directories${normal} ...
+clean:
+	@echo ${bold}Cleaning Sharc build directories${normal} ...
 	@rm -f $(ALL_OBJ)
-	@rm -f $(TARGET)$(EXTENSION)
 	@echo Done.
 	@echo

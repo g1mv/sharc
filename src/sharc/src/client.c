@@ -63,7 +63,7 @@ SHARC_FORCE_INLINE void sharc_client_version() {
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
-    printf(" powered by libssc %i.%i.%i\n", ssc_version_major(), ssc_version_minor(), ssc_version_revision());
+    printf(" powered by Centaurean Density %i.%i.%i\n", density_version_major(), density_version_minor(), density_version_revision());
     printf("Copyright (C) 2013 Guillaume Voirin\n");
     printf("Built for %s (%s endian system, %u bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, (unsigned int) (8 * sizeof(void *)), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
 }
@@ -111,32 +111,32 @@ void sharc_client_format_decimal(uint64_t number) {
     printf(",%03"PRIu64, number % 1000);
 }
 
-SHARC_FORCE_INLINE uint_fast64_t sharc_client_reloadInputBuffer(ssc_stream *restrict stream, const sharc_client_io *restrict io_in) {
+SHARC_FORCE_INLINE uint_fast64_t sharc_client_reloadInputBuffer(density_stream *restrict stream, const sharc_client_io *restrict io_in) {
     stream->in.size = (uint_fast64_t) fread(stream->in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
     if (stream->in.size < SHARC_PREFERRED_BUFFER_SIZE) {
         if (ferror(io_in->stream))
             sharc_client_exit_error("Error reading file");
     }
-    ssc_byte_buffer_rewind(&stream->in);
+    density_byte_buffer_rewind(&stream->in);
     return stream->in.size;
 }
 
-SHARC_FORCE_INLINE uint_fast64_t sharc_client_emptyOutputBuffer(ssc_stream *restrict stream, const sharc_client_io *restrict io_out) {
+SHARC_FORCE_INLINE uint_fast64_t sharc_client_emptyOutputBuffer(density_stream *restrict stream, const sharc_client_io *restrict io_out) {
     uint_fast64_t written = (uint_fast64_t) fwrite(stream->out.pointer, sizeof(sharc_byte), (size_t) stream->out.position, io_out->stream);
     if (written < stream->out.position) {
         if (ferror(io_out->stream))
             sharc_client_exit_error("Error writing file");
     }
-    ssc_byte_buffer_rewind(&stream->out);
+    density_byte_buffer_rewind(&stream->out);
     return written;
 }
 
-SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fast64_t *written, const sharc_client_io *restrict io_in, const sharc_client_io *restrict io_out, ssc_stream *restrict stream, const SSC_STREAM_STATE streamState, const char *errorMessage) {
+SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fast64_t *written, const sharc_client_io *restrict io_in, const sharc_client_io *restrict io_out, density_stream *restrict stream, const DENSITY_STREAM_STATE streamState, const char *errorMessage) {
     switch (streamState) {
-        case SSC_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
+        case DENSITY_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
             *written = sharc_client_emptyOutputBuffer(stream, io_out);
             break;
-        case SSC_STREAM_STATE_STALL_ON_INPUT_BUFFER:
+        case DENSITY_STREAM_STATE_STALL_ON_INPUT_BUFFER:
             *read = sharc_client_reloadInputBuffer(stream, io_in);
             break;
         default:
@@ -144,7 +144,7 @@ SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fa
     }
 }
 
-SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *io_out, const SSC_COMPRESSION_MODE attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
+SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *io_out, const DENSITY_COMPRESSION_MODE attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
     struct stat attributes;
 
     const size_t inFileNameLength = strlen(io_in->name);
@@ -184,17 +184,17 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
      * The following code is an example of how to use the stream API to compress a file
      */
     uint64_t totalWritten = sharc_header_write(io_out->stream, io_out->origin_type, &attributes);
-    ssc_stream *stream = (ssc_stream *) malloc(sizeof(ssc_stream));
-    SSC_STREAM_STATE streamState;
+    density_stream *stream = (density_stream *) malloc(sizeof(density_stream));
+    DENSITY_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
-    if (ssc_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
+    if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_client_exit_error("Unable to prepare compression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
-    while ((streamState = ssc_stream_compress_init(stream, attemptMode, SSC_ENCODE_OUTPUT_TYPE_DEFAULT, SSC_BLOCK_TYPE_DEFAULT)))
+    while ((streamState = density_stream_compress_init(stream, attemptMode, DENSITY_ENCODE_OUTPUT_TYPE_DEFAULT, DENSITY_BLOCK_TYPE_DEFAULT)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize compression");
-    while ((streamState = ssc_stream_compress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
+    while ((streamState = density_stream_compress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during compression");
-    while ((streamState = ssc_stream_compress_finish(stream)))
+    while ((streamState = density_stream_compress_finish(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing compression");
     sharc_client_emptyOutputBuffer(stream, io_out);
     /*
@@ -301,17 +301,17 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     uint64_t totalRead = sharc_header_read(io_in->stream, &header);
     if (!sharc_header_check_validity(&header))
         sharc_client_exit_error("Invalid file");
-    ssc_stream *stream = (ssc_stream *) malloc(sizeof(ssc_stream));
-    SSC_STREAM_STATE streamState;
+    density_stream *stream = (density_stream *) malloc(sizeof(density_stream));
+    DENSITY_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
-    if (ssc_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
+    if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
         sharc_client_exit_error("Unable to prepare decompression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
-    while ((streamState = ssc_stream_decompress_init(stream)))
+    while ((streamState = density_stream_decompress_init(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize decompression");
-    while ((streamState = ssc_stream_decompress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
+    while ((streamState = density_stream_decompress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during decompression");
-    while ((streamState = ssc_stream_decompress_finish(stream)))
+    while ((streamState = density_stream_decompress_finish(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing decompression");
     sharc_client_emptyOutputBuffer(stream, io_out);
     /*
@@ -395,7 +395,7 @@ int main(int argc, char *argv[]) {
         sharc_client_usage();
 
     sharc_byte action = SHARC_ACTION_COMPRESS;
-    SSC_COMPRESSION_MODE mode = SSC_COMPRESSION_MODE_CHAMELEON;
+    DENSITY_COMPRESSION_MODE mode = DENSITY_COMPRESSION_MODE_CHAMELEON;
     sharc_byte prompting = SHARC_PROMPTING;
     sharc_client_io in;
     in.origin_type = SHARC_HEADER_ORIGIN_TYPE_FILE;
@@ -422,16 +422,16 @@ int main(int argc, char *argv[]) {
                             sharc_client_usage();
                         switch (argv[i][2] - '0') {
                             case 0:
-                                mode = SSC_COMPRESSION_MODE_COPY;
+                                mode = DENSITY_COMPRESSION_MODE_COPY;
                                 break;
                             case 1:
-                                mode = SSC_COMPRESSION_MODE_CHAMELEON;
+                                mode = DENSITY_COMPRESSION_MODE_CHAMELEON;
                                 break;
                             case 2:
-                                mode = SSC_COMPRESSION_MODE_DUAL_PASS_CHAMELEON;
+                                mode = DENSITY_COMPRESSION_MODE_JADE;
                                 break;
                             /*case 3:
-                                mode = SSC_COMPRESSION_MODE_ARGONAUT;
+                                mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
                                 break;*/
                             default:
                                 sharc_client_usage();
@@ -480,16 +480,16 @@ int main(int argc, char *argv[]) {
                                     sharc_client_usage();
                                 switch (argv[i][11] - '0') {
                                     case 0:
-                                        mode = SSC_COMPRESSION_MODE_COPY;
+                                        mode = DENSITY_COMPRESSION_MODE_COPY;
                                         break;
                                     case 1:
-                                        mode = SSC_COMPRESSION_MODE_CHAMELEON;
+                                        mode = DENSITY_COMPRESSION_MODE_CHAMELEON;
                                         break;
                                     case 2:
-                                        mode = SSC_COMPRESSION_MODE_DUAL_PASS_CHAMELEON;
+                                        mode = DENSITY_COMPRESSION_MODE_JADE;
                                         break;
                                     /*case 3:
-                                        mode = SSC_COMPRESSION_MODE_ARGONAUT;
+                                        mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
                                         break;*/
                                     default:
                                         sharc_client_usage();

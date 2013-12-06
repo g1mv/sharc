@@ -34,7 +34,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include "../modules/libssc/src/ssc_api.h"
+#include "../../density/src/density_api.h"
 #include "chrono.h"
 #include "header.h"
 #include "globals.h"
@@ -106,7 +106,7 @@ uint8_t output_buffer[SHARC_PREFERRED_BUFFER_SIZE];
 FILE* sharc_client_checkOpenFile(const char*, const char*, const sharc_bool);
 void sharc_client_version();
 void sharc_client_usage();
-void sharc_client_compress(sharc_client_io *, sharc_client_io *, const SSC_COMPRESSION_MODE, const sharc_bool, const char*, const char*);
+void sharc_client_compress(sharc_client_io *, sharc_client_io *, const DENSITY_COMPRESSION_MODE, const sharc_bool, const char*, const char*);
 void sharc_client_decompress(sharc_client_io *, sharc_client_io *, const sharc_bool, const char*, const char*);
 
 #endif

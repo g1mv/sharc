@@ -1,3 +1,3 @@
-[submodule "modules/libssc"]
-	path = modules/libssc
-	url = git://github.com/centaurean/libssc.git
+[submodule "src/density"]
+	path = src/density
+	url = https://github.com/centaurean/density.git
