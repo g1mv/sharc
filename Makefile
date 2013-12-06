@@ -34,7 +34,7 @@ endif
 
 TARGET = sharc
 DENSITY_SRC_DIRECTORY = ./src/density/src/
-SHARC_SRC_DIRECTORY = ./src/sharc/src/
+SHARC_SRC_DIRECTORY = ./src/
 
 CFLAGS = -flto -std=c99 -D_FILE_OFFSET_BITS=64
 
