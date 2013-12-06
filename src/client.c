@@ -395,7 +395,7 @@ int main(int argc, char *argv[]) {
         sharc_client_usage();
 
     sharc_byte action = SHARC_ACTION_COMPRESS;
-    DENSITY_COMPRESSION_MODE mode = DENSITY_COMPRESSION_MODE_CHAMELEON;
+    DENSITY_COMPRESSION_MODE mode = DENSITY_COMPRESSION_MODE_CHAMELEON_ALGORITHM;
     sharc_byte prompting = SHARC_PROMPTING;
     sharc_client_io in;
     in.origin_type = SHARC_HEADER_ORIGIN_TYPE_FILE;
@@ -425,10 +425,10 @@ int main(int argc, char *argv[]) {
                                 mode = DENSITY_COMPRESSION_MODE_COPY;
                                 break;
                             case 1:
-                                mode = DENSITY_COMPRESSION_MODE_CHAMELEON;
+                                mode = DENSITY_COMPRESSION_MODE_CHAMELEON_ALGORITHM;
                                 break;
                             case 2:
-                                mode = DENSITY_COMPRESSION_MODE_JADE;
+                                mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
                                 break;
                             /*case 3:
                                 mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
@@ -483,10 +483,10 @@ int main(int argc, char *argv[]) {
                                         mode = DENSITY_COMPRESSION_MODE_COPY;
                                         break;
                                     case 1:
-                                        mode = DENSITY_COMPRESSION_MODE_CHAMELEON;
+                                        mode = DENSITY_COMPRESSION_MODE_CHAMELEON_ALGORITHM;
                                         break;
                                     case 2:
-                                        mode = DENSITY_COMPRESSION_MODE_JADE;
+                                        mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
                                         break;
                                     /*case 3:
                                         mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
