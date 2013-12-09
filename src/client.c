@@ -87,10 +87,10 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
     printf("  -c[LEVEL], --compress[=LEVEL]     Compress files using LEVEL if specified (default)\n");
-    printf("                                    LEVEL can have the following values :\n");
+    printf("                                    LEVEL can have the following values (as values become higher, compression ratio increases and speed is reduced) :\n");
     printf("                                    0 = No compression\n");
-    printf("                                    1 = Chameleon algorithm, fastest compression available (default)\n");
-    printf("                                    2 = Chameleon algorithm dual pass\n");
+    printf("                                    1 = Chameleon algorithm (default)\n");
+    printf("                                    2 = Mandala algorithm\n");
     printf("                                    3 = Argonaut algorithm\n");
     printf("  -d, --decompress                  Decompress files\n");
     printf("  -p[PATH], --output-path[=PATH]    Set output path\n");
