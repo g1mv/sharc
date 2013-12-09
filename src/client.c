@@ -91,7 +91,7 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     printf("                                    0 = No compression\n");
     printf("                                    1 = Chameleon algorithm (default)\n");
     printf("                                    2 = Mandala algorithm\n");
-    printf("                                    3 = Argonaut algorithm\n");
+    //printf("                                    3 = Argonaut algorithm\n");
     printf("  -d, --decompress                  Decompress files\n");
     printf("  -p[PATH], --output-path[=PATH]    Set output path\n");
     printf("  -n, --no-prompt                   Overwrite without prompting\n");
