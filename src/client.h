@@ -95,7 +95,7 @@
 #endif
 
 typedef struct {
-    const char* name;
+    char* name;
     FILE* stream;
     SHARC_HEADER_ORIGIN_TYPE origin_type;
 } sharc_client_io;
@@ -106,7 +106,7 @@ uint8_t output_buffer[SHARC_PREFERRED_BUFFER_SIZE];
 FILE* sharc_client_checkOpenFile(const char*, const char*, const sharc_bool);
 void sharc_client_version();
 void sharc_client_usage();
-void sharc_client_compress(sharc_client_io *, sharc_client_io *, const DENSITY_COMPRESSION_MODE, const sharc_bool, const char*, const char*);
-void sharc_client_decompress(sharc_client_io *, sharc_client_io *, const sharc_bool, const char*, const char*);
+void sharc_client_compress(sharc_client_io *, sharc_client_io * const, const DENSITY_COMPRESSION_MODE, const sharc_bool, const char*, const char*);
+void sharc_client_decompress(sharc_client_io *, sharc_client_io * const, const sharc_bool, const char*, const char*);
 
 #endif

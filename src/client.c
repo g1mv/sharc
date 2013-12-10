@@ -144,44 +144,46 @@ SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fa
     }
 }
 
-SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *io_out, const DENSITY_COMPRESSION_MODE attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
+SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *const io_out, const DENSITY_COMPRESSION_MODE attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
     struct stat attributes;
 
     const size_t inFileNameLength = strlen(io_in->name);
+    const size_t outFileNameLength = inFileNameLength + 6;
+    io_out->name = (char*)malloc((outFileNameLength + 1) * sizeof(char));
+    sprintf(io_out->name, "%s.sharc", io_in->name);
+
     char inFilePath[strlen(inPath) + inFileNameLength + 1];
-    char outFilePath[strlen(outPath) + inFileNameLength + 6 + 1];
+    const size_t outFilePathLength = strlen(outPath) + outFileNameLength;
+    char outFilePath[(outFilePathLength > strlen(SHARC_STDIN_COMPRESSED) ? outFilePathLength : strlen(SHARC_STDIN_COMPRESSED)) + 1];
     sprintf(inFilePath, "%s%s", inPath, io_in->name);
 
     if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-        if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            sprintf(outFilePath, "%s%s.sharc", outPath, io_in->name);
-
-            io_out->name = outFilePath;
-        }
+        if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE)
+            sprintf(outFilePath, "%s%s", outPath, io_out->name);
 
         io_in->stream = sharc_client_checkOpenFile(inFilePath, "rb", false);
 
         stat(inFilePath, &attributes);
     } else {
         if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE)
-            io_out->name = SHARC_STDIN_COMPRESSED;
+            sprintf(outFilePath, "%s%s", outPath, SHARC_STDIN_COMPRESSED);
 
         io_in->stream = stdin;
         io_in->name = SHARC_STDIN;
     }
 
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE)
-        io_out->stream = sharc_client_checkOpenFile(io_out->name, "wb", prompting);
+        io_out->stream = sharc_client_checkOpenFile(outFilePath, "wb", prompting);
     else {
         io_out->stream = stdout;
-        io_out->name = SHARC_STDOUT;
+        sprintf(outFilePath, "%s%s", outPath, SHARC_STDOUT);
     }
 
     sharc_chrono chrono;
     sharc_chrono_start(&chrono);
 
     /*
-     * The following code is an example of how to use the stream API to compress a file
+     * The following code is an example of how to use the Density stream API to compress a file
      */
     uint64_t totalWritten = sharc_header_write(io_out->stream, io_out->origin_type, &attributes);
     density_stream *stream = (density_stream *) malloc(sizeof(density_stream));
@@ -229,7 +231,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
 #endif
-            printf("%s", io_out->name);
+            printf("%s", outFilePath);
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
@@ -250,7 +252,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
 #endif
-            printf("%s", io_out->name);
+            printf("%s", outFilePath);
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
@@ -258,44 +260,45 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
         }
     }
     free(stream);
+    free(io_out->name);
 }
 
-SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_client_io *io_out, const sharc_bool prompting, const char *inPath, const char *outPath) {
+SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_client_io *const io_out, const sharc_bool prompting, const char *inPath, const char *outPath) {
     const size_t inFileNameLength = strlen(io_in->name);
-    char inFilePath[strlen(inPath) + inFileNameLength];
-    char outFilePath[strlen(outPath) + inFileNameLength - 6];
+    const size_t outFileNameLength = inFileNameLength - 6;
+    io_out->name = (char*)malloc((outFileNameLength + 1) * sizeof(char));
+    strncpy(io_out->name, io_in->name, outFileNameLength);
+
+    char inFilePath[strlen(inPath) + inFileNameLength + 1];
+    const size_t outFilePathLength = strlen(outPath) + outFileNameLength;
+    char outFilePath[(outFilePathLength > strlen(SHARC_STDOUT) ? outFilePathLength : strlen(SHARC_STDOUT)) + 1];
     sprintf(inFilePath, "%s%s", inPath, io_in->name);
 
     if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-        if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            outFilePath[0] = '\0';
-            strcat(outFilePath, outPath);
-            strncat(outFilePath, io_in->name, inFileNameLength - 6);
-
-            io_out->name = outFilePath;
-        }
+        if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE)
+            sprintf(outFilePath, "%s%s", outPath, io_out->name);
 
         io_in->stream = sharc_client_checkOpenFile(inFilePath, "rb", false);
     } else {
         if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE)
-            io_out->name = SHARC_STDIN;
+            strcpy(outFilePath, SHARC_STDIN);
 
         io_in->stream = stdin;
         io_in->name = SHARC_STDIN;
     }
 
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE)
-        io_out->stream = sharc_client_checkOpenFile(io_out->name, "wb", prompting);
+        io_out->stream = sharc_client_checkOpenFile(outFilePath, "wb", prompting);
     else {
         io_out->stream = stdout;
-        io_out->name = SHARC_STDOUT;
+        strcpy(outFilePath, SHARC_STDOUT);
     }
 
     sharc_chrono chrono;
     sharc_chrono_start(&chrono);
 
     /*
-     * The following code is an example of how to use the stream API to decompress a file
+     * The following code is an example of how to use the Density stream API to decompress a file
      */
     sharc_header header;
     uint64_t totalRead = sharc_header_read(io_in->stream, &header);
@@ -327,7 +330,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
         fclose(io_out->stream);
 
         if (header.genericHeader.originType == SHARC_HEADER_ORIGIN_TYPE_FILE)
-            sharc_header_restore_file_attributes(&header, io_out->name);
+            sharc_header_restore_file_attributes(&header, outFilePath);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
             totalRead += *stream->in_total_read;
@@ -353,7 +356,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
 #endif
-            printf("%s", io_out->name);
+            printf("%s", outFilePath);
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
@@ -374,7 +377,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
 #endif
-            printf("%s", io_out->name);
+            printf("%s", outFilePath);
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
@@ -382,6 +385,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
         }
     }
     free(stream);
+    free(io_out->name);
 }
 
 int main(int argc, char *argv[]) {
@@ -402,7 +406,6 @@ int main(int argc, char *argv[]) {
     in.name = "";
     sharc_client_io out;
     out.origin_type = SHARC_HEADER_ORIGIN_TYPE_FILE;
-    out.name = "";
     sharc_byte pathMode = SHARC_FILE_OUTPUT_PATH;
     char inPath[SHARC_OUTPUT_PATH_MAX_SIZE] = "";
     char outPath[SHARC_OUTPUT_PATH_MAX_SIZE] = "";
@@ -430,9 +433,9 @@ int main(int argc, char *argv[]) {
                             case 2:
                                 mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
                                 break;
-                            /*case 3:
-                                mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
-                                break;*/
+                                /*case 3:
+                                    mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
+                                    break;*/
                             default:
                                 sharc_client_usage();
                         }
@@ -465,7 +468,6 @@ int main(int argc, char *argv[]) {
                     case 'v':
                         sharc_client_version();
                         exit(0);
-                        break;
                     case 'h':
                         sharc_client_usage();
                         break;
@@ -488,9 +490,9 @@ int main(int argc, char *argv[]) {
                                     case 2:
                                         mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
                                         break;
-                                    /*case 3:
-                                        mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
-                                        break;*/
+                                        /*case 3:
+                                            mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
+                                            break;*/
                                     default:
                                         sharc_client_usage();
                                 }
