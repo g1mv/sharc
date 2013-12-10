@@ -87,7 +87,8 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
     printf("  -c[LEVEL], --compress[=LEVEL]     Compress files using LEVEL if specified (default)\n");
-    printf("                                    LEVEL can have the following values (as values become higher, compression ratio increases and speed is reduced) :\n");
+    printf("                                    LEVEL can have the following values (as values become higher,\n");
+    printf("                                    compression ratio increases and speed diminishes) :\n");
     printf("                                    0 = No compression\n");
     printf("                                    1 = Chameleon algorithm (default)\n");
     printf("                                    2 = Mandala algorithm\n");
