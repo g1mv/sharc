@@ -154,7 +154,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 
     char inFilePath[strlen(inPath) + inFileNameLength + 1];
     const size_t outFilePathLength = strlen(outPath) + outFileNameLength;
-    char outFilePath[(outFilePathLength > strlen(SHARC_STDIN_COMPRESSED) ? outFilePathLength : strlen(SHARC_STDIN_COMPRESSED)) + 1];
+    char outFilePath[(outFileNameLength > strlen(SHARC_STDIN_COMPRESSED) ? outFilePathLength : strlen(outPath) + strlen(SHARC_STDIN_COMPRESSED)) + 1];
     sprintf(inFilePath, "%s%s", inPath, io_in->name);
 
     if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
@@ -185,7 +185,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     /*
      * The following code is an example of how to use the Density stream API to compress a file
      */
-    uint64_t totalWritten = sharc_header_write(io_out->stream, io_out->origin_type, &attributes);
+    uint64_t totalWritten = sharc_header_write(io_out->stream, io_in->origin_type, &attributes);
     density_stream *stream = (density_stream *) malloc(sizeof(density_stream));
     DENSITY_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
@@ -256,7 +256,9 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
-            printf(", %"PRIu64" bytes written.\n", totalWritten);
+            printf(", ");
+            sharc_client_format_decimal(totalWritten);
+            printf(" bytes written.\n");
         }
     }
     free(stream);
@@ -264,14 +266,18 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 }
 
 SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_client_io *const io_out, const sharc_bool prompting, const char *inPath, const char *outPath) {
+    if(io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_STREAM)
+        io_in->name = SHARC_STDIN_COMPRESSED;
     const size_t inFileNameLength = strlen(io_in->name);
+    if(inFileNameLength < 6)
+        sharc_client_exit_error("Invalid file name");
     const size_t outFileNameLength = inFileNameLength - 6;
     io_out->name = (char*)malloc((outFileNameLength + 1) * sizeof(char));
     strncpy(io_out->name, io_in->name, outFileNameLength);
 
     char inFilePath[strlen(inPath) + inFileNameLength + 1];
     const size_t outFilePathLength = strlen(outPath) + outFileNameLength;
-    char outFilePath[(outFilePathLength > strlen(SHARC_STDOUT) ? outFilePathLength : strlen(SHARC_STDOUT)) + 1];
+    char outFilePath[(outFileNameLength > strlen(SHARC_STDOUT) ? outFilePathLength : strlen(outPath) + strlen(SHARC_STDOUT)) + 1];
     sprintf(inFilePath, "%s%s", inPath, io_in->name);
 
     if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
@@ -284,7 +290,6 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
             strcpy(outFilePath, SHARC_STDIN);
 
         io_in->stream = stdin;
-        io_in->name = SHARC_STDIN;
     }
 
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE)
@@ -381,7 +386,9 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
-            printf(", %"PRIu64" bytes written.\n", totalWritten);
+            printf(", ");
+            sharc_client_format_decimal(totalWritten);
+            printf(" bytes written.\n");
         }
     }
     free(stream);
