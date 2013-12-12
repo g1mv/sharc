@@ -1,6 +1,6 @@
 0.9.11 beta
 -----------
-<i>December 14, 2013</i>
+<i>December 12, 2013</i>
 
 * Client code and compression library are now distinct projects
 * Updated compression library to [Density 0.9.12 beta](https://github.com/centaurean/density.git)
