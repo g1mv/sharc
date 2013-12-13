@@ -274,6 +274,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     const size_t outFileNameLength = inFileNameLength - 6;
     io_out->name = (char*)malloc((outFileNameLength + 1) * sizeof(char));
     strncpy(io_out->name, io_in->name, outFileNameLength);
+    io_out->name[outFileNameLength] = '\0';
 
     char inFilePath[strlen(inPath) + inFileNameLength + 1];
     const size_t outFilePathLength = strlen(outPath) + outFileNameLength;
