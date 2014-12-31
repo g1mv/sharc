@@ -1,6 +1,5 @@
 /*
  * Centaurean Sharc
- * http://www.centaurean.com/sharc
  *
  * Copyright (c) 2013, Guillaume Voirin
  * All rights reserved.
@@ -52,7 +51,7 @@
 #define SHARC_FILE_OUTPUT_PATH        false
 #define SHARC_FIXED_OUTPUT_PATH       true
 
-#define SHARC_PREFERRED_BUFFER_SIZE   1 << 19
+#define SHARC_PREFERRED_BUFFER_SIZE   (1 << 19)
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define SHARC_ENDIAN_STRING           "Little"

@@ -1,6 +1,5 @@
 /*
  * Centaurean Sharc
- * http://www.centaurean.com/sharc
  *
  * Copyright (c) 2013, Guillaume Voirin
  * All rights reserved.
@@ -112,22 +111,23 @@ void sharc_client_format_decimal(uint64_t number) {
 }
 
 SHARC_FORCE_INLINE uint_fast64_t sharc_client_reloadInputBuffer(density_stream *restrict stream, const sharc_client_io *restrict io_in) {
-    stream->in.size = (uint_fast64_t) fread(stream->in.pointer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
-    if (stream->in.size < SHARC_PREFERRED_BUFFER_SIZE) {
-        if (ferror(io_in->stream))
+    uint_fast64_t read = (uint_fast64_t) fread(input_buffer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
+    density_stream_update_input(stream, input_buffer, read);
+    if (read < SHARC_PREFERRED_BUFFER_SIZE) {
+        if (!read || ferror(io_in->stream))
             sharc_client_exit_error("Error reading file");
     }
-    density_byte_buffer_rewind(&stream->in);
-    return stream->in.size;
+    return read;
 }
 
 SHARC_FORCE_INLINE uint_fast64_t sharc_client_emptyOutputBuffer(density_stream *restrict stream, const sharc_client_io *restrict io_out) {
-    uint_fast64_t written = (uint_fast64_t) fwrite(stream->out.pointer, sizeof(sharc_byte), (size_t) stream->out.position, io_out->stream);
-    if (written < stream->out.position) {
-        if (ferror(io_out->stream))
+    uint_fast64_t available = density_stream_output_available_for_use(stream);
+    uint_fast64_t written = (uint_fast64_t) fwrite(output_buffer, sizeof(sharc_byte), (size_t) available, io_out->stream);
+    if (written < available) {
+        if (!written || ferror(io_out->stream))
             sharc_client_exit_error("Error writing file");
     }
-    density_byte_buffer_rewind(&stream->out);
+    density_stream_update_output(stream, output_buffer, SHARC_PREFERRED_BUFFER_SIZE);
     return written;
 }
 
@@ -149,7 +149,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 
     const size_t inFileNameLength = strlen(io_in->name);
     const size_t outFileNameLength = inFileNameLength + 6;
-    io_out->name = (char*)malloc((outFileNameLength + 1) * sizeof(char));
+    io_out->name = (char *) malloc((outFileNameLength + 1) * sizeof(char));
     sprintf(io_out->name, "%s.sharc", io_in->name);
 
     char inFilePath[strlen(inPath) + inFileNameLength + 1];
@@ -186,10 +186,10 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
      * The following code is an example of how to use the Density stream API to compress a file
      */
     uint64_t totalWritten = sharc_header_write(io_out->stream, io_in->origin_type, &attributes);
-    density_stream *stream = (density_stream *) malloc(sizeof(density_stream));
+    density_stream *stream = density_stream_create(NULL, NULL);
     DENSITY_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
-    if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
+    if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
         sharc_client_exit_error("Unable to prepare compression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = density_stream_compress_init(stream, attemptMode, DENSITY_ENCODE_OUTPUT_TYPE_DEFAULT, DENSITY_BLOCK_TYPE_DEFAULT)))
@@ -261,18 +261,18 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
             printf(" bytes written.\n");
         }
     }
-    free(stream);
+    density_stream_destroy(stream);
     free(io_out->name);
 }
 
 SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_client_io *const io_out, const sharc_bool prompting, const char *inPath, const char *outPath) {
-    if(io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_STREAM)
+    if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_STREAM)
         io_in->name = SHARC_STDIN_COMPRESSED;
     const size_t inFileNameLength = strlen(io_in->name);
-    if(inFileNameLength < 6)
+    if (inFileNameLength < 6)
         sharc_client_exit_error("Invalid file name");
     const size_t outFileNameLength = inFileNameLength - 6;
-    io_out->name = (char*)malloc((outFileNameLength + 1) * sizeof(char));
+    io_out->name = (char *) malloc((outFileNameLength + 1) * sizeof(char));
     strncpy(io_out->name, io_in->name, outFileNameLength);
     io_out->name[outFileNameLength] = '\0';
 
@@ -310,10 +310,10 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     uint64_t totalRead = sharc_header_read(io_in->stream, &header);
     if (!sharc_header_check_validity(&header))
         sharc_client_exit_error("Invalid file");
-    density_stream *stream = (density_stream *) malloc(sizeof(density_stream));
+    density_stream *stream = density_stream_create(NULL, NULL);
     DENSITY_STREAM_STATE streamState;
     uint_fast64_t read = 0, written = 0;
-    if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE, NULL, NULL))
+    if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
         sharc_client_exit_error("Unable to prepare decompression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = density_stream_decompress_init(stream)))
@@ -392,7 +392,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
             printf(" bytes written.\n");
         }
     }
-    free(stream);
+    density_stream_destroy(stream);
     free(io_out->name);
 }
 
@@ -565,7 +565,7 @@ int main(int argc, char *argv[]) {
                         } else
                             sharc_client_usage();
                         if (pathMode == SHARC_FILE_OUTPUT_PATH)
-                        strcpy(outPath, inPath);
+                            strcpy(outPath, inPath);
                     } else
                         in.name = argv[i];
                 }
