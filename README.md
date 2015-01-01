@@ -11,7 +11,7 @@ SHARC is actually a single-thread <b>command line interface</b> to the **<a href
 
 Benchmark
 ---------
-[Click here for a benchmark](http://quixdb.github.io/squash/benchmarks/core-i3-2105.html) of <b>SHARC</b>'s fastest mode compared to other archivers, on an Intel® Core™ i3-2105 (x86 64), Asus P8H61-H motherboard with Fedora 19. It is possible to run yours using [this project](https://github.com/quixdb/squash).
+[Click here for a benchmark](http://quixdb.github.io/squash/benchmarks/core-i3-2105.html) of <b>SHARC</b>'s fastest mode compared to other algorithms, on an Intel® Core™ i3-2105 (x86 64), Asus P8H61-H motherboard with Fedora 19. It is possible to run yours using [this project](https://github.com/quixdb/squash).
 
 Usage
 -----
