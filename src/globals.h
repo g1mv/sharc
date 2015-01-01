@@ -33,10 +33,12 @@
 
 #if defined(__INTEL_COMPILER)
 #define SHARC_FORCE_INLINE __forceinline
-#elif defined(__GNUC__)
-#define SHARC_FORCE_INLINE inline __attribute__((always_inline))
 #elif defined(_MSC_VER)
 #define SHARC_FORCE_INLINE __forceinline
+#elif defined(__GNUC__)
+#define SHARC_FORCE_INLINE inline __attribute__((always_inline))
+#elif defined(__clang__)
+#define SHARC_FORCE_INLINE inline __attribute__((always_inline))
 #else
 #warning Impossible to force functions inlining. Expect performance issues.
 #endif
