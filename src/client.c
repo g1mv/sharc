@@ -192,7 +192,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
         sharc_client_exit_error("Unable to prepare compression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
-    while ((streamState = density_stream_compress_init(stream, attemptMode, DENSITY_ENCODE_OUTPUT_TYPE_DEFAULT, DENSITY_BLOCK_TYPE_DEFAULT)))
+    while ((streamState = density_stream_compress_init(stream, attemptMode, DENSITY_BLOCK_TYPE_DEFAULT)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize compression");
     while ((streamState = density_stream_compress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during compression");
@@ -316,7 +316,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
         sharc_client_exit_error("Unable to prepare decompression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
-    while ((streamState = density_stream_decompress_init(stream)))
+    while ((streamState = density_stream_decompress_init(stream, NULL)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize decompression");
     while ((streamState = density_stream_decompress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during decompression");
