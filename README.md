@@ -18,7 +18,7 @@ Platform : MacBook Pro, OSX 10.10.1, 2.3 GHz Intel Core i7, 8Go 1600 MHz DDR, SS
 
 Timing : using the *time* function, and taking the best *user* output after multiple runs
 
-<font size=2>
+<font size="2">
 Program | Library | Compress | Decompress | Size | Ratio | Round trip
 --- | --- | --- | --- | --- | --- | ---
 sharc -c1 | density 0.10.2 | 0,117s (854,70 MB/s) | 0,096s (1041,67 MB/s) | 61 525 266 | 61,53% | 0,213s
