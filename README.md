@@ -29,6 +29,16 @@ Timing : using the *time* function, and taking the best *user* output after mult
 
 For a more exhaustive benchmark, [click here](http://quixdb.github.io/squash/benchmarks/core-i3-2105.html) to see **SHARC**'s fastest mode compared to other algorithms, on an Intel® Core™ i3-2105 (x86 64), Asus P8H61-H motherboard with Fedora 19. It is possible to run yours using [this project](https://github.com/quixdb/squash).
 
+Build
+-----
+
+SHARC is C99 compliant and easy to build on most platforms. You need a C compiler (gcc, clang ...), a *make* utility and *git* to checkout the DENSITY submodule.
+
+Just *cd* into the sharc directory, then run the following command :
+> make
+
+And that's it !
+
 Usage
 -----
 
