@@ -18,6 +18,7 @@ Platform : MacBook Pro, OSX 10.10.1, 2.3 GHz Intel Core i7, 8Go 1600 MHz DDR, SS
 
 Timing : using the *time* function, and taking the best *user* output after multiple runs
 
+
 <sub>Program</sub> | <sub>Library</sub> | <sub>Compress</sub> | <sub>Decompress</sub> | <sub>Size</sub> | <sub>Ratio</sub> | <sub>Round trip</sub>
 --- | --- | --- | --- | --- | --- | ---
 <sub>**sharc** -c1</sub> | <sub>**density** 0.10.2</sub> | <sub>0,117s (854,70 MB/s)</sub> | <sub>0,096s (1041,67 MB/s)</sub> | <sub>61 525 266</sub> | <sub>61,53%</sub> | <sub>0,213s</sub>
@@ -28,6 +29,7 @@ Timing : using the *time* function, and taking the best *user* output after mult
 <sub>lzop -9</sub> | <sub>lzo 2.08</sub> | <sub>14,298s (6,99 MB/s)</sub> | <sub>0,315s 317,46 MB/s)</sub> | <sub>41 217 688</sub> | <sub>41,22%</sub> | <sub>14,613s</sub>
 
 For a more exhaustive benchmark, [click here](http://quixdb.github.io/squash/benchmarks/core-i3-2105.html) to see **SHARC**'s fastest mode compared to other algorithms, on an Intel® Core™ i3-2105 (x86 64), Asus P8H61-H motherboard with Fedora 19. It is possible to run yours using [this project](https://github.com/quixdb/squash).
+
 
 Usage
 -----
