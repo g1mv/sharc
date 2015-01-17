@@ -114,7 +114,7 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_client_reloadInputBuffer(density_stream *
     uint_fast64_t read = (uint_fast64_t) fread(input_buffer, sizeof(sharc_byte), SHARC_PREFERRED_BUFFER_SIZE, io_in->stream);
     density_stream_update_input(stream, input_buffer, read);
     if (read < SHARC_PREFERRED_BUFFER_SIZE) {
-        if (!read || ferror(io_in->stream))
+        if (ferror(io_in->stream))
             sharc_client_exit_error("Error reading file");
     }
     return read;
@@ -124,7 +124,7 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_client_emptyOutputBuffer(density_stream *
     uint_fast64_t available = density_stream_output_available_for_use(stream);
     uint_fast64_t written = (uint_fast64_t) fwrite(output_buffer, sizeof(sharc_byte), (size_t) available, io_out->stream);
     if (written < available) {
-        if (!written || ferror(io_out->stream))
+        if (ferror(io_out->stream))
             sharc_client_exit_error("Error writing file");
     }
     density_stream_update_output(stream, output_buffer, SHARC_PREFERRED_BUFFER_SIZE);
@@ -133,10 +133,10 @@ SHARC_FORCE_INLINE uint_fast64_t sharc_client_emptyOutputBuffer(density_stream *
 
 SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fast64_t *written, const sharc_client_io *restrict io_in, const sharc_client_io *restrict io_out, density_stream *restrict stream, const DENSITY_STREAM_STATE streamState, const char *errorMessage) {
     switch (streamState) {
-        case DENSITY_STREAM_STATE_STALL_ON_OUTPUT_BUFFER:
+        case DENSITY_STREAM_STATE_STALL_ON_OUTPUT:
             *written = sharc_client_emptyOutputBuffer(stream, io_out);
             break;
-        case DENSITY_STREAM_STATE_STALL_ON_INPUT_BUFFER:
+        case DENSITY_STREAM_STATE_STALL_ON_INPUT:
             *read = sharc_client_reloadInputBuffer(stream, io_in);
             break;
         default:
@@ -194,7 +194,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = density_stream_compress_init(stream, attemptMode, DENSITY_BLOCK_TYPE_DEFAULT)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize compression");
-    while ((streamState = density_stream_compress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
+    while ((streamState = density_stream_compress_continue(stream)) && (read == SHARC_PREFERRED_BUFFER_SIZE))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during compression");
     while ((streamState = density_stream_compress_finish(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing compression");
@@ -318,7 +318,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = density_stream_decompress_init(stream, NULL)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize decompression");
-    while ((streamState = density_stream_decompress(stream, read < SHARC_PREFERRED_BUFFER_SIZE)))
+    while ((streamState = density_stream_decompress_continue(stream)) && (read == SHARC_PREFERRED_BUFFER_SIZE))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during decompression");
     while ((streamState = density_stream_decompress_finish(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing decompression");
