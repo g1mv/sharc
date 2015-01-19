@@ -62,9 +62,9 @@
 #error Unknow endianness
 #endif
 
-#define SHARC_MAJOR_VERSION               0
-#define SHARC_MINOR_VERSION               9
-#define SHARC_REVISION                    12
+#define SHARC_MAJOR_VERSION               1
+#define SHARC_MINOR_VERSION               0
+#define SHARC_REVISION                    0
 
 #define SHARC_ESCAPE_CHARACTER   ((char)27)
 
