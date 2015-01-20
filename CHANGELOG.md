@@ -1,6 +1,14 @@
+1.0.0
+-----
+*January 19, 2015*
+
+* Now using Density 0.11.1 with the new streams API
+* Improved README, added benchmark
+
+
 0.9.11 beta
 -----------
-<i>December 12, 2013</i>
+*December 12, 2013*
 
 * Client code and compression library are now distinct projects
 * Updated compression library to [Density 0.9.12 beta](https://github.com/centaurean/density.git)
@@ -13,7 +21,7 @@
 
 0.9.10 beta
 -----------
-<i>September 14, 2013</i>
+*September 14, 2013*
 
 * Added a stream API with flushing support and custom memory allocation
 * Added a buffers API on top of the the stream API layer
@@ -31,7 +39,7 @@
 
 0.9.9 beta
 ----------
-<i>August 26, 2013</i>
+*August 26, 2013*
 
 * Added maximum dictionary reset cycle to ensure possible parallelization
 * Improved XOR mask
@@ -43,7 +51,7 @@
 
 0.9.8 beta
 ----------
-<i>August 19, 2013</i>
+*August 19, 2013*
 
 * Added preprocessor guards on large file #defines
 * Modified dictionary indexing process to enable reuse of long distance previously-read file data (major performance boost)
@@ -56,7 +64,7 @@
 
 0.9.7 beta
 ----------
-<i>August 8, 2013</i>
+*August 8, 2013*
 
 * Improved binary mode setting for stdin/stdout on Windows
 * Added support for big endian CPU systems
@@ -72,7 +80,7 @@
 
 0.9.6 beta
 ----------
-<i>August 1, 2013</i>
+*August 1, 2013*
 
 * Target architecture definition option re-added in makefile
 * Improved makefile and program displays
@@ -83,14 +91,14 @@
 
 0.9.5 beta
 ----------
-<i>July 20, 2013</i>
+*July 20, 2013*
 
 * Improved makefile and added build information on version display
 * Added stddef.h to globals.h for standard macro definitions
 
 0.9.4 beta
 ----------
-<i>July 5, 2013</i>
+*July 5, 2013*
 
 * Added no prompting for overwrites option
 * Created client interface to differentiate file management and stream compression
@@ -99,7 +107,7 @@
 
 0.9.3 beta
 ----------
-<i>July 2, 2013</i>
+*July 2, 2013*
 
 * Corrected out file name problem
 * Corrected problem with intermediate buffer pointer swap in case of an encoding mode reversion
@@ -109,7 +117,7 @@
 
 0.9.2 beta
 ----------
-<i>June 29, 2013</i>
+*June 29, 2013*
 
 * Improved makefile
 * Added usage
@@ -121,6 +129,6 @@
 
 0.9.1 beta
 ----------
-<i>June 24, 2013</i>
- 
+*June 24, 2013*
+
 * Initial beta version
