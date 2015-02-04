@@ -22,8 +22,6 @@
 # 01/06/13 17:27
 #
 
-export
-
 ifeq ($(OS),Windows_NT)
     bold =
     normal =
@@ -33,10 +31,9 @@ else
 endif
 
 TARGET = sharc
+SRC_DIRECTORY = ./src/
 DENSITY_SRC_DIRECTORY = ./src/density/src/
-SHARC_SRC_DIRECTORY = ./src/
-
-CFLAGS = -flto -std=c99 -D_FILE_OFFSET_BITS=64
+SPOOKYHASH_SRC_DIRECTORY = ./src/density/src/spookyhash/src/
 
 ifeq ($(OS),Windows_NT)
     EXTENSION = .exe
@@ -46,32 +43,21 @@ else
     ARROW = \-\>
 endif
 
-ifdef ARCH
-    CFLAGS += -m$(ARCH)
-endif
-
-ifndef WARNINGS
-    CFLAGS += -w
-else
-    CFLAGS += -Wall
-endif
-
-ifndef DEBUG
-    CFLAGS += -O4
-else
-    CFLAGS += -O0 -g
-endif
-
-CC = @$(PREFIX)cc$(SUFFIX)
-
-SRC = $(wildcard $(SHARC_SRC_DIRECTORY)*.c)
+SRC = $(wildcard $(SRC_DIRECTORY)*.c $(DENSITY_SRC_DIRECTORY)*.c $(SPOOKYHASH_SRC_DIRECTORY)*.c)
 OBJ = $(SRC:.c=.o)
 
 ALL_OBJ = $(OBJ)
 
-.PHONY: compile link-header link sharc-compile sharc-clean density-compile density-clean
+.PHONY: link-header link
 
-all: link
+all: compile link-header link
+
+$(SPOOKYHASH_SRC_DIRECTORY)Makefile:
+	@echo ${bold}Cloning SpookyHash${normal} ...
+	@cd $(DENSITY_SRC_DIRECTORY)
+	@git submodule init
+	@git submodule update
+	@echo
 
 $(DENSITY_SRC_DIRECTORY)Makefile:
 	@echo ${bold}Cloning Density${normal} ...
@@ -79,32 +65,24 @@ $(DENSITY_SRC_DIRECTORY)Makefile:
 	@git submodule update
 	@echo
 
-density-compile: $(DENSITY_SRC_DIRECTORY)Makefile
-	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
-
-sharc-compile:
-	@cd $(SHARC_SRC_DIRECTORY) && $(MAKE) compile
-
 link-header:
 	@echo ${bold}Linking Sharc${normal} ...
 
-compile: density-compile sharc-compile
+compile: $(SPOOKYHASH_SRC_DIRECTORY)Makefile $(DENSITY_SRC_DIRECTORY)Makefile
+	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) compile
+	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
+	@cd $(SRC_DIRECTORY) && $(MAKE) compile
 
-link: compile link-header $(TARGET)$(EXTENSION)
+link: compile link-header $(TARGET)$(STAT_EXT) $(TARGET)$(DYN_EXT)
 	@echo Done.
 	@echo
-	
-$(TARGET)$(EXTENSION):
+
+$(TARGET)$(EXTENSION): $(ALL_OBJ)
 	@echo *.o $(ARROW) $(TARGET)$(EXTENSION)
-	$(CC) -o $(TARGET)$(EXTENSION) $(SHARC_SRC_DIRECTORY)*.o $(DENSITY_SRC_DIRECTORY)*.o $(CFLAGS)
+	@$(CC) -o $(TARGET)$(EXTENSION) $(OBJ)
 
-density-clean:
-	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) clean
-	
-sharc-clean:
-	@cd $(SHARC_SRC_DIRECTORY) && $(MAKE) clean
-
-clean: density-clean sharc-clean
-	@echo ${bold}Removing $(TARGET)$(EXTENSION)${normal} ...
+clean:
 	@rm -f $(TARGET)$(EXTENSION)
-	@echo Done.
+	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) clean
+	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) clean
+	@cd $(SRC_DIRECTORY) && $(MAKE) clean

@@ -93,7 +93,8 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     //printf("                                    3 = Argonaut algorithm\n");
     printf("  -d, --decompress                  Decompress files\n");
     printf("  -p[PATH], --output-path[=PATH]    Set output path\n");
-    printf("  -n, --no-prompt                   Overwrite without prompting\n");
+    printf("  -x, --check-integrity             Add integrity check hashsum (use when compressing)\n");
+    printf("  -f, --no-prompt                   Overwrite without prompting\n");
     printf("  -i, --stdin                       Read from stdin\n");
     printf("  -o, --stdout                      Write to stdout\n");
     printf("  -v, --version                     Display version information\n");
@@ -139,12 +140,14 @@ SHARC_FORCE_INLINE void sharc_client_actionRequired(uint_fast64_t *read, uint_fa
         case DENSITY_STREAM_STATE_STALL_ON_INPUT:
             *read = sharc_client_reloadInputBuffer(stream, io_in);
             break;
+        case DENSITY_STREAM_STATE_ERROR_INTEGRITY_CHECK_FAIL:
+            sharc_client_exit_error("Integrity check failed");
         default:
             sharc_client_exit_error(errorMessage);
     }
 }
 
-SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *const io_out, const DENSITY_COMPRESSION_MODE attemptMode, const sharc_bool prompting, const char *inPath, const char *outPath) {
+SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_client_io *const io_out, const DENSITY_COMPRESSION_MODE attemptMode, const sharc_bool prompting, const sharc_bool integrityChecks, const char *inPath, const char *outPath) {
     struct stat attributes;
 
     const size_t inFileNameLength = strlen(io_in->name);
@@ -192,7 +195,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (density_stream_prepare(stream, input_buffer, SHARC_PREFERRED_BUFFER_SIZE, output_buffer, SHARC_PREFERRED_BUFFER_SIZE))
         sharc_client_exit_error("Unable to prepare compression");
     read = sharc_client_reloadInputBuffer(stream, io_in);
-    while ((streamState = density_stream_compress_init(stream, attemptMode, DENSITY_BLOCK_TYPE_DEFAULT)))
+    while ((streamState = density_stream_compress_init(stream, attemptMode, integrityChecks ? DENSITY_BLOCK_TYPE_WITH_HASHSUM_INTEGRITY_CHECK : DENSITY_BLOCK_TYPE_DEFAULT)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize compression");
     while ((streamState = density_stream_compress_continue(stream)) && (read == SHARC_PREFERRED_BUFFER_SIZE))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during compression");
@@ -208,11 +211,11 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
         const double elapsed = sharc_chrono_elapsed(&chrono);
 
-        totalWritten += *stream->out_total_written;
+        totalWritten += *stream->totalBytesWritten;
         fclose(io_out->stream);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            uint64_t totalRead = *stream->in_total_read;
+            uint64_t totalRead = *stream->totalBytesRead;
             fclose(io_in->stream);
 
             double ratio = (100.0 * totalWritten) / totalRead;
@@ -332,14 +335,14 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     if (io_out->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
         const double elapsed = sharc_chrono_elapsed(&chrono);
 
-        uint64_t totalWritten = *stream->out_total_written;
+        uint64_t totalWritten = *stream->totalBytesWritten;
         fclose(io_out->stream);
 
         if (header.genericHeader.originType == SHARC_HEADER_ORIGIN_TYPE_FILE)
             sharc_header_restore_file_attributes(&header, outFilePath);
 
         if (io_in->origin_type == SHARC_HEADER_ORIGIN_TYPE_FILE) {
-            totalRead += *stream->in_total_read;
+            totalRead += *stream->totalBytesRead;
             fclose(io_in->stream);
 
             if (header.genericHeader.originType == SHARC_HEADER_ORIGIN_TYPE_FILE) {
@@ -408,7 +411,8 @@ int main(int argc, char *argv[]) {
 
     sharc_byte action = SHARC_ACTION_COMPRESS;
     DENSITY_COMPRESSION_MODE mode = DENSITY_COMPRESSION_MODE_CHAMELEON_ALGORITHM;
-    sharc_byte prompting = SHARC_PROMPTING;
+    sharc_bool prompting = SHARC_PROMPTING;
+    sharc_bool integrityChecks = SHARC_NO_INTEGRITY_CHECK;
     sharc_client_io in;
     in.origin_type = SHARC_HEADER_ORIGIN_TYPE_FILE;
     in.name = "";
@@ -464,8 +468,11 @@ int main(int argc, char *argv[]) {
                         }
                         pathMode = SHARC_FIXED_OUTPUT_PATH;
                         break;
-                    case 'n':
+                    case 'f':
                         prompting = SHARC_NO_PROMPTING;
+                        break;
+                    case 'x':
+                        integrityChecks = SHARC_INTEGRITY_CHECKS;
                         break;
                     case 'i':
                         in.origin_type = SHARC_HEADER_ORIGIN_TYPE_STREAM;
@@ -484,23 +491,36 @@ int main(int argc, char *argv[]) {
                             sharc_client_usage();
                         switch (argv[i][2]) {
                             case 'c':
-                                if (argLength == 10)
-                                    break;
-                                if (argLength != 12)
+                                if (argLength < 4)
                                     sharc_client_usage();
-                                switch (argv[i][11] - '0') {
-                                    case 0:
-                                        mode = DENSITY_COMPRESSION_MODE_COPY;
+                                switch(argv[i][3]) {
+                                    case 'o':
+                                        if (argLength == 10)
+                                            break;
+                                        if (argLength != 12)
+                                            sharc_client_usage();
+                                        switch (argv[i][11] - '0') {
+                                            case 0:
+                                                mode = DENSITY_COMPRESSION_MODE_COPY;
+                                                break;
+                                            case 1:
+                                                mode = DENSITY_COMPRESSION_MODE_CHAMELEON_ALGORITHM;
+                                                break;
+                                            case 2:
+                                                mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
+                                                break;
+                                                /*case 3:
+                                                    mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
+                                                    break;*/
+                                            default:
+                                                sharc_client_usage();
+                                        }
                                         break;
-                                    case 1:
-                                        mode = DENSITY_COMPRESSION_MODE_CHAMELEON_ALGORITHM;
+                                    case 'h':
+                                        if (argLength != 17)
+                                            sharc_client_usage();
+                                        integrityChecks = SHARC_INTEGRITY_CHECKS;
                                         break;
-                                    case 2:
-                                        mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
-                                        break;
-                                        /*case 3:
-                                            mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
-                                            break;*/
                                     default:
                                         sharc_client_usage();
                                 }
@@ -574,7 +594,7 @@ int main(int argc, char *argv[]) {
                         sharc_client_decompress(&in, &out, prompting, inPath, outPath);
                         break;
                     default:
-                        sharc_client_compress(&in, &out, mode, prompting, inPath, outPath);
+                        sharc_client_compress(&in, &out, mode, prompting, integrityChecks, inPath, outPath);
                         break;
                 }
                 break;
@@ -587,7 +607,7 @@ int main(int argc, char *argv[]) {
                 sharc_client_decompress(&in, &out, prompting, inPath, outPath);
                 break;
             default:
-                sharc_client_compress(&in, &out, mode, prompting, inPath, outPath);
+                sharc_client_compress(&in, &out, mode, prompting, integrityChecks, inPath, outPath);
                 break;
         }
     }

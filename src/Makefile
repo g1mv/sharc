@@ -25,30 +25,14 @@
 ifeq ($(OS),Windows_NT)
     bold =
     normal =
+    ARROW = ^-^>
 else
     bold = `tput bold`
     normal = `tput sgr0`
+    ARROW = \-\>
 endif
 
-CFLAGS = -flto -std=c99 -D_FILE_OFFSET_BITS=64
-
-ifdef ARCH
-    CFLAGS += -m$(ARCH)
-endif
-
-ifndef WARNINGS
-    CFLAGS += -w
-else
-    CFLAGS += -Wall
-endif
-
-ifndef DEBUG
-    CFLAGS += -O4
-else
-    CFLAGS += -O0 -g
-endif
-
-CC = @$(PREFIX)cc$(SUFFIX)
+CFLAGS = -O3 -w -flto -std=c99 -D_FILE_OFFSET_BITS=64 $(EXTRA_CFLAGS)
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
@@ -68,10 +52,10 @@ compile: compile-header $(ALL_OBJ)
 
 %.o: %.c
 	@echo $^ $(ARROW) $@
-	$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-	@echo ${bold}Cleaning Sharc build directories${normal} ...
+	@echo ${bold}Cleaning Sharc objects${normal} ...
 	@rm -f $(ALL_OBJ)
 	@echo Done.
 	@echo

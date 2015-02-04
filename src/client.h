@@ -43,6 +43,9 @@
 #define SHARC_NO_PROMPTING            false
 #define SHARC_PROMPTING               true
 
+#define SHARC_INTEGRITY_CHECKS        true
+#define SHARC_NO_INTEGRITY_CHECK      false
+
 #define SHARC_STDIN                   "stdin"
 #define SHARC_STDOUT                  "stdout"
 #define SHARC_STDIN_COMPRESSED        "stdin.sharc"
@@ -104,7 +107,7 @@ uint8_t output_buffer[SHARC_PREFERRED_BUFFER_SIZE];
 FILE* sharc_client_checkOpenFile(const char*, const char*, const sharc_bool);
 void sharc_client_version();
 void sharc_client_usage();
-void sharc_client_compress(sharc_client_io *, sharc_client_io * const, const DENSITY_COMPRESSION_MODE, const sharc_bool, const char*, const char*);
+void sharc_client_compress(sharc_client_io *, sharc_client_io * const, const DENSITY_COMPRESSION_MODE, const sharc_bool, const sharc_bool, const char*, const char*);
 void sharc_client_decompress(sharc_client_io *, sharc_client_io * const, const sharc_bool, const char*, const char*);
 
 #endif
