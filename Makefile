@@ -52,6 +52,12 @@ ALL_OBJ = $(OBJ)
 
 all: compile link-header link
 
+$(DENSITY_SRC_DIRECTORY)Makefile:
+	@echo ${bold}Cloning Density${normal} ...
+	@git submodule init
+	@git submodule update
+	@echo
+
 $(SPOOKYHASH_SRC_DIRECTORY)Makefile: $(DENSITY_SRC_DIRECTORY)Makefile
 	@echo ${bold}Cloning SpookyHash${normal} ...
 	@cd $(DENSITY_SRC_DIRECTORY)
@@ -59,16 +65,10 @@ $(SPOOKYHASH_SRC_DIRECTORY)Makefile: $(DENSITY_SRC_DIRECTORY)Makefile
 	@git submodule update
 	@echo
 
-$(DENSITY_SRC_DIRECTORY)Makefile:
-	@echo ${bold}Cloning Density${normal} ...
-	@git submodule init
-	@git submodule update
-	@echo
-
 link-header:
 	@echo ${bold}Linking Sharc${normal} ...
 
-compile: $(DENSITY_SRC_DIRECTORY)Makefile
+compile: $(DENSITY_SRC_DIRECTORY)Makefile $(SPOOKYHASH_SRC_DIRECTORY)Makefile
 	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) compile
 	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
 	@cd $(SRC_DIRECTORY) && $(MAKE) compile
