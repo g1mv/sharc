@@ -1,10 +1,16 @@
+1.1.0
+-----
+*February 5, 2015*
+
+* Added integrity checks
+* Updated to Density 0.11.3
+
 1.0.0
 -----
 *January 19, 2015*
 
 * Now using Density 0.11.1 with the new streams API
 * Improved README, added benchmark
-
 
 0.9.11 beta
 -----------
