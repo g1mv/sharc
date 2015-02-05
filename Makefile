@@ -70,8 +70,8 @@ link-header:
 
 compile: $(DENSITY_SRC_DIRECTORY)Makefile
 	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) compile
-    @cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
-    @cd $(SRC_DIRECTORY) && $(MAKE) compile
+	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
+	@cd $(SRC_DIRECTORY) && $(MAKE) compile
 
 link: compile link-header $(TARGET)$(STAT_EXT) $(TARGET)$(DYN_EXT)
 	@echo Done.
