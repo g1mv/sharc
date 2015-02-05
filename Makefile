@@ -52,7 +52,7 @@ ALL_OBJ = $(OBJ)
 
 all: compile link-header link
 
-$(SPOOKYHASH_SRC_DIRECTORY)Makefile:
+$(SPOOKYHASH_SRC_DIRECTORY)Makefile: $(DENSITY_SRC_DIRECTORY)Makefile
 	@echo ${bold}Cloning SpookyHash${normal} ...
 	@cd $(DENSITY_SRC_DIRECTORY)
 	@git submodule init
@@ -68,10 +68,10 @@ $(DENSITY_SRC_DIRECTORY)Makefile:
 link-header:
 	@echo ${bold}Linking Sharc${normal} ...
 
-compile: $(SPOOKYHASH_SRC_DIRECTORY)Makefile $(DENSITY_SRC_DIRECTORY)Makefile
+compile: $(DENSITY_SRC_DIRECTORY)Makefile
 	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) compile
-	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
-	@cd $(SRC_DIRECTORY) && $(MAKE) compile
+    @cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
+    @cd $(SRC_DIRECTORY) && $(MAKE) compile
 
 link: compile link-header $(TARGET)$(STAT_EXT) $(TARGET)$(DYN_EXT)
 	@echo Done.
