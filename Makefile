@@ -22,59 +22,68 @@
 # 01/06/13 17:27
 #
 
-ifeq ($(OS),Windows_NT)
-    bold =
-    normal =
-else
-    bold = `tput bold`
-    normal = `tput sgr0`
-endif
+UPDATE_SUBMODULES := $(shell git submodule update --init --recursive)
 
 TARGET = sharc
+CFLAGS = -O3 -w -flto -std=c99 -D_FILE_OFFSET_BITS=64
+
 SRC_DIRECTORY = ./src/
 DENSITY_SRC_DIRECTORY = ./src/density/src/
 SPOOKYHASH_SRC_DIRECTORY = ./src/density/src/spookyhash/src/
 
 ifeq ($(OS),Windows_NT)
+    bold =
+    normal =
     EXTENSION = .exe
     ARROW = ^-^>
 else
+    bold = `tput bold`
+    normal = `tput sgr0`
     EXTENSION =
     ARROW = \-\>
 endif
 
-SRC = $(wildcard $(SRC_DIRECTORY)*.c $(DENSITY_SRC_DIRECTORY)*.c $(SPOOKYHASH_SRC_DIRECTORY)*.c)
-OBJ = $(SRC:.c=.o)
+SHARC_SRC = $(wildcard $(SRC_DIRECTORY)*.c)
+SHARC_OBJ = $(SHARC_SRC:.c=.o)
+OTHER_SRC = $(wildcard $(DENSITY_SRC_DIRECTORY)*.c $(SPOOKYHASH_SRC_DIRECTORY)*.c)
+OTHER_OBJ = $(OTHER_SRC:.c=.o)
+ALL_OBJ = $(SHARC_OBJ) $(OTHER_OBJ)
 
-ALL_OBJ = $(OBJ)
+.PHONY: compile-header link-header
 
-.PHONY: link-header link
+all: $(TARGET)$(EXTENSION)
 
-all: compile link-header link
+%.o: %.c
+	@echo $^ $(ARROW) $@
+	@$(CC) -c $(CFLAGS) $< -o $@
 
-$(DENSITY_SRC_DIRECTORY)Makefile:
-	@echo ${bold}Cloning Density and SpookyHash${normal} ...
-	@git submodule update --init --recursive
-	@echo
-
-link-header:
-	@echo ${bold}Linking Sharc${normal} ...
-
-compile: $(DENSITY_SRC_DIRECTORY)Makefile $(SPOOKYHASH_SRC_DIRECTORY)Makefile
+compile-submodules:
 	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) compile
 	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
-	@cd $(SRC_DIRECTORY) && $(MAKE) compile
 
-link: compile link-header $(TARGET)$(STAT_EXT) $(TARGET)$(DYN_EXT)
+compile-header: compile-submodules
+	@echo ${bold}Compiling Sharc${normal} ...
+
+compile: compile-header $(SHARC_OBJ)
 	@echo Done.
 	@echo
 
-$(TARGET)$(EXTENSION): $(ALL_OBJ)
-	@echo *.o $(ARROW) $(TARGET)$(EXTENSION)
-	@$(CC) -o $(TARGET)$(EXTENSION) $(OBJ)
+link-header: compile
+	@echo ${bold}Linking Sharc${normal} ...
 
-clean:
-	@rm -f $(TARGET)$(EXTENSION)
+$(TARGET)$(EXTENSION): link-header $(ALL_OBJ)
+	@echo *.o $(ARROW) $(TARGET)$(EXTENSION)
+	@$(CC) -o $(TARGET)$(EXTENSION) $(ALL_OBJ)
+	@echo Done.
+	@echo
+
+clean-submodules:
 	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) clean
 	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) clean
-	@cd $(SRC_DIRECTORY) && $(MAKE) clean
+
+clean: clean-submodules
+	@echo ${bold}Cleaning Sharc objects${normal} ...
+	@rm -f $(SHARC_OBJ)
+	@rm -f $(TARGET)$(EXTENSION)
+	@echo Done.
+	@echo
