@@ -28,8 +28,10 @@ TARGET = sharc
 CFLAGS = -O3 -w -flto -std=c99 -D_FILE_OFFSET_BITS=64
 
 SRC_DIRECTORY = ./src/
-DENSITY_SRC_DIRECTORY = ./src/density/src/
-SPOOKYHASH_SRC_DIRECTORY = ./src/density/src/spookyhash/src/
+DENSITY_DIRECTORY = ./src/density/
+DENSITY_SRC_DIRECTORY = $(DENSITY_DIRECTORY)src/
+SPOOKYHASH_DIRECTORY = $(DENSITY_SRC_DIRECTORY)spookyhash/
+SPOOKYHASH_SRC_DIRECTORY = $(SPOOKYHASH_DIRECTORY)src/
 
 ifeq ($(OS),Windows_NT)
     bold =
@@ -58,8 +60,7 @@ all: $(TARGET)$(EXTENSION)
 	@$(CC) -c $(CFLAGS) $< -o $@
 
 compile-submodules:
-	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) compile
-	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) compile
+	@cd $(DENSITY_DIRECTORY) && $(MAKE) compile
 
 compile-header: compile-submodules
 	@echo ${bold}Compiling Sharc${normal} ...
@@ -78,8 +79,7 @@ $(TARGET)$(EXTENSION): link-header $(ALL_OBJ)
 	@echo
 
 clean-submodules:
-	@cd $(SPOOKYHASH_SRC_DIRECTORY) && $(MAKE) clean
-	@cd $(DENSITY_SRC_DIRECTORY) && $(MAKE) clean
+	@cd $(DENSITY_DIRECTORY) && $(MAKE) clean
 
 clean: clean-submodules
 	@echo ${bold}Cleaning Sharc objects${normal} ...
