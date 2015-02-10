@@ -1,3 +1,10 @@
+1.1.1
+-----
+*February 10, 2015*
+
+* Updated Density to 0.11.4
+* Removed unnecessary makefile, now using a single makefile
+
 1.1.0
 -----
 *February 5, 2015*
