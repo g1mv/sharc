@@ -90,7 +90,7 @@ SHARC_FORCE_INLINE void sharc_client_usage() {
     printf("                                    0 = No compression\n");
     printf("                                    1 = Chameleon algorithm (default)\n");
     printf("                                    2 = Mandala algorithm\n");
-    //printf("                                    3 = Argonaut algorithm\n");
+    printf("                                    3 = Argonaut algorithm\n");
     printf("  -d, --decompress                  Decompress files\n");
     printf("  -p[PATH], --output-path[=PATH]    Set output path\n");
     printf("  -x, --check-integrity             Add integrity check hashsum (use when compressing)\n");
@@ -445,9 +445,9 @@ int main(int argc, char *argv[]) {
                             case 2:
                                 mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
                                 break;
-                                /*case 3:
-                                    mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
-                                    break;*/
+                            case 3:
+                                mode = DENSITY_COMPRESSION_MODE_ARGONAUT_ALGORITHM;
+                                break;
                             default:
                                 sharc_client_usage();
                         }
@@ -493,7 +493,7 @@ int main(int argc, char *argv[]) {
                             case 'c':
                                 if (argLength < 4)
                                     sharc_client_usage();
-                                switch(argv[i][3]) {
+                                switch (argv[i][3]) {
                                     case 'o':
                                         if (argLength == 10)
                                             break;
@@ -509,9 +509,9 @@ int main(int argc, char *argv[]) {
                                             case 2:
                                                 mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
                                                 break;
-                                                /*case 3:
-                                                    mode = DENSITY_COMPRESSION_MODE_ARGONAUT;
-                                                    break;*/
+                                            case 3:
+                                                mode = DENSITY_COMPRESSION_MODE_ARGONAUT_ALGORITHM;
+                                                break;
                                             default:
                                                 sharc_client_usage();
                                         }
