@@ -443,10 +443,10 @@ int main(int argc, char *argv[]) {
                                 mode = DENSITY_COMPRESSION_MODE_CHAMELEON_ALGORITHM;
                                 break;
                             case 2:
-                                mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
+                                mode = DENSITY_COMPRESSION_MODE_CHEETAH_ALGORITHM;
                                 break;
                             case 3:
-                                mode = DENSITY_COMPRESSION_MODE_ARGONAUT_ALGORITHM;
+                                mode = DENSITY_COMPRESSION_MODE_LION_ALGORITHM;
                                 break;
                             default:
                                 sharc_client_usage();
@@ -507,10 +507,10 @@ int main(int argc, char *argv[]) {
                                                 mode = DENSITY_COMPRESSION_MODE_CHAMELEON_ALGORITHM;
                                                 break;
                                             case 2:
-                                                mode = DENSITY_COMPRESSION_MODE_MANDALA_ALGORITHM;
+                                                mode = DENSITY_COMPRESSION_MODE_CHEETAH_ALGORITHM;
                                                 break;
                                             case 3:
-                                                mode = DENSITY_COMPRESSION_MODE_ARGONAUT_ALGORITHM;
+                                                mode = DENSITY_COMPRESSION_MODE_LION_ALGORITHM;
                                                 break;
                                             default:
                                                 sharc_client_usage();
