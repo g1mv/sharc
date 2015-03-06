@@ -23,11 +23,15 @@
 #include "chrono.h"
 
 SHARC_FORCE_INLINE void sharc_chrono_start(sharc_chrono * chrono) {
-    gettimeofday(&chrono->start, NULL);
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    chrono->start = usage.ru_utime;
 }
 
 SHARC_FORCE_INLINE void sharc_chrono_stop(sharc_chrono * chrono) {
-    gettimeofday(&chrono->stop, NULL);
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    chrono->stop = usage.ru_utime;
 }
 
 SHARC_FORCE_INLINE double sharc_chrono_elapsed(sharc_chrono * chrono) {

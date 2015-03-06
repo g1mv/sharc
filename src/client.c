@@ -219,7 +219,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
             fclose(io_in->stream);
 
             double ratio = (100.0 * totalWritten) / totalRead;
-            double speed = (1.0 * totalRead) / (elapsed * 1024.0 * 1024.0);
+            double speed = (1.0 * totalRead) / (elapsed * 1000.0 * 1000.0);
             printf("Compressed ");
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
@@ -240,8 +240,8 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
 #endif
             printf(" (");
             sharc_client_format_decimal(totalWritten);
-            printf(" bytes), ");
-            printf("Ratio out / in = %.1lf%%, Time = %.3lf s, Speed = %.0lf MB/s\n", ratio, elapsed, speed);
+            printf(" bytes)");
+            printf(" ➔ %.1lf%% (User time %.3lfs ➔ %.0lf MB/s)\n", ratio, elapsed, speed);
         } else {
             printf("Compressed ");
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
