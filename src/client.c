@@ -350,7 +350,8 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
                     sharc_client_exit_error("Input file is corrupt !");
             }
 
-            double speed = (1.0 * totalWritten) / (elapsed * 1024.0 * 1024.0);
+            double ratio = (100.0 * totalWritten) / totalRead;
+            double speed = (1.0 * totalWritten) / (elapsed * 1000.0 * 1000.0);
             printf("Decompressed ");
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
             printf("%c[1m", SHARC_ESCAPE_CHARACTER);
@@ -371,8 +372,8 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
 #endif
             printf(" (");
             sharc_client_format_decimal(totalWritten);
-            printf(" bytes), ");
-            printf("Time = %.3lf s, Speed = %.0lf MB/s\n", elapsed, speed);
+            printf(" bytes)");
+            printf(" ➔ %.1lf%% (User time %.3lfs ➔ %.0lf MB/s)\n", ratio, elapsed, speed);
         } else {
             printf("Decompressed ");
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
