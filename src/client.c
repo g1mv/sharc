@@ -345,10 +345,10 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
             totalRead += *stream->totalBytesRead;
             fclose(io_in->stream);
 
-            if (header.genericHeader.originType == SHARC_HEADER_ORIGIN_TYPE_FILE) {
+            /*if (header.genericHeader.originType == SHARC_HEADER_ORIGIN_TYPE_FILE) {
                 if (totalWritten != header.fileInformationHeader.originalFileSize)
                     sharc_client_exit_error("Input file is corrupt !");
-            }
+            }*/
 
             double ratio = (100.0 * totalWritten) / totalRead;
             double speed = (1.0 * totalWritten) / (elapsed * 1000.0 * 1000.0);
