@@ -23,7 +23,7 @@
 #ifndef SHARC_CHRONO_H
 #define SHARC_CHRONO_H
 
-#include <sys/time.h>
+#include <sys/resource.h>
 
 #include "globals.h"
 
