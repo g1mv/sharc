@@ -25,7 +25,7 @@
 #UPDATE_SUBMODULES := $(shell git submodule update --init --recursive)
 
 TARGET = sharc
-CFLAGS = -O3 -w -flto -std=c99 -D_FILE_OFFSET_BITS=64
+CFLAGS = -Ofast -fomit-frame-pointer -w -flto -std=c99 -D_FILE_OFFSET_BITS=64
 
 SRC_DIRECTORY = ./src/
 DENSITY_DIRECTORY = ./src/density/
