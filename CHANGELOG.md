@@ -1,3 +1,12 @@
+1.2.0
+-----
+*March 24, 2015*
+
+* Updated Density to 0.12.0
+* Improved time display and sampling by measuring user time which is more realistic
+* Corrected incorrect import in chrono.h
+* Improved compilation switches
+
 1.1.1
 -----
 *February 10, 2015*
