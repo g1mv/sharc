@@ -23,16 +23,43 @@
 #ifndef SHARC_CHRONO_H
 #define SHARC_CHRONO_H
 
-#include <sys/resource.h>
-
 #include "globals.h"
 
-#define SHARC_CHRONO_MICROSECONDS    1000000.0
+#if defined(_WIN64) || defined(_WIN32)
+#include <windows.h>
+#include <time.h>
+
+#define RUSAGE_SELF     0
+#define RUSAGE_THREAD   1 
+
+struct rusage {
+    struct timeval ru_utime; /* user CPU time used */
+    struct timeval ru_stime; /* system CPU time used */
+    long   ru_maxrss;        /* maximum resident set size */
+    long   ru_ixrss;         /* integral shared memory size */
+    long   ru_idrss;         /* integral unshared data size */
+    long   ru_isrss;         /* integral unshared stack size */
+    long   ru_minflt;        /* page reclaims (soft page faults) */
+    long   ru_majflt;        /* page faults (hard page faults) */
+    long   ru_nswap;         /* swaps */
+    long   ru_inblock;       /* block input operations */
+    long   ru_oublock;       /* block output operations */
+    long   ru_msgsnd;        /* IPC messages sent */
+    long   ru_msgrcv;        /* IPC messages received */
+    long   ru_nsignals;      /* signals received */
+    long   ru_nvcsw;         /* voluntary context switches */
+    long   ru_nivcsw;        /* involuntary context switches */
+};
+#else
+#include <sys/resource.h>
+#endif
 
 typedef struct {
     struct timeval start;
     struct timeval stop;
 } sharc_chrono;
+
+#define SHARC_CHRONO_MICROSECONDS    1000000.0
 
 void sharc_chrono_start(sharc_chrono *);
 void sharc_chrono_stop(sharc_chrono *);

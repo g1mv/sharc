@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Centaurean Sharc
  *
  * Copyright (c) 2013, Guillaume Voirin
@@ -241,7 +241,7 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
             printf(" (");
             sharc_client_format_decimal(totalWritten);
             printf(" bytes)");
-            printf(" ➔ %.1lf%% (User time %.3lfs ➔ %.0lf MB/s)\n", ratio, elapsed, speed);
+            printf(" %s %.1lf%% (User time %.3lfs %s %.0lf MB/s)\n", SHARC_ARROW, ratio, elapsed, SHARC_ARROW, speed);
         } else {
             printf("Compressed ");
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
@@ -373,7 +373,7 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
             printf(" (");
             sharc_client_format_decimal(totalWritten);
             printf(" bytes)");
-            printf(" ➔ %.1lf%% (User time %.3lfs ➔ %.0lf MB/s)\n", ratio, elapsed, speed);
+            printf(" %s %.1lf%% (User time %.3lfs %s %.0lf MB/s)\n", SHARC_ARROW, ratio, elapsed, SHARC_ARROW, speed);
         } else {
             printf("Decompressed ");
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Centaurean Sharc
  *
  * Copyright (c) 2013, Guillaume Voirin
@@ -67,6 +67,12 @@
 #else
 #define SHARC_PATH_SEPARATOR          '/'
 #define SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
+#endif
+
+#if defined(_WIN64) || defined(_WIN32)
+#define SHARC_ARROW          "->"
+#else
+#define SHARC_ARROW          "➔"
 #endif
 
 #if defined(_WIN64) || defined(_WIN32)

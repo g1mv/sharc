@@ -22,6 +22,40 @@
 
 #include "chrono.h"
 
+#if defined(_WIN64) || defined(_WIN32)
+SHARC_FORCE_INLINE void usage_to_timeval(FILETIME *ft, struct timeval *tv) {
+    ULARGE_INTEGER time;
+    time.LowPart = ft->dwLowDateTime;
+    time.HighPart = ft->dwHighDateTime;
+
+    tv->tv_sec = time.QuadPart / 10000000;
+    tv->tv_usec = (time.QuadPart % 10000000) / 10;
+}
+
+SHARC_FORCE_INLINE int getrusage(int who, struct rusage *usage) {
+    FILETIME creation_time, exit_time, kernel_time, user_time;
+    memset(usage, 0, sizeof(struct rusage));
+
+    if (who == RUSAGE_SELF) {
+        if (!GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time)) {
+            return -1;
+        }
+        usage_to_timeval(&kernel_time, &usage->ru_stime);
+        usage_to_timeval(&user_time, &usage->ru_utime);
+        return 0;
+    } else if (who == RUSAGE_THREAD) {
+        if (!GetThreadTimes(GetCurrentThread(), &creation_time, &exit_time, &kernel_time, &user_time)) {
+            return -1;
+        }
+        usage_to_timeval(&kernel_time, &usage->ru_stime);
+        usage_to_timeval(&user_time, &usage->ru_utime);
+        return 0;
+    } else {
+        return -1;
+    }
+}
+#endif
+
 SHARC_FORCE_INLINE void sharc_chrono_start(sharc_chrono * chrono) {
     struct rusage usage;
     getrusage(RUSAGE_SELF, &usage);
