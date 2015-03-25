@@ -64,7 +64,7 @@
 
 #define SHARC_MAJOR_VERSION               1
 #define SHARC_MINOR_VERSION               2
-#define SHARC_REVISION                    1
+#define SHARC_REVISION                    2
 
 #define SHARC_ESCAPE_CHARACTER   ((char)27)
 

@@ -22,7 +22,7 @@
 # 01/06/13 17:27
 #
 
-#UPDATE_SUBMODULES := $(shell git submodule update --init --recursive)
+UPDATE_SUBMODULES := $(shell git submodule update --init --recursive)
 
 TARGET = sharc
 CFLAGS = -Ofast -fomit-frame-pointer -w -flto -std=c99 -D_FILE_OFFSET_BITS=64
