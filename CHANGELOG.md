@@ -1,3 +1,9 @@
+1.2.1
+-----
+*March 25, 2015*
+
+* Updated user timings for windows compatibility
+
 1.2.0
 -----
 *March 24, 2015*
