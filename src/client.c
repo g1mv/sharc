@@ -61,7 +61,7 @@ SHARC_FORCE_INLINE void sharc_client_version() {
 #ifdef SHARC_ALLOW_ANSI_ESCAPE_SEQUENCES
     printf("%c[0m", SHARC_ESCAPE_CHARACTER);
 #endif
-    printf(" powered by Centaurean Density %i.%i.%i\n", density_version_major(), density_version_minor(), density_version_revision());
+    printf(" powered by Centaurean Density %i.%i.%i beta\n", density_version_major(), density_version_minor(), density_version_revision());
     printf("Copyright (C) 2013 Guillaume Voirin\n");
     printf("Built for %s (%s endian system, %u bits) using GCC %d.%d.%d, %s %s\n", SHARC_PLATFORM_STRING, SHARC_ENDIAN_STRING, (unsigned int) (8 * sizeof(void *)), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __DATE__, __TIME__);
 }
@@ -197,8 +197,11 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = density_stream_compress_init(stream, attemptMode, integrityChecks ? DENSITY_BLOCK_TYPE_WITH_HASHSUM_INTEGRITY_CHECK : DENSITY_BLOCK_TYPE_DEFAULT)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize compression");
-    while ((streamState = density_stream_compress_continue(stream)) && (read == SHARC_PREFERRED_BUFFER_SIZE))
+    while ((streamState = density_stream_compress_continue(stream))) {
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during compression");
+        if(read != SHARC_PREFERRED_BUFFER_SIZE)
+            break;
+    }
     while ((streamState = density_stream_compress_finish(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing compression");
     sharc_client_emptyOutputBuffer(stream, io_out);
@@ -321,8 +324,11 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = density_stream_decompress_init(stream, NULL)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize decompression");
-    while ((streamState = density_stream_decompress_continue(stream)) && (read == SHARC_PREFERRED_BUFFER_SIZE))
+    while ((streamState = density_stream_decompress_continue(stream))) {
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during decompression");
+        if(read != SHARC_PREFERRED_BUFFER_SIZE)
+            break;
+    }
     while ((streamState = density_stream_decompress_finish(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing decompression");
     sharc_client_emptyOutputBuffer(stream, io_out);
