@@ -197,11 +197,8 @@ SHARC_FORCE_INLINE void sharc_client_compress(sharc_client_io *io_in, sharc_clie
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = density_stream_compress_init(stream, attemptMode, integrityChecks ? DENSITY_BLOCK_TYPE_WITH_HASHSUM_INTEGRITY_CHECK : DENSITY_BLOCK_TYPE_DEFAULT)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize compression");
-    while ((streamState = density_stream_compress_continue(stream))) {
+    while ((read == SHARC_PREFERRED_BUFFER_SIZE) && (streamState = density_stream_compress_continue(stream)))   // Test order is important
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during compression");
-        if(read != SHARC_PREFERRED_BUFFER_SIZE)
-            break;
-    }
     while ((streamState = density_stream_compress_finish(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing compression");
     sharc_client_emptyOutputBuffer(stream, io_out);
@@ -324,11 +321,8 @@ SHARC_FORCE_INLINE void sharc_client_decompress(sharc_client_io *io_in, sharc_cl
     read = sharc_client_reloadInputBuffer(stream, io_in);
     while ((streamState = density_stream_decompress_init(stream, NULL)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "Unable to initialize decompression");
-    while ((streamState = density_stream_decompress_continue(stream))) {
+    while ((read == SHARC_PREFERRED_BUFFER_SIZE) && (streamState = density_stream_decompress_continue(stream))) // Test order is important
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured during decompression");
-        if(read != SHARC_PREFERRED_BUFFER_SIZE)
-            break;
-    }
     while ((streamState = density_stream_decompress_finish(stream)))
         sharc_client_actionRequired(&read, &written, io_in, io_out, stream, streamState, "An error occured while finishing decompression");
     sharc_client_emptyOutputBuffer(stream, io_out);
