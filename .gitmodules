@@ -1,3 +1,0 @@
-[submodule "density"]
-	path = src/density
-	url = https://github.com/centaurean/density.git
