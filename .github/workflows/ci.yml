@@ -77,4 +77,4 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: lscpu
       - name: Build
-        run: RUSTFLAGS="-C target-cpu=native" ${{ env.CARGO }} build --verbose $TARGET
+        run: ${{ env.CARGO }} build --verbose $TARGET

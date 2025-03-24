@@ -1,6 +1,5 @@
 use density_rs::algorithms::cheetah::cheetah::Cheetah;
 use density_rs::codec::codec::Codec;
-use gxhash::gxhash32;
 use memmap2::Mmap;
 use std::env;
 use std::fs::File;
@@ -24,7 +23,7 @@ fn main() -> Result<(), Error> {
                 let mut algorithm = Cheetah::new();
                 let range = i..usize::min(i + EIGHT_MEGABYTES, memory_map.len());
                 dbg!(&range);
-                let hash = gxhash32(&memory_map[range.start..range.end], 0x1234);
+                let hash = seahash::hash(&memory_map[range.start..range.end]);
                 dbg!(&hash);
                 // algorithm.clear_state();
                 if let Ok(written) = algorithm.encode(&memory_map[range.start..range.end], &mut buffer) {
