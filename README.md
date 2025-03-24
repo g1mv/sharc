@@ -5,11 +5,28 @@
 
 Simple High-speed ARChiver
 
-**sharc** is a very fast file archiver, using the [**density** compression library](http://github.com/g1mv/density).
-It is ideal when speed is the main requirement, followed by compression ratio - although excellent ratios can be
+**Sharc** is a very fast file archiver, using the [**density** compression library](http://github.com/g1mv/density).
+It is ideal when speed is paramount, followed by compression ratio - although excellent ratios can be
 achieved with certain settings and low entropy data.
 
 ### Build
+
+**Sharc** can be built on rust-compatible platforms. First use [rustup](https://rustup.rs) to install
+rust.
+
+a) get the source code:
+
+```shell
+    git clone https://github.com/g1mv/sharc.git
+    cd sharc
+```
+
+b) build and print commands list:
+
+```shell
+    RUSTFLAGS="-C target-cpu=native" cargo build --release
+    target/release/sharc -h
+```
 
 ### Usage
 
@@ -29,9 +46,7 @@ Fastest algorithm (**density** chameleon):
 Well-balanced default (**density** cheetah)
 > sharc -c2 test
 
-
 Slower but still very fast, with better compression ratio (**density** lion):
-
 > sharc -c3 test
 
 For help and a full list of options:
