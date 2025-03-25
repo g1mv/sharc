@@ -7,8 +7,8 @@ use std::ops::{Index, Range};
 const MEMORY_MAP_THRESHOLD: usize = 16 * 1024;
 
 pub enum Reader {
-    MemoryMap(Mmap),
-    Buffer(Vec<u8>),
+    MemoryMap(Mmap, usize),
+    Buffer(Vec<u8>, usize),
 }
 
 impl Reader {
@@ -18,16 +18,45 @@ impl Reader {
         if file_size < MEMORY_MAP_THRESHOLD {
             let mut buffer = Vec::with_capacity(file_size);
             file.read_to_end(&mut buffer)?;
-            Ok(Buffer(buffer))
+            Ok(Buffer(buffer, 0))
         } else {
-            Ok(MemoryMap(unsafe { Mmap::map(&file)? }))
+            Ok(MemoryMap(unsafe { Mmap::map(&file)? }, 0))
         }
     }
 
     pub fn len(&self) -> usize {
         match self {
-            MemoryMap(memory_map) => { memory_map.len() }
-            Buffer(buffer) => { buffer.len() }
+            MemoryMap(memory_map, _) => { memory_map.len() }
+            Buffer(buffer, _) => { buffer.len() }
+        }
+    }
+
+    pub fn bytes_at(&self, offset: usize, size: usize) -> &[u8] {
+        match self {
+            MemoryMap(memory_map, _) => { &memory_map[offset..offset + size] }
+            Buffer(buffer, _) => { &buffer[offset..offset + size] }
+        }
+    }
+
+    pub fn read_bytes(&mut self, size: usize) -> &[u8] {
+        match self {
+            MemoryMap(memory_map, index) => {
+                let out = &memory_map[*index..*index + size];
+                *index += size;
+                out
+            }
+            Buffer(buffer, index) => {
+                let out = &buffer[*index..*index + size];
+                *index += size;
+                out
+            }
+        }
+    }
+
+    pub fn get_index(&self) -> usize {
+        match self {
+            MemoryMap(_, index) => { *index }
+            Buffer(_, index) => { *index }
         }
     }
 }
@@ -37,8 +66,8 @@ impl Index<Range<usize>> for Reader {
 
     fn index(&self, range: Range<usize>) -> &Self::Output {
         match self {
-            MemoryMap(memory_map) => { &memory_map[range] }
-            Buffer(buffer) => { &buffer[range] }
+            MemoryMap(memory_map, _) => { &memory_map[range] }
+            Buffer(buffer, _) => { &buffer[range] }
         }
     }
 }
