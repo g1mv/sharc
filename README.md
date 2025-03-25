@@ -7,9 +7,10 @@ Simple High-speed ARChiver
 
 **sharc** is a very fast file archiver, using the [**density**](http://github.com/g1mv/density) compression library.
 It is ideal when speed is paramount, followed by compression ratio - although excellent ratios can be
-achieved with certain settings and low entropy data.
+achieved with certain settings on low entropy data.
 
-**sharc** uses parallel processing to achieve maximum encode/decode performance. It is especially efficient with large files.
+**sharc** uses parallel processing to achieve maximum encode/decode performance, and is thus particularly
+efficient with large files. Data integrity is verified using the fast, non-cryptographic [**seahash**](https://gitlab.redox-os.org/redox-os/seahash) hashing algorithm.
 
 [![MIT licensed](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE-MIT)
 [![Apache-2.0 licensed](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE-APACHE)
@@ -28,30 +29,50 @@ a) get the source code:
     cd sharc
 ```
 
-b) build and print commands list:
+b) build and print help:
 
 ```shell
     RUSTFLAGS="-C target-cpu=native" cargo build --release
     target/release/sharc -h
 ```
 
-### Usage
+### Output file format
 
-To compress a file named 'test' into 'test.sharc' using the default algorithm (**density** cheetah):
-> sharc test
+The **.sharc** file format consists of a header, followed by a sequence of blocks.
+The header has the following structure:
 
-To decompress 'test.sharc',
-> unsharc test.sharc
+| Header  | Algorithm used | Block size MB | 
+|---------|----------------|---------------|
+| 5 bytes | 1 byte         | 2 bytes       |
 
-Compression algorithm can be selected with the -c option.
-Fastest algorithm (**density** chameleon):
-> sharc -c1 test
+The sequence of blocks has the following structure:
 
-Well-balanced default (**density** cheetah)
-> sharc -c2 test
+| Encoded block size (ebs) | Encoded block | Block hash |
+|--------------------------|---------------|------------|
+| 8 bytes                  | {ebs} bytes   | 8 bytes    |
 
-Slower but still very fast, with better compression ratio (**density** lion):
-> sharc -c3 test
+### General usage
 
-For help and a full list of options:
+To compress a file named 'test.file' into 'test.file.sharc' using the default algorithm (**density** cheetah):
+> sharc test.file
+
+To decompress 'test.file.sharc',
+> unsharc test.file.sharc
+
+### Algorithm selection
+
+Compression algorithm can be selected with the **-a** option.
+
+| Algorithm | Speed rank | Ratio rank |
+|-----------|------------|------------|
+| chameleon | 1st        | 3rd        | 
+| cheetah   | 2nd        | 2nd        |
+| lion      | 3rd        | 1st        |
+
+For example, to use the fastest available algorithm (**density** chameleon):
+> sharc -a chameleon test.file
+
+### Other options
+
+For further information on all other options:
 > sharc -h
