@@ -5,13 +5,20 @@
 
 Simple High-speed ARChiver
 
-**Sharc** is a very fast file archiver, using the [**density** compression library](http://github.com/g1mv/density).
+**sharc** is a very fast file archiver, using the [**density**](http://github.com/g1mv/density) compression library.
 It is ideal when speed is paramount, followed by compression ratio - although excellent ratios can be
 achieved with certain settings and low entropy data.
 
+**sharc** uses parallel processing to achieve maximum encode/decode performance. It is especially efficient with large files.
+
+[![MIT licensed](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE-MIT)
+[![Apache-2.0 licensed](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE-APACHE)
+[![Crates.io](https://img.shields.io/crates/v/sharc.svg)](https://crates.io/crates/density-rs)
+[![Build Status](https://github.com/g1mv/sharc/actions/workflows/ci.yml/badge.svg)](https://github.com/g1mv/density/actions)
+
 ### Build
 
-**Sharc** can be built on rust-compatible platforms. First use [rustup](https://rustup.rs) to install
+**sharc** can be built on rust-compatible platforms. First use [rustup](https://rustup.rs) to install
 rust.
 
 a) get the source code:
@@ -30,7 +37,7 @@ b) build and print commands list:
 
 ### Usage
 
-To compress a file named 'test' using the default algorithm (**density** cheetah):
+To compress a file named 'test' into 'test.sharc' using the default algorithm (**density** cheetah):
 > sharc test
 
 To decompress 'test.sharc',

@@ -17,11 +17,11 @@ impl Writer {
         self.file.write_all(&buffer)
     }
 
-    pub fn write_encoded_block(&mut self, buffer: &[u8]) -> Result<()> {
+    pub fn write_encoded_block(&mut self, buffer: &[u8], hash: u64) -> Result<()> {
         let size_u64 = u64::try_from(buffer.len()).unwrap();
         self.write_bytes(&size_u64.to_le_bytes())?;
         self.write_bytes(buffer)?;
-        self.write_bytes(&seahash::hash(buffer).to_le_bytes())
+        self.write_bytes(&hash.to_le_bytes())
     }
 
     pub fn flush(&mut self) -> Result<()> {

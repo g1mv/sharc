@@ -16,11 +16,13 @@ pub fn encode(file_name: &str, block_size_mb: u16, algorithm: Algorithm) -> Resu
     // Parallel block encoding
     let block_size = block_size_mb as usize * 1024 * 1024;
     let (sender, receiver) = channel();
-    (0..1 + reader.len() / block_size).into_par_iter().for_each_with(sender, |out, block| {
-        let block_range = block * block_size..usize::min((block + 1) * block_size, reader.len());
+    (0..1 + reader.len() / block_size).into_par_iter().for_each_with(sender, |out, block_number| {
+        let block_range = block_number * block_size..usize::min((block_number + 1) * block_size, reader.len());
         let mut buffer = vec![0; algorithm.safe_encode_buffer_size(block_range.end - block_range.start)];
-        match algorithm.encode(&reader[block_range.start..block_range.end], &mut buffer) {
-            Ok(written) => { out.send((block, buffer, written)).unwrap(); }
+        let block_bytes = &reader[block_range.start..block_range.end];
+        let hash = seahash::hash(block_bytes);
+        match algorithm.encode(block_bytes, &mut buffer) {
+            Ok(written) => { out.send((block_number, buffer, written, hash)).unwrap(); }
             Err(error) => { panic!("Failed to encode block: {:?}", error); }
         }
     });
@@ -31,24 +33,24 @@ pub fn encode(file_name: &str, block_size_mb: u16, algorithm: Algorithm) -> Resu
     writer.write_bytes(&block_size_mb.to_le_bytes())?;
 
     // Write blocks (sequencer)
-    let mut current_block = 0;
-    let mut storage = BTreeMap::new();
-    for (block, buffer, size) in receiver.iter() {
-        if block == current_block {
-            writer.write_encoded_block(&buffer[..size])?;
-            current_block += 1;
+    let mut current_block_number = 0;
+    let mut sequencer = BTreeMap::new();
+    for (block_number, buffer, size, hash) in receiver.iter() {
+        if block_number == current_block_number {
+            writer.write_encoded_block(&buffer[..size], hash)?;
+            current_block_number += 1;
         } else {
-            storage.insert(block, (buffer, size));
+            sequencer.insert(block_number, (buffer, size, hash));
 
-            // Consume from storage to free up memory
-            if let Some((buffer, size)) = storage.remove(&current_block) {
-                writer.write_encoded_block(&buffer[..size])?;
-                current_block += 1;
+            // Consume from sequencer to free up memory
+            if let Some((buffer, size, hash)) = sequencer.remove(&current_block_number) {
+                writer.write_encoded_block(&buffer[..size], hash)?;
+                current_block_number += 1;
             }
         }
     }
-    for (_block, (buffer, size)) in storage {
-        writer.write_encoded_block(&buffer[..size])?;
+    for (_block_number, (buffer, size, hash)) in sequencer {
+        writer.write_encoded_block(&buffer[..size], hash)?;
     }
     writer.flush()?;
 

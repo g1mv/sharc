@@ -40,23 +40,23 @@ impl Reader {
 
     pub fn read_bytes(&mut self, size: usize) -> &[u8] {
         match self {
-            MemoryMap(memory_map, index) => {
-                let out = &memory_map[*index..*index + size];
-                *index += size;
+            MemoryMap(memory_map, cursor) => {
+                let out = &memory_map[*cursor..*cursor + size];
+                *cursor += size;
                 out
             }
-            Buffer(buffer, index) => {
-                let out = &buffer[*index..*index + size];
-                *index += size;
+            Buffer(buffer, cursor) => {
+                let out = &buffer[*cursor..*cursor + size];
+                *cursor += size;
                 out
             }
         }
     }
 
-    pub fn get_index(&self) -> usize {
+    pub fn get_cursor(&self) -> usize {
         match self {
-            MemoryMap(_, index) => { *index }
-            Buffer(_, index) => { *index }
+            MemoryMap(_, cursor) => { *cursor }
+            Buffer(_, cursor) => { *cursor }
         }
     }
 }

@@ -5,6 +5,7 @@ use density_rs::codec::codec::Codec;
 use density_rs::errors::decode_error::DecodeError;
 use density_rs::errors::encode_error::EncodeError;
 
+#[derive(Clone)]
 pub enum Algorithm {
     Chameleon,
     Cheetah,
