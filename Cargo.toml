@@ -1,8 +1,8 @@
 [package]
 name = "sharc"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2024"
-description = "Simple, high-speed archiver using the Density compression library"
+description = "Simple, high-speed archiver using the density compression library"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/g1mv/sharc"
 authors = ["Guillaume Voirin"]
@@ -23,3 +23,4 @@ density-rs = "0.16.4"
 memmap2 = "0.9.5"
 seahash = "4.1.0"
 rayon = "1.10.0"
+clap = { version = "4.5.32", features = ["derive"] }

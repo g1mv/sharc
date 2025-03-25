@@ -1,16 +1,17 @@
 use crate::algorithm::Algorithm;
-use crate::commons::HEADER;
 use crate::reader::Reader;
 use crate::writer::Writer;
+use crate::HEADER;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::collections::{BTreeMap, LinkedList};
 use std::fs::File;
 use std::io::Result;
+use std::path::PathBuf;
 use std::sync::mpsc::channel;
 
-pub fn decode(file_name: &str) -> Result<()> {
-    let mut reader = Reader::new(File::open(file_name)?)?;
-    let mut writer = Writer::new(File::create_new(file_name.rsplit_once(".").unwrap().0)?);
+pub fn decode(file_path: PathBuf) -> Result<()> {
+    let mut reader = Reader::new(File::open(&file_path)?)?;
+    let mut writer = Writer::new(File::create_new(file_path.parent().unwrap().join(file_path.file_stem().unwrap()))?);
 
     let header = reader.read_bytes(HEADER.len());
     assert_eq!(header, HEADER, "Incorrect header!");

@@ -1,17 +1,19 @@
 use crate::algorithm::Algorithm;
-use crate::commons::HEADER;
 use crate::reader::Reader;
 use crate::writer::Writer;
+use crate::HEADER;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Result;
+use std::path::PathBuf;
 use std::sync::mpsc::channel;
 
-pub fn encode(file_name: &str, block_size_mb: u16, algorithm: Algorithm) -> Result<()> {
-    let reader = Reader::new(File::open(file_name)?)?;
-    let mut writer = Writer::new(File::create_new(&format!("{}.sharc", file_name))?);
+pub fn encode(mut file_path: PathBuf, block_size_mb: u16, algorithm: Algorithm) -> Result<()> {
+    let reader = Reader::new(File::open(&file_path)?)?;
+    file_path.set_extension(format!("{}{}", file_path.extension().unwrap().to_str().unwrap(), ".sharc")); // Unstable add_extension()
+    let mut writer = Writer::new(File::create_new(&file_path)?);
 
     // Parallel block encoding
     let block_size = block_size_mb as usize * 1024 * 1024;

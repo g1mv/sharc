@@ -41,9 +41,6 @@ To compress a file named 'test' into 'test.sharc' using the default algorithm (*
 > sharc test
 
 To decompress 'test.sharc',
-> sharc -d test.sharc
-
-or:
 > unsharc test.sharc
 
 Compression algorithm can be selected with the -c option.
