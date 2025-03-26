@@ -19,7 +19,7 @@ incremental = false
 overflow-checks = false
 
 [dependencies]
-density-rs = "0.16.4"
+density-rs = "0.16.5"
 memmap2 = "0.9.5"
 seahash = "4.1.0"
 rayon = "1.10.0"
