@@ -1,6 +1,6 @@
 [package]
 name = "sharc"
-version = "0.0.6"
+version = "0.1.0"
 edition = "2024"
 description = "Simple, high-speed archiver using the density compression library"
 license = "MIT OR Apache-2.0"

@@ -1,8 +1,5 @@
 # sharc
 
-> [!CAUTION]
-> Alpha version, do not use
-
 Simple High-speed ARChiver
 
 **sharc** is a very fast file archiver, using the [**density**](http://github.com/g1mv/density) compression library.
