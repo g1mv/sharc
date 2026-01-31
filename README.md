@@ -50,7 +50,7 @@ The sequence of blocks has the following structure:
 
 ### General usage
 
-To compress a file named 'test.file' into 'test.file.sharc' using the default algorithm (**density** cheetah):
+To compress a file named 'test.file' into 'test.file.sharc' using the default algorithm:
 > sharc test.file
 
 To decompress 'test.file.sharc',
