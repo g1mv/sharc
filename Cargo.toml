@@ -1,6 +1,6 @@
 [package]
 name = "sharc"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Simple, high-speed archiver using the density compression library"
 license = "MIT OR Apache-2.0"
@@ -20,7 +20,7 @@ overflow-checks = false
 
 [dependencies]
 density-rs = "0.16.6"
-memmap2 = "0.9.8"
+memmap2 = "0.9.9"
 seahash = "4.1.0"
 rayon = "1.11.0"
-clap = { version = "4.5.46", features = ["derive"] }
+clap = { version = "4.5.56", features = ["derive"] }

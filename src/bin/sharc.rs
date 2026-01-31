@@ -9,7 +9,7 @@ use std::path::PathBuf;
 #[command(version, about, long_about = None)]
 struct Args {
     /// Algorithm
-    #[arg(short, long, default_value_t = String::from("cheetah"), value_parser = clap::builder::PossibleValuesParser::new(["chameleon", "cheetah", "lion"]))]
+    #[arg(short, long, default_value_t = String::from("lion"), value_parser = clap::builder::PossibleValuesParser::new(["chameleon", "cheetah", "lion"]))]
     algorithm: String,
 
     /// Block size in MB
